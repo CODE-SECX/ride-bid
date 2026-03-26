@@ -1068,7 +1068,14 @@ select { cursor: pointer; }
   /* ═══════════ API: RIDES ═══════════ */
   async function loadRides() {
     try {
-      const res = await fetch(`${API_URL}/rides`);
+      let url = `${API_URL}/rides`;
+      
+      // If passenger is logged in, filter by their phone to show only their rides
+      if (passenger && passenger.phone) {
+        url += `?passengerPhone=${encodeURIComponent(passenger.phone)}`;
+      }
+      
+      const res = await fetch(url);
       const data = await res.json();
       rides = data.rides || [];
       renderPassengerRequests();

@@ -221,20 +221,22 @@ app.post('/api/rides', async (req, res) => {
 
 app.get('/api/rides', async (req, res) => {
   try {
-    const { status, passengerId, includeAll } = req.query;
+    const { status, passengerId, passengerPhone, includeAll } = req.query;
 
     let query = supabase
       .from('ride_requests')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (includeAll === 'true') {
-      // Return all rides
+    // Filter by passenger ID or phone if provided (for passenger view)
+    if (passengerId) {
+      query = query.eq('passenger_id', passengerId);
+    } else if (passengerPhone) {
+      query = query.eq('passenger_phone', passengerPhone);
     } else if (status === 'pending' || status === 'countered') {
       query = query.in('status', ['pending', 'countered']).gt('expires_at', new Date().toISOString());
-    } else if (passengerId) {
-      query = query.eq('passenger_id', passengerId);
     } else {
+      // Default: show active rides
       query = query.in('status', ['pending', 'countered', 'confirmed', 'completed']);
     }
 
