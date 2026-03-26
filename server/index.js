@@ -119,7 +119,7 @@ app.get('/api/passengers/:phone', async (req, res) => {
   }
 });
 
-app.post('/api/drivers/login', async (req, res) => {
+app.post('/api/drivers', async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) {
@@ -142,11 +142,6 @@ app.post('/api/drivers/login', async (req, res) => {
     if (!validPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-
-    const { data: updateError } = await supabase
-      .from('drivers')
-      .update({ is_online: true })
-      .eq('id', driver.id);
 
     res.json({ 
       driver: { 
