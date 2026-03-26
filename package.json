@@ -1,6 +1,7 @@
 {
   "name": "ride-n-go",
   "version": "1.0.0",
+  "private": true,
   "description": "Ride fare negotiation app",
   "scripts": {
     "dev": "node server/index.js",
