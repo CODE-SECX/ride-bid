@@ -1024,18 +1024,24 @@ select { cursor: pointer; }
     const username = document.getElementById('d-username').value.trim();
     const password = document.getElementById('d-password').value;
 
+    console.log('[DEBUG] Login attempt:', { username, apiUrl: API_URL });
+
     if (!username || !password) {
       toast('⚠️', 'Credentials required', 'Please enter username and password.', 'amber');
       return;
     }
 
     try {
+      console.log('[DEBUG] Sending request to:', `${API_URL}/drivers`);
       const res = await fetch(`${API_URL}/drivers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
+      console.log('[DEBUG] Response status:', res.status);
+      
       const data = await res.json();
+      console.log('[DEBUG] Response data:', data);
       
       if (!res.ok) throw new Error(data.error);
 
