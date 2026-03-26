@@ -1,11 +1,10 @@
 {
   "name": "ride-n-go",
   "version": "1.0.0",
-  "description": "Ride negotiation app with Supabase and real-time updates",
-  "main": "server/index.js",
+  "description": "Ride fare negotiation app",
   "scripts": {
-    "start": "node server/index.js",
-    "dev": "node server/index.js"
+    "dev": "node server/index.js",
+    "start": "node server/index.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

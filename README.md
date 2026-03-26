@@ -1,13 +1,13 @@
 # RideNego - Ride Fare Negotiation App
 
-A real-time ride fare negotiation application with Supabase database and Node.js/Express backend with WebSocket support.
+A real-time ride fare negotiation application with Supabase database.
 
 ## Prerequisites
 
 1. **Node.js** - v14 or higher
 2. **Supabase Account** - Create a project at [supabase.com](https://supabase.com)
 
-## Setup Instructions
+## Local Development
 
 ### 1. Database Setup
 
@@ -36,19 +36,28 @@ A real-time ride fare negotiation application with Supabase database and Node.js
    npm start
    ```
 
-4. Server runs at `http://localhost:3000`
+4. Open `http://localhost:3000` in your browser
 
-### 3. Using the App
+## Deployment to Vercel
 
-1. Open `http://localhost:3000` in your browser
-2. **Passenger View**: Enter your name and phone number to create an account
-3. Create a ride request with pickup, drop-off, and your offered fare
-4. **Driver View**: Switch to "I'm a Driver" tab and login
-   - Default driver credentials:
-     - Username: `driver`
-     - Password: `driver123`
-5. Drivers can accept, counter, or reject ride requests
-6. Real-time updates via WebSocket - no polling needed!
+1. Push your code to GitHub
+2. Go to [Vercel](https://vercel.com) and import your repository
+3. Add environment variables in Vercel project settings:
+   - `SUPABASE_URL` - Your Supabase project URL
+   - `SUPABASE_ANON_KEY` - Your Supabase anon key
+4. Deploy
+
+**Note**: Vercel serverless functions don't support WebSockets. For production:
+- Use polling for real-time updates (already implemented in frontend)
+- Or use Supabase Realtime for live updates
+
+## Features
+
+- Fare negotiation (accept, counter, reject)
+- Passenger and driver authentication
+- Auto-expiration of pending rides
+- Responsive design
+- Real-time updates (WebSocket locally, polling on Vercel)
 
 ## Project Structure
 
@@ -58,30 +67,24 @@ ride-ngo/
 ├── package.json          # Node.js dependencies
 ├── server/
 │   └── index.js          # Express + WebSocket server
+├── api/
+│   └── rides.js          # Vercel API handler
 ├── supabase-setup.sql    # Database schema
-├── ridenegotiate.html    # Frontend (served by server)
+├── ridenegotiate.html    # Frontend
+├── vercel.json           # Vercel config
 └── README.md
 ```
-
-## Features
-
-- Real-time ride request updates via WebSocket
-- Fare negotiation (accept, counter, reject)
-- Passenger and driver authentication
-- Auto-expiration of pending rides
-- Responsive design
 
 ## API Endpoints
 
 - `POST /api/passengers` - Create/get passenger
 - `POST /api/drivers/login` - Driver login
 - `POST /api/rides` - Create ride request
-- `GET /api/rides` - Get all pending rides
-- `PATCH /api/rides/:id` - Update ride status
+- `GET /api/rides` - Get all rides
+- `PATCH /api/rides/:id` - Update ride
 - `POST /api/rides/:id/counter` - Counter offer
 - `POST /api/rides/:id/accept` - Accept ride
 - `POST /api/rides/:id/reject` - Reject ride
-
-## WebSocket Events
-
-- `ride_update` - Broadcast when any ride status changes
+- `POST /api/rides/:id/complete` - Complete ride
+- `POST /api/rides/:id/accept-counter` - Accept counter
+- `POST /api/rides/:id/decline-counter` - Decline counter
