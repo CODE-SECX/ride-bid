@@ -1030,7 +1030,7 @@ select { cursor: pointer; }
     }
 
     try {
-      const res = await fetch(`${API_URL}/drivers/login`, {
+      const res = await fetch(`${API_URL}/drivers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
