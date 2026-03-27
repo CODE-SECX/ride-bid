@@ -710,6 +710,21 @@ app.post('/api/admin/expire-rides', async (req, res) => {
 // SERVER BOOT
 // ─────────────────────────────────────────────
 
+app.get('/api/drivers/:id/profile', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { data: driver, error } = await supabase
+        .from('drivers')
+        .select('id, name, contact_no, vehicle_info')
+        .eq('id', id)
+        .single();
+      if (error || !driver) return res.status(404).json({ error: 'Driver not found' });
+      res.json({ driver });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log(`WebSocket server ready`);
