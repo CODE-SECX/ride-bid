@@ -913,29 +913,42 @@ a.phone-link .phone-icon {
   const API_URL = (window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin) + '/api';
   let ws = null;
   let passenger = null;
-  let rides = [];
+
+  /*
+   * TWO SEPARATE RIDE ARRAYS — this is the core fix for Issue 2.
+   *
+   * allRides    → every ride on the platform, used by the driver view and
+   *               the "All Rides" section visible to passengers.
+   *               Always fetched without a passenger filter.
+   *
+   * myRides     → only this passenger's own rides, used for "Your Negotiations".
+   *               Fetched with ?passengerPhone=... so it includes ALL statuses
+   *               (completed, rejected, etc.) for a full personal history.
+   *
+   * Previously a single `rides` array was used. When a passenger was logged in,
+   * loadRides() fetched only that passenger's rides and overwrote the array —
+   * so the driver saw only those rides. On logout the fetch reverted to all rides.
+   */
+  let allRides = [];
+  let myRides  = [];
+
   let driver = null;
   let driverFilter = 'all';
 
   /* ═══════════ PHONE LINK HELPER ═══════════ */
-  // Makes a phone number into a tappable tel: link with a phone icon
   function phoneLink(phoneStr, labelClass) {
     if (!phoneStr || phoneStr === 'N/A') {
       return `<span class="${labelClass || ''}">N/A</span>`;
     }
-    // Strip spaces for the href but keep display formatting
     const dialable = phoneStr.replace(/\s+/g, '');
     return `<a href="tel:${dialable}" class="phone-link ${labelClass || ''}"><span class="phone-icon">📞</span>${phoneStr}</a>`;
   }
 
   /* ═══════════ WEBSOCKET ═══════════ */
   const WS_URL = window.location.hostname === 'localhost' ? 'ws://localhost:3000' : null;
-  
+
   function connectWebSocket() {
-    if (!WS_URL) {
-      console.log('WebSocket not available in production');
-      return;
-    }
+    if (!WS_URL) { console.log('WebSocket not available in production'); return; }
     ws = new WebSocket(WS_URL);
     ws.onopen = () => console.log('WebSocket connected');
     ws.onmessage = (event) => {
@@ -950,25 +963,57 @@ a.phone-link .phone-icon {
     };
   }
 
+  /*
+   * handleRideUpdate — called for every incoming WebSocket broadcast.
+   * Updates BOTH arrays so nothing goes stale regardless of which tab is open.
+   */
   function handleRideUpdate(ride) {
-    const idx = rides.findIndex(r => r.id === ride.id);
-    if (idx >= 0) {
-      rides[idx] = { ...rides[idx], ...ride };
-    } else if (ride.status === 'pending' || ride.status === 'countered') {
-      rides.unshift(ride);
+    // Update allRides
+    const allIdx = allRides.findIndex(r => r.id === ride.id);
+    if (allIdx >= 0) {
+      allRides[allIdx] = { ...allRides[allIdx], ...ride };
+    } else {
+      allRides.unshift(ride);
     }
-    if (passenger && ride.passenger_phone === passenger.phone) renderPassengerRequests();
+
+    // Update myRides only if this ride belongs to the logged-in passenger
+    if (passenger && ride.passenger_phone === passenger.phone) {
+      const myIdx = myRides.findIndex(r => r.id === ride.id);
+      if (myIdx >= 0) {
+        myRides[myIdx] = { ...myRides[myIdx], ...ride };
+      } else {
+        myRides.unshift(ride);
+      }
+    }
+
+    renderPassengerRequests();
+    renderAllRides();
     renderDriverView();
   }
 
+  /*
+   * sendRideUpdate — called after a local action (accept, counter, etc.)
+   * to immediately reflect changes in the UI before the WebSocket echo arrives.
+   */
   function sendRideUpdate(ride) {
-    const idx = rides.findIndex(r => r.id === ride.id);
-    if (idx >= 0) {
-      rides[idx] = { ...rides[idx], ...ride };
+    const allIdx = allRides.findIndex(r => r.id === ride.id);
+    if (allIdx >= 0) {
+      allRides[allIdx] = { ...allRides[allIdx], ...ride };
     } else {
-      rides.unshift(ride);
+      allRides.unshift(ride);
     }
+
+    if (passenger && ride.passenger_phone === passenger.phone) {
+      const myIdx = myRides.findIndex(r => r.id === ride.id);
+      if (myIdx >= 0) {
+        myRides[myIdx] = { ...myRides[myIdx], ...ride };
+      } else {
+        myRides.unshift(ride);
+      }
+    }
+
     renderPassengerRequests();
+    renderAllRides();
     renderDriverView();
   }
 
@@ -982,21 +1027,21 @@ a.phone-link .phone-icon {
 
     if (tab === 'driver') {
       if (!driver) showDriverLogin();
-      else loadRides();
+      else loadAllRides();
     }
     if (tab === 'passenger') {
-      loadRides();
-      renderPassengerRequests();
+      loadAllRides();
+      if (passenger) loadMyRides();
     }
   }
 
   /* ═══════════ ACCOUNT: PASSENGER ═══════════ */
   async function createPassengerAccount() {
-    const name  = document.getElementById('p-name').value.trim();
-    const code  = document.getElementById('p-code').value;
-    const phone = document.getElementById('p-phone').value.trim();
+    const nameInput = document.getElementById('p-name').value.trim();
+    const code      = document.getElementById('p-code').value;
+    const phone     = document.getElementById('p-phone').value.trim();
 
-    if (!name)              { toast('⚠️', 'Name required', 'Drivers need something to call you.', 'amber'); return; }
+    if (!nameInput)           { toast('⚠️', 'Name required', 'Drivers need something to call you.', 'amber'); return; }
     if (!phone || phone.length < 6) { toast('⚠️', 'Check your number', "That doesn't look right — try again.", 'amber'); return; }
 
     const fullPhone = code + ' ' + phone;
@@ -1005,29 +1050,61 @@ a.phone-link .phone-icon {
       const res = await fetch(`${API_URL}/passengers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone: fullPhone })
+        body: JSON.stringify({ name: nameInput, phone: fullPhone })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      passenger = { id: data.passenger.id, name, phone: fullPhone };
+      /*
+       * FIX for Issue 1: always use the name that came BACK from the server,
+       * not the one the user typed. The server returns the existing record when
+       * the phone is already registered, so the canonical name is always
+       * data.passenger.name — regardless of what was typed in the input.
+       *
+       * Before this fix: passenger = { name: nameInput, ... }
+       * nameInput could be "B" even though the account was created as "A".
+       */
+      const canonicalName = data.passenger.name;
+
+      passenger = {
+        id:    data.passenger.id,
+        name:  canonicalName,
+        phone: fullPhone
+      };
       localStorage.setItem('passenger', JSON.stringify(passenger));
 
-      document.getElementById('passenger-auth').classList.add('hidden');
-      document.getElementById('passenger-dashboard').classList.remove('hidden');
-      document.getElementById('p-display-name').textContent  = name;
-      document.getElementById('p-display-phone').textContent = passenger.phone;
-      document.getElementById('p-avatar').textContent        = name[0].toUpperCase();
+      showPassengerDashboard();
 
-      toast('👋', "You're in, " + name.split(' ')[0] + '!', 'Name your price and see who bites.', 'blue');
-      loadRides();
+      /*
+       * If the server returned a different name than what was typed, the phone
+       * was already registered. Let the user know which account they're in.
+       */
+      if (canonicalName !== nameInput) {
+        toast('ℹ️', 'Welcome back, ' + canonicalName.split(' ')[0] + '!',
+          'This number is already registered — signed in as ' + canonicalName + '.', 'blue');
+      } else {
+        toast('👋', "You're in, " + canonicalName.split(' ')[0] + '!',
+          'Name your price and see who bites.', 'blue');
+      }
+
+      loadAllRides();
+      loadMyRides();
     } catch (err) {
       toast('❌', 'Error', err.message, 'red');
     }
   }
 
+  function showPassengerDashboard() {
+    document.getElementById('passenger-auth').classList.add('hidden');
+    document.getElementById('passenger-dashboard').classList.remove('hidden');
+    document.getElementById('p-display-name').textContent  = passenger.name;
+    document.getElementById('p-display-phone').textContent = passenger.phone;
+    document.getElementById('p-avatar').textContent        = passenger.name[0].toUpperCase();
+  }
+
   function logoutPassenger() {
     passenger = null;
+    myRides   = [];
     localStorage.removeItem('passenger');
     document.getElementById('passenger-auth').classList.remove('hidden');
     document.getElementById('passenger-dashboard').classList.add('hidden');
@@ -1040,12 +1117,8 @@ a.phone-link .phone-icon {
     if (saved) {
       try {
         passenger = JSON.parse(saved);
-        document.getElementById('passenger-auth').classList.add('hidden');
-        document.getElementById('passenger-dashboard').classList.remove('hidden');
-        document.getElementById('p-display-name').textContent  = passenger.name;
-        document.getElementById('p-display-phone').textContent = passenger.phone;
-        document.getElementById('p-avatar').textContent        = passenger.name[0].toUpperCase();
-        loadRides();
+        showPassengerDashboard();
+        loadMyRides();
       } catch (e) { localStorage.removeItem('passenger'); }
     }
   }
@@ -1097,8 +1170,8 @@ a.phone-link .phone-icon {
       localStorage.setItem('driver', JSON.stringify(driver));
 
       toast('✅', 'Welcome, ' + driver.name + '!', 'You are now online.', 'green');
-      loadRides();
       renderDriverDashboard();
+      loadAllRides();
     } catch (err) {
       toast('❌', 'Login failed', err.message, 'red');
     }
@@ -1123,7 +1196,7 @@ a.phone-link .phone-icon {
       try {
         driver = JSON.parse(saved);
         renderDriverDashboard();
-        loadRides();
+        loadAllRides();
       } catch (e) {
         localStorage.removeItem('driver');
         showDriverLogin();
@@ -1169,19 +1242,38 @@ a.phone-link .phone-icon {
   }
 
   /* ═══════════ API: RIDES ═══════════ */
-  async function loadRides() {
+
+  /*
+   * loadAllRides — fetches ALL rides (no passenger filter).
+   * Used by: driver view, passenger "All Rides" section.
+   * Never filters by passenger so the driver always sees the full picture.
+   */
+  async function loadAllRides() {
     try {
-      let url = `${API_URL}/rides`;
-      if (passenger && passenger.phone) {
-        url += `?passengerPhone=${encodeURIComponent(passenger.phone)}`;
-      }
-      const res = await fetch(url);
+      const res  = await fetch(`${API_URL}/rides`);
       const data = await res.json();
-      rides = data.rides || [];
-      renderPassengerRequests();
+      allRides   = data.rides || [];
+      renderAllRides();
       renderDriverView();
     } catch (err) {
-      console.error('Error loading rides:', err);
+      console.error('Error loading all rides:', err);
+    }
+  }
+
+  /*
+   * loadMyRides — fetches only the logged-in passenger's rides.
+   * Uses the history endpoint so completed/rejected rides are included too.
+   * Completely separate from allRides — never overwrites it.
+   */
+  async function loadMyRides() {
+    if (!passenger || !passenger.phone) return;
+    try {
+      const res  = await fetch(`${API_URL}/rides/history/${encodeURIComponent(passenger.phone)}`);
+      const data = await res.json();
+      myRides    = data.rides || [];
+      renderPassengerRequests();
+    } catch (err) {
+      console.error('Error loading my rides:', err);
     }
   }
 
@@ -1201,12 +1293,12 @@ a.phone-link .phone-icon {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          passengerId: passenger.id,
-          passengerName: passenger.name,
+          passengerId:    passenger.id,
+          passengerName:  passenger.name,
           passengerPhone: passenger.phone,
-          pickupLocation: pickup,
+          pickupLocation:  pickup,
           dropoffLocation: drop,
-          offeredFare: price
+          offeredFare:     price
         })
       });
       const data = await res.json();
@@ -1217,8 +1309,13 @@ a.phone-link .phone-icon {
       document.getElementById('p-price').value  = '';
 
       toast('📤', 'Offer sent!', 'Drivers can see your $' + price + ' bid. Sit tight.', 'green');
-      rides.unshift(data.ride);
+
+      // Add the new ride to BOTH arrays immediately
+      myRides.unshift(data.ride);
+      allRides.unshift(data.ride);
       renderPassengerRequests();
+      renderAllRides();
+      renderDriverView();
     } catch (err) {
       toast('❌', 'Error', err.message, 'red');
     }
@@ -1341,10 +1438,15 @@ a.phone-link .phone-icon {
   function renderPassengerRequests() {
     if (!passenger) return;
 
-    const myRides = rides.filter(r => r.passenger_name === passenger.name && r.passenger_phone === passenger.phone);
     const listEl  = document.getElementById('passenger-requests-list');
     const emptyEl = document.getElementById('passenger-requests-empty');
+    if (!listEl) return;
 
+    /*
+     * FIX: use myRides (passenger's own rides fetched via history endpoint)
+     * instead of filtering allRides by name+phone.
+     * This also correctly shows completed and rejected rides in history.
+     */
     if (myRides.length === 0) {
       emptyEl.style.display = '';
       listEl.innerHTML = '';
@@ -1352,7 +1454,6 @@ a.phone-link .phone-icon {
       emptyEl.style.display = 'none';
       listEl.innerHTML = myRides.map(renderPassengerCard).join('');
     }
-    renderAllRides();
   }
 
   function renderPassengerCard(r) {
@@ -1361,7 +1462,6 @@ a.phone-link .phone-icon {
     const counteredPrice = r.counter_fare;
 
     if (r.status === 'countered') {
-      // Driver info inside the counter banner (no separate duplicate block)
       const driverDetail = r.driver ? `
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid var(--violet-border);">
           <div class="contact-avatar-sm green-avatar" style="background:linear-gradient(135deg,var(--violet),#6d28d9);">
@@ -1396,7 +1496,6 @@ a.phone-link .phone-icon {
     }
 
     if (r.status === 'confirmed') {
-      // Single clean driver contact block
       const driverBlock = r.driver ? `
         <div class="driver-contact-block">
           <div class="driver-contact-block-header">
@@ -1484,9 +1583,10 @@ a.phone-link .phone-icon {
     const emptyEl = document.getElementById('all-rides-empty');
     if (!listEl) return;
 
-    let filtered = rides;
-    if (passengerRideFilter === 'pending')   filtered = rides.filter(r => r.status === 'pending' || r.status === 'countered');
-    if (passengerRideFilter === 'confirmed') filtered = rides.filter(r => r.status === 'confirmed' || r.status === 'completed');
+    // Use allRides (the full unfiltered dataset) — never myRides
+    let filtered = allRides;
+    if (passengerRideFilter === 'pending')   filtered = allRides.filter(r => r.status === 'pending' || r.status === 'countered');
+    if (passengerRideFilter === 'confirmed') filtered = allRides.filter(r => r.status === 'confirmed' || r.status === 'completed');
 
     if (filtered.length === 0) {
       emptyEl.style.display = '';
@@ -1525,12 +1625,13 @@ a.phone-link .phone-icon {
 
     if (!listEl) return;
 
-    countEl.textContent = rides.filter(r => r.status === 'pending' || r.status === 'countered').length;
+    // Driver always reads from allRides
+    countEl.textContent = allRides.filter(r => r.status === 'pending' || r.status === 'countered').length;
 
-    let filtered = rides;
-    if (driverFilter === 'pending')   filtered = rides.filter(r => r.status === 'pending');
-    if (driverFilter === 'countered') filtered = rides.filter(r => r.status === 'countered');
-    if (driverFilter === 'closed')    filtered = rides.filter(r => r.status === 'confirmed' || r.status === 'rejected' || r.status === 'completed');
+    let filtered = allRides;
+    if (driverFilter === 'pending')   filtered = allRides.filter(r => r.status === 'pending');
+    if (driverFilter === 'countered') filtered = allRides.filter(r => r.status === 'countered');
+    if (driverFilter === 'closed')    filtered = allRides.filter(r => r.status === 'confirmed' || r.status === 'rejected' || r.status === 'completed');
 
     if (filtered.length === 0) {
       emptyEl.style.display = '';
@@ -1542,7 +1643,7 @@ a.phone-link .phone-icon {
   }
 
   function renderDriverCard(r) {
-    const isClosed     = r.status === 'confirmed' || r.status === 'rejected';
+    const isClosed      = r.status === 'confirmed' || r.status === 'rejected';
     const offeredPrice  = r.offered_fare;
     const counteredPrice= r.counter_fare;
     let actions    = '';
@@ -1575,7 +1676,6 @@ a.phone-link .phone-icon {
     }
 
     if (r.status === 'confirmed') {
-      // Single clean passenger contact block — no duplication
       closedNote = `
         <div class="contact-info-block" style="margin-top:12px;">
           <div class="contact-info-block-header">
@@ -1634,7 +1734,11 @@ a.phone-link .phone-icon {
   }
 
   /* ═══════════ HELPERS ═══════════ */
-  function getRide(id) { return rides.find(r => r.id === id); }
+  /*
+   * getRide — looks in allRides for driver actions (counter form toggle etc.)
+   * since those actions always originate from the driver view.
+   */
+  function getRide(id) { return allRides.find(r => r.id === id); }
 
   function badgeHTML(status) {
     const labels = { pending:'Awaiting response', countered:'Counter proposed', confirmed:'Confirmed', completed:'Completed', rejected:'Closed' };
@@ -1671,6 +1775,7 @@ a.phone-link .phone-icon {
   connectWebSocket();
   checkSavedPassenger();
   checkSavedDriver();
+  loadAllRides();      // pre-load all rides on page load regardless of login state
   switchTab('passenger');
 </script>
 </body>
