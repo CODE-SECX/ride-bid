@@ -710,6 +710,22 @@ app.post('/api/admin/expire-rides', async (req, res) => {
 // SERVER BOOT
 // ─────────────────────────────────────────────
 
+app.get('/api/drivers/:id/profile', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { data: driver, error } = await supabase
+        .from('drivers')
+        .select('id, name, username, contact_no, vehicle_info')
+        .eq('id', id)
+        .single();
+      if (error || !driver) return res.status(404).json({ error: 'Driver not found' });
+      res.json({ driver });
+    } catch (err) {
+      console.error('Error fetching driver profile:', err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
 app.patch('/api/drivers/:id/profile', async (req, res) => {
     try {
       const { id } = req.params;
