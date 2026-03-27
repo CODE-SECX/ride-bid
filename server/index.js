@@ -574,5 +574,11 @@ server.listen(PORT, () => {
   console.log(`WebSocket server ready`);
 });
 
-// Required for Vercel
+// Guard the listen call
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
+// Add this at the very bottom
 module.exports = app;
