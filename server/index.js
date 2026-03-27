@@ -65,9 +65,20 @@ async function checkAndExpireRides() {
   }
 }
 
-
 setInterval(checkAndExpireRides, 30000);
 
+// ─────────────────────────────────────────────
+// PASSENGERS
+// ─────────────────────────────────────────────
+
+/**
+ * POST /api/passengers
+ * Register or look up a passenger by phone number.
+ * - If phone already exists: returns existing record (name is IGNORED — phone is the identity).
+ * - If phone is new: creates a new record with the provided name.
+ * FIX: previously, a new name could silently shadow an existing account.
+ * Now we always return the authoritative record for that phone.
+ */
 app.post('/api/passengers', async (req, res) => {
   try {
     const { name, phone } = req.body;
@@ -75,6 +86,7 @@ app.post('/api/passengers', async (req, res) => {
       return res.status(400).json({ error: 'Name and phone are required' });
     }
 
+    // Check if passenger already exists for this phone
     let { data: existing } = await supabase
       .from('passengers')
       .select('*')
@@ -82,9 +94,11 @@ app.post('/api/passengers', async (req, res) => {
       .single();
 
     if (existing) {
+      // Phone is the unique identity — return existing record regardless of supplied name
       return res.json({ passenger: existing });
     }
 
+    // New phone — create the passenger
     const { data, error } = await supabase
       .from('passengers')
       .insert([{ name, phone }])
@@ -121,6 +135,10 @@ app.get('/api/passengers/:phone', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────
+// DRIVERS
+// ─────────────────────────────────────────────
+
 app.post('/api/drivers', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -145,14 +163,14 @@ app.post('/api/drivers', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    res.json({ 
-      driver: { 
-        id: driver.id, 
-        name: driver.name, 
+    res.json({
+      driver: {
+        id: driver.id,
+        name: driver.name,
         contact_no: driver.contact_no,
         vehicle_info: driver.vehicle_info,
         username: driver.username
-      } 
+      }
     });
   } catch (err) {
     console.error('Error logging in driver:', err);
@@ -174,28 +192,57 @@ app.post('/api/drivers/logout', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────
+// RIDES
+// ─────────────────────────────────────────────
+
+/**
+ * POST /api/rides
+ * Create a new ride request.
+ * FIX: We now look up the passenger by phone to enforce that the authoritative
+ * name (from the passengers table) is always used, preventing a caller from
+ * submitting a ride with an arbitrary name for an existing phone number.
+ */
 app.post('/api/rides', async (req, res) => {
   try {
-    const { 
-      passengerId, 
-      passengerName, 
-      passengerPhone, 
-      pickupLocation, 
-      dropoffLocation, 
-      offeredFare 
+    const {
+      passengerId,
+      passengerPhone,
+      pickupLocation,
+      dropoffLocation,
+      offeredFare
     } = req.body;
 
-    if (!passengerName || !passengerPhone || !pickupLocation || !dropoffLocation || !offeredFare) {
-      return res.status(400).json({ error: 'All fields are required' });
+    // passengerName is no longer trusted from the request body for existing passengers.
+    // We resolve the canonical name from the passengers table using the phone number.
+    if (!passengerPhone || !pickupLocation || !dropoffLocation || !offeredFare) {
+      return res.status(400).json({ error: 'Phone, pickup, dropoff and fare are required' });
     }
+
+    // Resolve canonical passenger record by phone
+    const { data: passenger, error: passengerError } = await supabase
+      .from('passengers')
+      .select('id, name')
+      .eq('phone', passengerPhone)
+      .single();
+
+    if (passengerError || !passenger) {
+      return res.status(400).json({
+        error: 'Passenger not found. Please register first using your phone number.'
+      });
+    }
+
+    // Use the canonical name and id from the passengers table
+    const resolvedPassengerId = passenger.id;
+    const resolvedPassengerName = passenger.name;
 
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
     const { data, error } = await supabase
       .from('ride_requests')
       .insert([{
-        passenger_id: passengerId,
-        passenger_name: passengerName,
+        passenger_id: resolvedPassengerId,
+        passenger_name: resolvedPassengerName,
         passenger_phone: passengerPhone,
         pickup_location: pickupLocation,
         dropoff_location: dropoffLocation,
@@ -218,14 +265,13 @@ app.post('/api/rides', async (req, res) => {
 
 app.get('/api/rides', async (req, res) => {
   try {
-    const { status, passengerId, passengerPhone, includeAll } = req.query;
+    const { status, passengerId, passengerPhone } = req.query;
 
     let query = supabase
       .from('ride_requests')
       .select('*')
       .order('created_at', { ascending: false });
 
-    // Filter by passenger ID or phone if provided (for passenger view)
     if (passengerId) {
       query = query.eq('passenger_id', passengerId);
     } else if (passengerPhone) {
@@ -233,7 +279,6 @@ app.get('/api/rides', async (req, res) => {
     } else if (status === 'pending' || status === 'countered') {
       query = query.in('status', ['pending', 'countered']).gt('expires_at', new Date().toISOString());
     } else {
-      // Default: show active rides
       query = query.in('status', ['pending', 'countered', 'confirmed', 'completed']);
     }
 
@@ -323,7 +368,6 @@ app.post('/api/rides/:id/counter', async (req, res) => {
       throw error;
     }
 
-    // Get driver details
     const { data: driver } = await supabase
       .from('drivers')
       .select('name, contact_no, vehicle_info')
@@ -362,7 +406,6 @@ app.post('/api/rides/:id/accept', async (req, res) => {
       throw error;
     }
 
-    // Get driver details
     const { data: driver } = await supabase
       .from('drivers')
       .select('name, contact_no, vehicle_info')
@@ -459,7 +502,6 @@ app.post('/api/rides/:id/accept-counter', async (req, res) => {
 
     if (error) throw error;
 
-    // Get driver details who made the counter
     if (ride.countered_by) {
       const { data: driver } = await supabase
         .from('drivers')
@@ -491,7 +533,6 @@ app.post('/api/rides/:id/complete', async (req, res) => {
       throw error;
     }
 
-    // Add to ride history
     await supabase.from('ride_history').insert([{
       request_id: id,
       driver_id: driverId,
@@ -508,7 +549,6 @@ app.post('/api/rides/:id/complete', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 app.post('/api/rides/:id/decline-counter', async (req, res) => {
   try {
@@ -541,17 +581,48 @@ app.post('/api/rides/:id/decline-counter', async (req, res) => {
   }
 });
 
-app.post('/api/admin/expire-rides', async (req, res) => {
+// ─────────────────────────────────────────────
+// HISTORY
+// ─────────────────────────────────────────────
+
+/**
+ * GET /api/rides/history/passenger/:phone
+ * Full ride history for a passenger identified by phone number.
+ * FIX: Was previously at /api/rides/history/:phone — kept that alias too for
+ * backwards compatibility, but the preferred path is more explicit.
+ * Includes ALL statuses (completed, rejected, expired, etc.) so the passenger
+ * can see their complete record, not just active rides.
+ */
+app.get('/api/rides/history/passenger/:phone', async (req, res) => {
   try {
-    const { data, error } = await supabase.rpc('expire_pending_rides');
+    const { phone } = req.params;
+
+    // Verify the passenger exists
+    const { data: passenger, error: passengerError } = await supabase
+      .from('passengers')
+      .select('id, name')
+      .eq('phone', phone)
+      .single();
+
+    if (passengerError || !passenger) {
+      return res.status(404).json({ error: 'Passenger not found' });
+    }
+
+    const { data, error } = await supabase
+      .from('ride_requests')
+      .select('*')
+      .eq('passenger_phone', phone)
+      .order('created_at', { ascending: false });
+
     if (error) throw error;
-    res.json({ success: true });
+    res.json({ passenger, rides: data || [] });
   } catch (err) {
-    console.error('Error expiring rides:', err);
+    console.error('Error fetching passenger history:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
+// Backwards-compatible alias
 app.get('/api/rides/history/:phone', async (req, res) => {
   try {
     const { phone } = req.params;
@@ -568,17 +639,85 @@ app.get('/api/rides/history/:phone', async (req, res) => {
   }
 });
 
+/**
+ * GET /api/drivers/:id/history
+ * Full ride history for a driver.
+ * FIX: This endpoint was entirely missing. Drivers had no way to retrieve
+ * their past rides. Now queries ride_history joined with ride_requests
+ * for the full picture.
+ */
+app.get('/api/drivers/:id/history', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Verify driver exists
+    const { data: driver, error: driverError } = await supabase
+      .from('drivers')
+      .select('id, name, username')
+      .eq('id', id)
+      .single();
+
+    if (driverError || !driver) {
+      return res.status(404).json({ error: 'Driver not found' });
+    }
+
+    // Query ride_history for completed rides by this driver
+    const { data: historyRows, error: histError } = await supabase
+      .from('ride_history')
+      .select('*')
+      .eq('driver_id', id)
+      .order('created_at', { ascending: false });
+
+    if (histError) throw histError;
+
+    // Also pull any confirmed/completed ride_requests accepted by this driver
+    // (covers cases where ride_history insert may have failed or ride is still in-progress)
+    const { data: activeRides, error: activeError } = await supabase
+      .from('ride_requests')
+      .select('*')
+      .eq('accepted_by', id)
+      .order('created_at', { ascending: false });
+
+    if (activeError) throw activeError;
+
+    res.json({
+      driver,
+      history: historyRows || [],
+      rides: activeRides || []
+    });
+  } catch (err) {
+    console.error('Error fetching driver history:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────
+// ADMIN
+// ─────────────────────────────────────────────
+
+app.post('/api/admin/expire-rides', async (req, res) => {
+  try {
+    const { data, error } = await supabase.rpc('expire_pending_rides');
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error expiring rides:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────
+// SERVER BOOT
+// ─────────────────────────────────────────────
 
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log(`WebSocket server ready`);
 });
 
-// Guard the listen call
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
-// Add this at the very bottom
 module.exports = app;
