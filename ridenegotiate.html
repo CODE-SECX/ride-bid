@@ -951,7 +951,8 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       const config = await response.json();
       
       if (config.supabaseUrl && config.supabaseAnonKey) {
-        supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+        const { createClient } = window.supabase;
+        supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
         console.log('✅ Supabase client initialized');
         return true;
       } else {
