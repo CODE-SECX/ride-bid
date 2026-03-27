@@ -999,11 +999,13 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
    * the counter-then-passenger-accept flow. Both end up as confirmed status.
    */
   function resolveDriver(r) {
-    if (r.driver) return r.driver;
-    const driverId = r.accepted_by || r.countered_by;
-    if (!driverId) return null;
-    if (driverCache[driverId] !== undefined) return driverCache[driverId];
-    fetchDriverById(driverId); // fire and forget — re-render on completion
+    // Only fetch driver details if we're in driver context and this ride belongs to current driver
+    if (driver && (r.accepted_by === driver.id || r.countered_by === driver.id)) {
+      if (r.driver) return r.driver;
+      return driver; // Return current driver's cached info
+    }
+    
+    // For passenger ALL RIDES view, don't fetch driver details for other drivers' rides
     return null;
   }
 
@@ -1241,6 +1243,10 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         <p class="auth-sub">Update your information that passengers see</p>
         <div class="card">
           <div class="form-grid">
+            <div>
+              <label>Username</label>
+              <input id="edit-username" type="text" value="${driver.username || ''}" placeholder="username" readonly />
+            </div>
             <div>
               <label>Full Name</label>
               <input id="edit-name" type="text" value="${driver.name || ''}" placeholder="e.g. Raj Sharma" />
