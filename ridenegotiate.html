@@ -1232,6 +1232,110 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     }
   }
 
+  function showDriverProfileEdit() {
+    if (!driver) return;
+    
+    const modalHtml = `
+      <div class="auth-wrap" style="max-width:480px; margin:40px auto;">
+        <h2 class="auth-heading">Edit Driver Profile</h2>
+        <p class="auth-sub">Update your information that passengers see</p>
+        <div class="card">
+          <div class="form-grid">
+            <div>
+              <label>Full Name</label>
+              <input id="edit-name" type="text" value="${driver.name || ''}" placeholder="e.g. Raj Sharma" />
+            </div>
+            <div>
+              <label>Contact Number</label>
+              <input id="edit-contact" type="tel" value="${driver.contact_no || ''}" placeholder="+91 98765 43210" />
+            </div>
+            <div>
+              <label>Vehicle Information</label>
+              <input id="edit-vehicle" type="text" value="${driver.vehicle_info || ''}" placeholder="e.g. Swift Dzire, White, KA01AB1234" />
+            </div>
+            <div>
+              <label>Current Password</label>
+              <input id="edit-current-password" type="password" placeholder="Enter current password to confirm changes" />
+            </div>
+            <div>
+              <label>New Password (optional)</label>
+              <input id="edit-new-password" type="password" placeholder="Leave blank to keep current password" />
+            </div>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button class="btn btn-primary" onclick="updateDriverProfile()">Save Changes</button>
+              <button class="btn btn-ghost" onclick="closeDriverProfileEdit()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.id = 'driver-profile-modal';
+    modal.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); z-index: 10000;
+      display: flex; align-items: center; justify-content: center;
+    `;
+    modal.innerHTML = modalHtml;
+    document.body.appendChild(modal);
+  }
+
+  async function updateDriverProfile() {
+    if (!driver) return;
+    
+    const name = document.getElementById('edit-name').value.trim();
+    const contact = document.getElementById('edit-contact').value.trim();
+    const vehicle = document.getElementById('edit-vehicle').value.trim();
+    const currentPassword = document.getElementById('edit-current-password').value;
+    const newPassword = document.getElementById('edit-new-password').value;
+    
+    if (!name) { toast('⚠️', 'Name required', 'Your name is required for identification.', 'amber'); return; }
+    if (!contact) { toast('⚠️', 'Contact required', 'Passengers need to reach you.', 'amber'); return; }
+    if (!currentPassword) { toast('⚠️', 'Password required', 'Enter current password to confirm changes.', 'amber'); return; }
+    
+    try {
+      // First verify current password
+      const loginRes = await fetch(`${API_URL}/drivers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: driver.username, password: currentPassword })
+      });
+      
+      const loginData = await loginRes.json();
+      if (!loginRes.ok) throw new Error('Current password is incorrect');
+      
+      // Update profile data
+      const updateData = { name, contact_no: contact, vehicle_info: vehicle };
+      if (newPassword.trim()) updateData.password = newPassword;
+      
+      const updateRes = await fetch(`${API_URL}/drivers/${driver.id}/profile`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData)
+      });
+      
+      const updateResult = await updateRes.json();
+      if (!updateRes.ok) throw new Error(updateResult.error || 'Update failed');
+      
+      // Update local driver object
+      driver = { ...driver, ...updateData };
+      localStorage.setItem('driver', JSON.stringify(driver));
+      
+      closeDriverProfileEdit();
+      renderDriverDashboard(); // Refresh dashboard to show updated info
+      toast('✅', 'Profile Updated', 'Your driver information has been updated successfully.', 'green');
+      
+    } catch (err) {
+      toast('❌', 'Update Failed', err.message, 'red');
+    }
+  }
+
+  function closeDriverProfileEdit() {
+    const modal = document.getElementById('driver-profile-modal');
+    if (modal) modal.remove();
+  }
+
   function renderDriverDashboard() {
     const html = `
       <div class="driver-header">
@@ -1244,6 +1348,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         </div>
         <div style="display:flex; gap:12px; align-items:center;">
           <div class="count-chip"><strong id="driver-count">0</strong> awaiting your call</div>
+          <button class="btn btn-blue btn-sm" onclick="showDriverProfileEdit()">Edit Profile</button>
           <button class="btn btn-ghost btn-sm" onclick="logoutDriver()">Logout</button>
         </div>
       </div>
