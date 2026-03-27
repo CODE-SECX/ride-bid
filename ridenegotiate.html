@@ -1698,8 +1698,21 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (!listEl) return;
 
     let filtered = allRides;
-    if (passengerRideFilter === 'pending')   filtered = allRides.filter(r => r.status === 'pending' || r.status === 'countered');
-    if (passengerRideFilter === 'confirmed') filtered = allRides.filter(r => r.status === 'confirmed' || r.status === 'completed');
+    
+    // If passenger is logged in, show only their own rides
+    if (passenger) {
+      filtered = allRides.filter(r => r.passenger_phone === passenger.phone);
+    }
+    // If driver is logged in, show only rides that are still available (not yet accepted)
+    else if (driver) {
+      filtered = allRides.filter(r => r.status === 'pending' || r.status === 'countered');
+    }
+    
+    // Apply additional filter based on passenger tabs
+    if (passenger) {
+      if (passengerRideFilter === 'pending')   filtered = filtered.filter(r => r.status === 'pending' || r.status === 'countered');
+      if (passengerRideFilter === 'confirmed') filtered = filtered.filter(r => r.status === 'confirmed' || r.status === 'completed');
+    }
 
     if (filtered.length === 0) {
       emptyEl.style.display = '';
@@ -1776,12 +1789,28 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     const countEl = document.getElementById('driver-count');
     if (!listEl) return;
 
-    countEl.textContent = allRides.filter(r => r.status === 'pending' || r.status === 'countered').length;
+    // Count only available rides (not yet accepted by anyone)
+    const availableRides = allRides.filter(r => r.status === 'pending' || r.status === 'countered');
+    countEl.textContent = availableRides.length;
 
     let filtered = allRides;
-    if (driverFilter === 'pending')   filtered = allRides.filter(r => r.status === 'pending');
-    if (driverFilter === 'countered') filtered = allRides.filter(r => r.status === 'countered');
-    if (driverFilter === 'closed')    filtered = allRides.filter(r => r.status === 'confirmed' || r.status === 'rejected' || r.status === 'completed');
+    
+    // Filter rides based on driver context:
+    // - Show only available rides (pending/countered) for general view
+    // - Show driver's own rides in closed tab
+    if (driverFilter === 'all') {
+      filtered = availableRides;
+    } else if (driverFilter === 'pending') {
+      filtered = allRides.filter(r => r.status === 'pending');
+    } else if (driverFilter === 'countered') {
+      filtered = allRides.filter(r => r.status === 'countered');
+    } else if (driverFilter === 'closed') {
+      // Show only rides that belong to this driver (accepted, rejected, or completed)
+      filtered = allRides.filter(r => 
+        (r.status === 'confirmed' || r.status === 'rejected' || r.status === 'completed') &&
+        (r.accepted_by === driver.id || r.countered_by === driver.id)
+      );
+    }
 
     if (filtered.length === 0) {
       emptyEl.style.display = '';
