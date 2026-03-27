@@ -999,13 +999,22 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
    * the counter-then-passenger-accept flow. Both end up as confirmed status.
    */
   function resolveDriver(r) {
-    // Only fetch driver details if we're in driver context and this ride belongs to current driver
-    if (driver && (r.accepted_by === driver.id || r.countered_by === driver.id)) {
-      if (r.driver) return r.driver;
-      return driver; // Return current driver's cached info
+    // Always return driver data if it's already attached to the ride
+    if (r.driver) return r.driver;
+    
+    const driverId = r.accepted_by || r.countered_by;
+    if (!driverId) return null;
+    
+    // Check cache first
+    if (driverCache[driverId] !== undefined) return driverCache[driverId];
+    
+    // For passenger view, always fetch driver details for confirmed/completed rides
+    // For driver view, only fetch if it's the current driver's ride
+    if ((passenger && (r.status === 'confirmed' || r.status === 'completed')) ||
+        (driver && (r.accepted_by === driver.id || r.countered_by === driver.id))) {
+      fetchDriverById(driverId); // fire and forget — re-render on completion
     }
     
-    // For passenger ALL RIDES view, don't fetch driver details for other drivers' rides
     return null;
   }
 
