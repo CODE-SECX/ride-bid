@@ -934,11 +934,35 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
 </div><!-- /main -->
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   /* ═══════════ STATE ═══════════ */
   const API_URL = (window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin) + '/api';
-  let ws = null;
+  
+  // Initialize Supabase client with config from server
+  let supabase = null;
+  let realtimeSubscription = null;
   let passenger = null;
+  
+  // Fetch Supabase config and initialize client
+  async function initializeSupabase() {
+    try {
+      const response = await fetch(`${API_URL}/config`);
+      const config = await response.json();
+      
+      if (config.supabaseUrl && config.supabaseAnonKey) {
+        supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+        console.log('✅ Supabase client initialized');
+        return true;
+      } else {
+        console.error('❌ Supabase configuration not found');
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Failed to fetch Supabase config:', error);
+      return false;
+    }
+  }
 
   /*
    * allRides  — every ride on the platform (driver view + "All Rides" section).
@@ -1031,35 +1055,42 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     return `<a href="tel:${dialable}" class="phone-link ${labelClass || ''}"><span class="phone-icon">📞</span>${phoneStr}</a>`;
   }
 
-  /* ═══════════ WEBSOCKET ═══════════ */
-  const WS_URL = window.location.hostname === 'localhost' 
-    ? 'ws://localhost:3000' 
-    : window.location.protocol === 'https:' 
-      ? `wss://${window.location.hostname}` 
-      : `ws://${window.location.hostname}:3000`;
-
-  function connectWebSocket() {
-    if (!WS_URL) { 
-      console.log('WebSocket URL not determined'); 
-      return; 
-    }
+  /* ═══════════ SUPABASE REALTIME ═══════════ */
+  function connectRealtime() {
+    console.log('Connecting to Supabase Realtime...');
     
-    console.log('Connecting to WebSocket at:', WS_URL);
-    ws = new WebSocket(WS_URL);
-    ws.onopen = () => console.log('WebSocket connected');
-    ws.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data);
-        if (msg.type === 'ride_update') handleRideUpdate(msg.data);
-      } catch (e) { console.error('WebSocket message error:', e); }
-    };
-    ws.onclose = () => {
-      console.log('WebSocket disconnected, reconnecting...');
-      setTimeout(connectWebSocket, 3000);
-    };
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+    // Subscribe to ride_requests table changes
+    realtimeSubscription = supabase
+      .channel('ride_requests')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'ride_requests' 
+        }, 
+        (payload) => {
+          console.log('Realtime update received:', payload);
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            handleRideUpdate(payload.new);
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Supabase Realtime connected');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Supabase Realtime connection error');
+          setTimeout(connectRealtime, 3000);
+        }
+      });
+  }
+
+  function disconnectRealtime() {
+    if (realtimeSubscription) {
+      supabase.removeChannel(realtimeSubscription);
+      realtimeSubscription = null;
+      console.log('Disconnected from Supabase Realtime');
+    }
   }
 
   function handleRideUpdate(ride) {
@@ -1966,11 +1997,18 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   }
 
   /* ═══════════ INIT ═══════════ */
-  connectWebSocket();
-  checkSavedPassenger();
-  checkSavedDriver();
-  loadAllRides();
-  switchTab('passenger');
+  async function initializeApp() {
+    const supabaseInitialized = await initializeSupabase();
+    if (supabaseInitialized) {
+      connectRealtime();
+    }
+    checkSavedPassenger();
+    checkSavedDriver();
+    loadAllRides();
+    switchTab('passenger');
+  }
+  
+  initializeApp();
 </script>
 
 <!--
