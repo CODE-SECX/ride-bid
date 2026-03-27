@@ -1245,7 +1245,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div class="form-grid">
             <div>
               <label>Username</label>
-              <input id="edit-username" type="text" value="${driver.username || ''}" placeholder="username" readonly />
+              <input id="edit-username" type="text" value="${driver.username || ''}" placeholder="username" />
             </div>
             <div>
               <label>Full Name</label>
@@ -1290,12 +1290,14 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   async function updateDriverProfile() {
     if (!driver) return;
     
+    const username = document.getElementById('edit-username').value.trim();
     const name = document.getElementById('edit-name').value.trim();
     const contact = document.getElementById('edit-contact').value.trim();
     const vehicle = document.getElementById('edit-vehicle').value.trim();
     const currentPassword = document.getElementById('edit-current-password').value;
     const newPassword = document.getElementById('edit-new-password').value;
     
+    if (!username) { toast('⚠️', 'Username required', 'Username is required for login.', 'amber'); return; }
     if (!name) { toast('⚠️', 'Name required', 'Your name is required for identification.', 'amber'); return; }
     if (!contact) { toast('⚠️', 'Contact required', 'Passengers need to reach you.', 'amber'); return; }
     if (!currentPassword) { toast('⚠️', 'Password required', 'Enter current password to confirm changes.', 'amber'); return; }
@@ -1312,7 +1314,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       if (!loginRes.ok) throw new Error('Current password is incorrect');
       
       // Update profile data
-      const updateData = { name, contact_no: contact, vehicle_info: vehicle };
+      const updateData = { username, name, contact_no: contact, vehicle_info: vehicle };
       if (newPassword.trim()) updateData.password = newPassword;
       
       const updateRes = await fetch(`${API_URL}/drivers/${driver.id}/profile`, {
