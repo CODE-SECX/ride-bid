@@ -1070,7 +1070,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           table: 'ride_requests' 
         }, 
         (payload) => {
-          console.log('Realtime update received:', payload);
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             handleRideUpdate(payload.new);
           }
@@ -1078,7 +1077,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('✅ Supabase Realtime connected');
         } else if (status === 'CHANNEL_ERROR') {
           console.error('❌ Supabase Realtime connection error');
           setTimeout(connectRealtime, 3000);
@@ -1090,7 +1088,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (realtimeSubscription) {
       supabaseClient.removeChannel(realtimeSubscription);
       realtimeSubscription = null;
-      console.log('Disconnected from Supabase Realtime');
     }
   }
 
