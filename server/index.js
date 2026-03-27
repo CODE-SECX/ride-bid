@@ -710,17 +710,44 @@ app.post('/api/admin/expire-rides', async (req, res) => {
 // SERVER BOOT
 // ─────────────────────────────────────────────
 
-app.get('/api/drivers/:id/profile', async (req, res) => {
+app.patch('/api/drivers/:id/profile', async (req, res) => {
     try {
       const { id } = req.params;
+      const { name, contact_no, vehicle_info, password } = req.body;
+      
+      // Build update object with only provided fields
+      const updateData = {};
+      if (name) updateData.name = name;
+      if (contact_no) updateData.contact_no = contact_no;
+      if (vehicle_info) updateData.vehicle_info = vehicle_info;
+      if (password) {
+        // Hash new password if provided
+        const bcrypt = require('bcryptjs');
+        const saltRounds = 10;
+        updateData.password_hash = await bcrypt.hash(password, saltRounds);
+      }
+      
       const { data: driver, error } = await supabase
         .from('drivers')
-        .select('id, name, contact_no, vehicle_info')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      if (!driver) return res.status(404).json({ error: 'Driver not found' });
+      
+      // Return updated driver data (without password hash)
+      const { data: updatedDriver, error: fetchError } = await supabase
+        .from('drivers')
+        .select('id, name, username, contact_no, vehicle_info')
         .eq('id', id)
         .single();
-      if (error || !driver) return res.status(404).json({ error: 'Driver not found' });
-      res.json({ driver });
+      
+      if (fetchError) throw fetchError;
+      res.json({ driver: updatedDriver });
     } catch (err) {
+      console.error('Error updating driver profile:', err);
       res.status(500).json({ error: err.message });
     }
   });
