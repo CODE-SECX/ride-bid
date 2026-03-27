@@ -441,6 +441,7 @@ select { cursor: pointer; }
   .badge { font-size: 0.6rem; padding: 3px 7px; }
   .scroll-list { max-height: 50vh; }
   .tip { padding: 10px 12px; font-size: 0.72rem; }
+  .address-callout { padding: 11px 12px; font-size: 0.72rem; }
 }
 
 /* ─── Ride Card ─── */
@@ -536,26 +537,13 @@ select { cursor: pointer; }
 
 /* ─── Contact Link ─── */
 a.phone-link {
-  color: inherit;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  color: inherit; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 4px;
   transition: color var(--t);
-  border-radius: 4px;
-  padding: 1px 3px;
-  margin: -1px -3px;
+  border-radius: 4px; padding: 1px 3px; margin: -1px -3px;
 }
-a.phone-link:hover {
-  color: var(--blue);
-  background: var(--blue-light);
-  text-decoration: underline;
-}
-a.phone-link .phone-icon {
-  font-size: 0.8em;
-  opacity: 0.7;
-  flex-shrink: 0;
-}
+a.phone-link:hover { color: var(--blue); background: var(--blue-light); text-decoration: underline; }
+a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
 /* ─── Contact Info Block (driver confirmed view) ─── */
 .contact-info-block {
@@ -565,28 +553,23 @@ a.phone-link .phone-icon {
   border-radius: var(--radius-sm);
   padding: 14px 16px;
 }
-.contact-info-block-header {
-  display: flex; align-items: center; gap: 8px;
-  margin-bottom: 10px;
-}
+.contact-info-block-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .contact-avatar-sm {
   width: 32px; height: 32px; border-radius: 50%;
   background: linear-gradient(135deg, var(--blue), #6366f1);
   display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 0.82rem; color: #fff;
-  flex-shrink: 0;
+  font-weight: 800; font-size: 0.82rem; color: #fff; flex-shrink: 0;
 }
 .contact-info-name { font-size: 0.86rem; font-weight: 700; color: var(--text); }
 .contact-info-role { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--blue); margin-top: 1px; }
 .contact-info-row {
   display: flex; align-items: center; gap: 8px;
-  padding: 8px 0;
-  border-top: 1px solid var(--blue-border);
+  padding: 8px 0; border-top: 1px solid var(--blue-border);
   font-size: 0.79rem; color: var(--text-secondary);
 }
 .contact-info-icon { font-size: 0.9rem; flex-shrink: 0; opacity: 0.75; }
 
-/* ─── Driver Contact Block (passenger confirmed view) ─── */
+/* ─── Driver Contact Block (passenger confirmed/completed view) ─── */
 .driver-contact-block {
   margin-top: 12px;
   background: var(--green-light);
@@ -594,19 +577,13 @@ a.phone-link .phone-icon {
   border-radius: var(--radius-sm);
   padding: 14px 16px;
 }
-.driver-contact-block-header {
-  display: flex; align-items: center; gap: 8px;
-  margin-bottom: 10px;
-}
-.contact-avatar-sm.green-avatar {
-  background: linear-gradient(135deg, var(--green), #059669);
-}
+.driver-contact-block-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.contact-avatar-sm.green-avatar { background: linear-gradient(135deg, var(--green), #059669); }
 .driver-contact-name { font-size: 0.86rem; font-weight: 700; color: var(--text); }
 .driver-contact-role { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--green); margin-top: 1px; }
 .driver-contact-row {
   display: flex; align-items: center; gap: 8px;
-  padding: 8px 0;
-  border-top: 1px solid var(--green-border);
+  padding: 8px 0; border-top: 1px solid var(--green-border);
   font-size: 0.79rem; color: var(--text-secondary);
 }
 
@@ -658,11 +635,7 @@ a.phone-link .phone-icon {
   background: transparent; color: var(--text-muted);
   transition: all var(--t); letter-spacing: -0.01em;
 }
-.inner-tab.active {
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: var(--shadow-xs);
-}
+.inner-tab.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-xs); }
 
 /* ─── Empty States ─── */
 .empty {
@@ -692,6 +665,40 @@ a.phone-link .phone-icon {
 .scroll-list::-webkit-scrollbar { width: 4px; }
 .scroll-list::-webkit-scrollbar-track { background: transparent; }
 .scroll-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ═══ NEW: Address Callout ═══
+   Amber-tinted guidance banner placed directly above the location
+   fields inside the ride-request form. Amber = attention without
+   alarm. Border is slightly heavier (1.5px) to hold focus.
+   ─────────────────────────────────── */
+.address-callout {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: #fffbeb;
+  border: 1.5px solid #fbbf24;
+  border-radius: var(--radius-sm);
+  padding: 13px 15px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(217,119,6,0.08);
+}
+.address-callout-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+.address-callout-title {
+  font-size: 0.76rem; font-weight: 700;
+  color: #92400e; letter-spacing: 0.01em; margin-bottom: 3px;
+}
+.address-callout-desc {
+  font-size: 0.72rem; color: #78350f; line-height: 1.6;
+}
+.address-callout-desc strong { font-weight: 700; color: #92400e; }
+
+/* ═══ NEW: Driver-loading placeholder ═══
+   Shown while driverCache is being populated so the card
+   doesn't look broken while the fetch is in flight.
+   ─────────────────────────────────── */
+.driver-loading {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.72rem; color: var(--text-muted);
+  padding: 8px 0; font-style: italic;
+}
 
 /* ─── Utils ─── */
 .divider { height: 1px; background: var(--border); margin: 24px 0; }
@@ -801,14 +808,33 @@ a.phone-link .phone-icon {
           <div class="section-caption">Fill in your route and name your price — let drivers come to you.</div>
 
           <div class="card">
+
+            <!-- ══ ADDRESS CALLOUT (NEW) ══
+                 Prominent amber guidance banner placed at the very top of the
+                 form, before the pickup/dropoff fields. Passengers see it
+                 before they start typing, not after they submit.
+                 Amber border stands out in a sea of blue/grey without
+                 looking like an error. -->
+            <div class="address-callout">
+              <div class="address-callout-icon">📍</div>
+              <div>
+                <div class="address-callout-title">Use your full address — it gets you picked up faster</div>
+                <div class="address-callout-desc">
+                  Include the <strong>door number, street name, and a nearby landmark</strong> for both
+                  pickup and drop-off. "Near the mall" won't cut it — drivers need enough detail
+                  to commit without back-and-forth.
+                </div>
+              </div>
+            </div>
+
             <div class="form-grid">
               <div>
                 <label>Pickup — the more specific, the better</label>
-                <input id="p-pickup" type="text" placeholder="e.g. Koramangala 5th Block, near Café Coffee Day" />
+                <input id="p-pickup" type="text" placeholder="e.g. 14, 5th Cross, Koramangala 5th Block, near Café Coffee Day" />
               </div>
               <div>
                 <label>Drop-off — where the journey ends</label>
-                <input id="p-drop" type="text" placeholder="e.g. Indiranagar 12th Main, CMH Road signal" />
+                <input id="p-drop" type="text" placeholder="e.g. 100 Feet Rd, Indiranagar 12th Main, opp. CMH Road signal" />
               </div>
               <div>
                 <label>Your offer — make it worth their ride ($)</label>
@@ -855,9 +881,9 @@ a.phone-link .phone-icon {
         <div class="section-caption">See what other passengers are offering — find trends and plan your own.</div>
 
         <div class="inner-tabs">
-          <button class="inner-tab active" id="ptab-all" onclick="filterPassengerRides('all')">All</button>
-          <button class="inner-tab" id="ptab-pending" onclick="filterPassengerRides('pending')">Pending</button>
-          <button class="inner-tab" id="ptab-confirmed" onclick="filterPassengerRides('confirmed')">Confirmed</button>
+          <button class="inner-tab active" id="ptab-all"       onclick="filterPassengerRides('all')">All</button>
+          <button class="inner-tab"        id="ptab-pending"   onclick="filterPassengerRides('pending')">Pending</button>
+          <button class="inner-tab"        id="ptab-confirmed" onclick="filterPassengerRides('confirmed')">Confirmed</button>
         </div>
 
         <div id="all-rides-empty" class="empty">
@@ -915,22 +941,71 @@ a.phone-link .phone-icon {
   let passenger = null;
 
   /*
-   * TWO SEPARATE RIDE ARRAYS — this is the core fix for Issue 2.
-   *
-   * allRides    → every ride on the platform, used by the driver view and
-   *               the "All Rides" section visible to passengers.
-   *               Always fetched without a passenger filter.
-   *
-   * myRides     → only this passenger's own rides, used for "Your Negotiations".
-   *               Fetched with ?passengerPhone=... so it includes ALL statuses
-   *               (completed, rejected, etc.) for a full personal history.
-   *
-   * Previously a single `rides` array was used. When a passenger was logged in,
-   * loadRides() fetched only that passenger's rides and overwrote the array —
-   * so the driver saw only those rides. On logout the fetch reverted to all rides.
+   * allRides  — every ride on the platform (driver view + "All Rides" section).
+   * myRides   — only this passenger's rides (history endpoint, all statuses).
    */
   let allRides = [];
   let myRides  = [];
+
+  /*
+   * driverCache — keyed by driver ID, value is the driver object or null.
+   *
+   * WHY THIS EXISTS (driver details in history):
+   * The history endpoint returns raw ride_requests rows. The `driver` sub-object
+   * that the live accept/counter endpoints attach is NOT stored in the DB — it is
+   * composed on the fly in the server response. So r.driver is always undefined
+   * for rides fetched from history.
+   *
+   * The fix: resolveDriver(r) looks up accepted_by / countered_by, checks this
+   * cache, and if missing fires fetchDriverById() which GETs the driver profile
+   * and stores the result here. After the fetch completes it calls
+   * renderPassengerRequests() so the card re-renders with real driver info.
+   *
+   * A value of `null` means "fetch was attempted but failed" — we won't retry.
+   * A value of `undefined` means "not yet fetched".
+   */
+  const driverCache = {};
+
+  /*
+   * fetchDriverById — async, fires once per unknown driver ID.
+   * Calls GET /api/drivers/:id/profile which you need to add to server.js
+   * (see the backend note at the bottom of this file). Falls back gracefully
+   * if the endpoint doesn't exist yet — the card just won't show driver details.
+   */
+  async function fetchDriverById(driverId) {
+    if (!driverId || driverCache[driverId] !== undefined) return;
+    driverCache[driverId] = null; // mark in-flight to prevent duplicate fetches
+    try {
+      const res = await fetch(`${API_URL}/drivers/${driverId}/profile`);
+      if (res.ok) {
+        const data = await res.json();
+        driverCache[driverId] = data.driver || null;
+        renderPassengerRequests(); // re-draw cards with the now-available driver info
+      }
+    } catch (e) {
+      console.warn('Could not fetch driver profile for', driverId, e);
+    }
+  }
+
+  /*
+   * resolveDriver(r) — returns a hydrated driver object for a ride, or null.
+   *
+   * Lookup priority:
+   *   1. r.driver  — already hydrated by a live WebSocket push (accept/counter).
+   *   2. driverCache[id]  — previously fetched and cached.
+   *   3. null + triggers fetchDriverById() — re-renders when the fetch lands.
+   *
+   * Driver ID: accepted_by covers the direct-accept flow; countered_by covers
+   * the counter-then-passenger-accept flow. Both end up as confirmed status.
+   */
+  function resolveDriver(r) {
+    if (r.driver) return r.driver;
+    const driverId = r.accepted_by || r.countered_by;
+    if (!driverId) return null;
+    if (driverCache[driverId] !== undefined) return driverCache[driverId];
+    fetchDriverById(driverId); // fire and forget — re-render on completion
+    return null;
+  }
 
   let driver = null;
   let driverFilter = 'all';
@@ -963,27 +1038,15 @@ a.phone-link .phone-icon {
     };
   }
 
-  /*
-   * handleRideUpdate — called for every incoming WebSocket broadcast.
-   * Updates BOTH arrays so nothing goes stale regardless of which tab is open.
-   */
   function handleRideUpdate(ride) {
-    // Update allRides
     const allIdx = allRides.findIndex(r => r.id === ride.id);
-    if (allIdx >= 0) {
-      allRides[allIdx] = { ...allRides[allIdx], ...ride };
-    } else {
-      allRides.unshift(ride);
-    }
+    if (allIdx >= 0) { allRides[allIdx] = { ...allRides[allIdx], ...ride }; }
+    else { allRides.unshift(ride); }
 
-    // Update myRides only if this ride belongs to the logged-in passenger
     if (passenger && ride.passenger_phone === passenger.phone) {
       const myIdx = myRides.findIndex(r => r.id === ride.id);
-      if (myIdx >= 0) {
-        myRides[myIdx] = { ...myRides[myIdx], ...ride };
-      } else {
-        myRides.unshift(ride);
-      }
+      if (myIdx >= 0) { myRides[myIdx] = { ...myRides[myIdx], ...ride }; }
+      else { myRides.unshift(ride); }
     }
 
     renderPassengerRequests();
@@ -991,25 +1054,15 @@ a.phone-link .phone-icon {
     renderDriverView();
   }
 
-  /*
-   * sendRideUpdate — called after a local action (accept, counter, etc.)
-   * to immediately reflect changes in the UI before the WebSocket echo arrives.
-   */
   function sendRideUpdate(ride) {
     const allIdx = allRides.findIndex(r => r.id === ride.id);
-    if (allIdx >= 0) {
-      allRides[allIdx] = { ...allRides[allIdx], ...ride };
-    } else {
-      allRides.unshift(ride);
-    }
+    if (allIdx >= 0) { allRides[allIdx] = { ...allRides[allIdx], ...ride }; }
+    else { allRides.unshift(ride); }
 
     if (passenger && ride.passenger_phone === passenger.phone) {
       const myIdx = myRides.findIndex(r => r.id === ride.id);
-      if (myIdx >= 0) {
-        myRides[myIdx] = { ...myRides[myIdx], ...ride };
-      } else {
-        myRides.unshift(ride);
-      }
+      if (myIdx >= 0) { myRides[myIdx] = { ...myRides[myIdx], ...ride }; }
+      else { myRides.unshift(ride); }
     }
 
     renderPassengerRequests();
@@ -1021,7 +1074,6 @@ a.phone-link .phone-icon {
   function switchTab(tab) {
     document.getElementById('view-passenger').classList.toggle('active', tab === 'passenger');
     document.getElementById('view-driver').classList.toggle('active', tab === 'driver');
-
     document.getElementById('tab-passenger').className = 'tab-btn' + (tab === 'passenger' ? ' active-passenger' : '');
     document.getElementById('tab-driver').className    = 'tab-btn' + (tab === 'driver'    ? ' active-driver'    : '');
 
@@ -1041,8 +1093,8 @@ a.phone-link .phone-icon {
     const code      = document.getElementById('p-code').value;
     const phone     = document.getElementById('p-phone').value.trim();
 
-    if (!nameInput)           { toast('⚠️', 'Name required', 'Drivers need something to call you.', 'amber'); return; }
-    if (!phone || phone.length < 6) { toast('⚠️', 'Check your number', "That doesn't look right — try again.", 'amber'); return; }
+    if (!nameInput)                { toast('⚠️', 'Name required', 'Drivers need something to call you.', 'amber'); return; }
+    if (!phone || phone.length < 6){ toast('⚠️', 'Check your number', "That doesn't look right — try again.", 'amber'); return; }
 
     const fullPhone = code + ' ' + phone;
 
@@ -1055,30 +1107,12 @@ a.phone-link .phone-icon {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      /*
-       * FIX for Issue 1: always use the name that came BACK from the server,
-       * not the one the user typed. The server returns the existing record when
-       * the phone is already registered, so the canonical name is always
-       * data.passenger.name — regardless of what was typed in the input.
-       *
-       * Before this fix: passenger = { name: nameInput, ... }
-       * nameInput could be "B" even though the account was created as "A".
-       */
       const canonicalName = data.passenger.name;
-
-      passenger = {
-        id:    data.passenger.id,
-        name:  canonicalName,
-        phone: fullPhone
-      };
+      passenger = { id: data.passenger.id, name: canonicalName, phone: fullPhone };
       localStorage.setItem('passenger', JSON.stringify(passenger));
 
       showPassengerDashboard();
 
-      /*
-       * If the server returned a different name than what was typed, the phone
-       * was already registered. Let the user know which account they're in.
-       */
       if (canonicalName !== nameInput) {
         toast('ℹ️', 'Welcome back, ' + canonicalName.split(' ')[0] + '!',
           'This number is already registered — signed in as ' + canonicalName + '.', 'blue');
@@ -1131,20 +1165,13 @@ a.phone-link .phone-icon {
         <p class="auth-sub">Enter your credentials to access ride requests</p>
         <div class="card">
           <div class="form-grid">
-            <div>
-              <label>Username</label>
-              <input id="d-username" type="text" placeholder="username" />
-            </div>
-            <div>
-              <label>Password</label>
-              <input id="d-password" type="password" placeholder="password" />
-            </div>
+            <div><label>Username</label><input id="d-username" type="text" placeholder="username" /></div>
+            <div><label>Password</label><input id="d-password" type="password" placeholder="password" /></div>
             <button class="btn btn-primary btn-full" onclick="loginDriver()">Login</button>
             <button class="btn btn-ghost btn-full" onclick="switchTab('passenger')">Back to Rider</button>
           </div>
         </div>
-      </div>
-    `;
+      </div>`;
     document.getElementById('view-driver').innerHTML = loginHtml;
   }
 
@@ -1168,7 +1195,6 @@ a.phone-link .phone-icon {
 
       driver = data.driver;
       localStorage.setItem('driver', JSON.stringify(driver));
-
       toast('✅', 'Welcome, ' + driver.name + '!', 'You are now online.', 'green');
       renderDriverDashboard();
       loadAllRides();
@@ -1217,37 +1243,26 @@ a.phone-link .phone-icon {
           </div>
         </div>
         <div style="display:flex; gap:12px; align-items:center;">
-          <div class="count-chip">
-            <strong id="driver-count">0</strong> awaiting your call
-          </div>
+          <div class="count-chip"><strong id="driver-count">0</strong> awaiting your call</div>
           <button class="btn btn-ghost btn-sm" onclick="logoutDriver()">Logout</button>
         </div>
       </div>
-
       <div class="inner-tabs">
         <button class="inner-tab active" id="dtab-all"       onclick="filterDriver('all')">All</button>
         <button class="inner-tab"        id="dtab-pending"   onclick="filterDriver('pending')">Pending</button>
         <button class="inner-tab"        id="dtab-countered" onclick="filterDriver('countered')">Countered</button>
         <button class="inner-tab"        id="dtab-closed"    onclick="filterDriver('closed')">Closed</button>
       </div>
-
       <div id="driver-requests-empty" class="empty">
         <span class="empty-icon">⏳</span>
         <div class="empty-head">Quiet for now</div>
         <div class="empty-body">Switch to the Rider tab to place a sample offer —<br>it'll land here instantly.</div>
       </div>
-      <div id="driver-requests-list" class="scroll-list"></div>
-    `;
+      <div id="driver-requests-list" class="scroll-list"></div>`;
     document.getElementById('view-driver').innerHTML = html;
   }
 
   /* ═══════════ API: RIDES ═══════════ */
-
-  /*
-   * loadAllRides — fetches ALL rides (no passenger filter).
-   * Used by: driver view, passenger "All Rides" section.
-   * Never filters by passenger so the driver always sees the full picture.
-   */
   async function loadAllRides() {
     try {
       const res  = await fetch(`${API_URL}/rides`);
@@ -1255,16 +1270,9 @@ a.phone-link .phone-icon {
       allRides   = data.rides || [];
       renderAllRides();
       renderDriverView();
-    } catch (err) {
-      console.error('Error loading all rides:', err);
-    }
+    } catch (err) { console.error('Error loading all rides:', err); }
   }
 
-  /*
-   * loadMyRides — fetches only the logged-in passenger's rides.
-   * Uses the history endpoint so completed/rejected rides are included too.
-   * Completely separate from allRides — never overwrites it.
-   */
   async function loadMyRides() {
     if (!passenger || !passenger.phone) return;
     try {
@@ -1272,9 +1280,7 @@ a.phone-link .phone-icon {
       const data = await res.json();
       myRides    = data.rides || [];
       renderPassengerRequests();
-    } catch (err) {
-      console.error('Error loading my rides:', err);
-    }
+    } catch (err) { console.error('Error loading my rides:', err); }
   }
 
   async function submitRideRequest() {
@@ -1293,9 +1299,8 @@ a.phone-link .phone-icon {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          passengerId:    passenger.id,
-          passengerName:  passenger.name,
-          passengerPhone: passenger.phone,
+          passengerId:     passenger.id,
+          passengerPhone:  passenger.phone,
           pickupLocation:  pickup,
           dropoffLocation: drop,
           offeredFare:     price
@@ -1310,15 +1315,12 @@ a.phone-link .phone-icon {
 
       toast('📤', 'Offer sent!', 'Drivers can see your $' + price + ' bid. Sit tight.', 'green');
 
-      // Add the new ride to BOTH arrays immediately
       myRides.unshift(data.ride);
       allRides.unshift(data.ride);
       renderPassengerRequests();
       renderAllRides();
       renderDriverView();
-    } catch (err) {
-      toast('❌', 'Error', err.message, 'red');
-    }
+    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
   /* ═══════════ DRIVER ACTIONS ═══════════ */
@@ -1334,9 +1336,7 @@ a.phone-link .phone-icon {
       if (!res.ok) throw new Error(data.error);
       sendRideUpdate(data.ride);
       toast('✅', 'Ride accepted!', 'Locked in at $' + data.ride.offered_fare + '.', 'green');
-    } catch (err) {
-      toast('❌', 'Error', err.message, 'red');
-    }
+    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
   async function driverReject(rideId) {
@@ -1351,9 +1351,7 @@ a.phone-link .phone-icon {
       if (!res.ok) throw new Error(data.error);
       sendRideUpdate(data.ride);
       toast('👋', 'Passed on this one', "You declined the offer. Plenty more coming.", 'amber');
-    } catch (err) {
-      toast('❌', 'Error', err.message, 'red');
-    }
+    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
   async function driverComplete(rideId) {
@@ -1371,9 +1369,7 @@ a.phone-link .phone-icon {
       const data = await res.json();
       sendRideUpdate(data.ride);
       toast('🏁', 'Ride completed!', 'Great job! Ride marked as completed.', 'green');
-    } catch (err) {
-      toast('❌', 'Error', err.message, 'red');
-    }
+    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
   async function driverCounter(rideId) {
@@ -1397,9 +1393,7 @@ a.phone-link .phone-icon {
       if (!res.ok) throw new Error(data.error);
       sendRideUpdate(data.ride);
       toast('💬', 'Counter sent', '$' + val + " is now with the passenger. Ball's in their court.", 'blue');
-    } catch (err) {
-      toast('❌', 'Error', err.message, 'red');
-    }
+    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
   /* ═══════════ PASSENGER RESPONSES ═══════════ */
@@ -1414,9 +1408,7 @@ a.phone-link .phone-icon {
       if (!res.ok) throw new Error(data.error);
       sendRideUpdate(data.ride);
       toast('🎉', 'Ride confirmed!', 'Deal locked at $' + data.ride.offered_fare + '. Your driver is on the way.', 'green');
-    } catch (err) {
-      toast('❌', 'Error', err.message, 'red');
-    }
+    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
   async function passengerRejectCounter(rideId) {
@@ -1429,24 +1421,16 @@ a.phone-link .phone-icon {
       if (!res.ok) throw new Error(data.error);
       sendRideUpdate(data.ride);
       toast('👋', 'Counter declined', "No worries — try a fresh request.", 'amber');
-    } catch (err) {
-      toast('❌', 'Error', err.message, 'red');
-    }
+    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
   /* ═══════════ RENDER: PASSENGER ═══════════ */
   function renderPassengerRequests() {
     if (!passenger) return;
-
     const listEl  = document.getElementById('passenger-requests-list');
     const emptyEl = document.getElementById('passenger-requests-empty');
     if (!listEl) return;
 
-    /*
-     * FIX: use myRides (passenger's own rides fetched via history endpoint)
-     * instead of filtering allRides by name+phone.
-     * This also correctly shows completed and rejected rides in history.
-     */
     if (myRides.length === 0) {
       emptyEl.style.display = '';
       listEl.innerHTML = '';
@@ -1461,22 +1445,26 @@ a.phone-link .phone-icon {
     const offeredPrice   = r.offered_fare;
     const counteredPrice = r.counter_fare;
 
+    /* ── countered: show driver mini-profile alongside the counter proposal ── */
     if (r.status === 'countered') {
-      const driverDetail = r.driver ? `
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid var(--violet-border);">
-          <div class="contact-avatar-sm green-avatar" style="background:linear-gradient(135deg,var(--violet),#6d28d9);">
-            ${(r.driver.name||'D')[0].toUpperCase()}
-          </div>
-          <div>
-            <div style="font-size:0.84rem; font-weight:700; color:var(--text);">${r.driver.name || 'Driver'}</div>
-            <div style="font-size:0.69rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--violet);">Your Driver</div>
-          </div>
-        </div>
-        <div style="display:flex; align-items:center; gap:6px; font-size:0.79rem; color:var(--text-secondary); margin-bottom:${r.driver.vehicle_info ? '6px' : '10px'};">
-          ${phoneLink(r.driver.contact_no)}
-        </div>
-        ${r.driver.vehicle_info ? `<div style="font-size:0.74rem; color:var(--text-muted); margin-bottom:10px;">🚘 ${r.driver.vehicle_info}</div>` : ''}
-      ` : '';
+      const driverObj = resolveDriver(r);
+      const driverDetail = driverObj
+        ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--violet-border);">
+             <div class="contact-avatar-sm" style="background:linear-gradient(135deg,var(--violet),#6d28d9);">
+               ${(driverObj.name||'D')[0].toUpperCase()}
+             </div>
+             <div>
+               <div style="font-size:0.84rem;font-weight:700;color:var(--text);">${driverObj.name||'Driver'}</div>
+               <div style="font-size:0.69rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--violet);">Your Driver</div>
+             </div>
+           </div>
+           <div style="display:flex;align-items:center;gap:6px;font-size:0.79rem;color:var(--text-secondary);margin-bottom:${driverObj.vehicle_info?'6px':'10px'};">
+             ${phoneLink(driverObj.contact_no)}
+           </div>
+           ${driverObj.vehicle_info ? `<div style="font-size:0.74rem;color:var(--text-muted);margin-bottom:10px;">🚘 ${driverObj.vehicle_info}</div>` : ''}`
+        : (r.accepted_by || r.countered_by)
+          ? `<div class="driver-loading">⏳ Loading driver details…</div>`
+          : '';
 
       extra = `
         <div class="counter-banner">
@@ -1484,7 +1472,7 @@ a.phone-link .phone-icon {
           ${driverDetail}
           <div class="price-compare">
             <span class="price-was">Your offer: $${offeredPrice}</span>
-            <span style="color:var(--text-dim); margin:0 2px;">→</span>
+            <span style="color:var(--text-dim);margin:0 2px;">→</span>
             <span class="price-now">$${counteredPrice}</span>
           </div>
           <p>They think $${counteredPrice} is a fair deal. Accept and you're on your way — or decline and try a new request.</p>
@@ -1495,36 +1483,49 @@ a.phone-link .phone-icon {
         </div>`;
     }
 
-    if (r.status === 'confirmed') {
-      const driverBlock = r.driver ? `
-        <div class="driver-contact-block">
-          <div class="driver-contact-block-header">
-            <div class="contact-avatar-sm green-avatar">${(r.driver.name||'D')[0].toUpperCase()}</div>
-            <div>
-              <div class="driver-contact-name">${r.driver.name || 'Driver'}</div>
-              <div class="driver-contact-role">Your Driver · En Route</div>
-            </div>
-          </div>
-          <div class="driver-contact-row">
-            <span class="contact-info-icon">📞</span>
-            ${phoneLink(r.driver.contact_no)}
-          </div>
-          ${r.driver.vehicle_info ? `
-          <div class="driver-contact-row">
-            <span class="contact-info-icon">🚘</span>
-            <span>${r.driver.vehicle_info}</span>
-          </div>` : ''}
-        </div>
-      ` : '';
+    /* ── confirmed / completed: status note + driver contact block ──
+     *
+     * FIX: We now call resolveDriver() for BOTH confirmed and completed rides.
+     * Previously `r.driver` was used directly — which is null for history rows.
+     * resolveDriver() falls back to driverCache, and triggers a background
+     * fetch if the driver isn't cached yet. The card re-renders once the fetch
+     * completes, making driver details appear in history just like live rides.
+     */
+    if (r.status === 'confirmed' || r.status === 'completed') {
+      const driverObj = resolveDriver(r);
+      const isComplete = r.status === 'completed';
+      const statusIcon = isComplete ? '🏁' : '🎉';
+      const statusMsg  = isComplete
+        ? `Ride completed at <strong>$${offeredPrice}</strong>. Thanks for riding!`
+        : `Confirmed at <strong>$${offeredPrice}</strong> — your driver is on the way. Safe travels!`;
+      const driverRole = isComplete ? 'Your Driver · Ride Complete' : 'Your Driver · En Route';
+
+      const driverBlock = driverObj
+        ? `<div class="driver-contact-block">
+             <div class="driver-contact-block-header">
+               <div class="contact-avatar-sm green-avatar">${(driverObj.name||'D')[0].toUpperCase()}</div>
+               <div>
+                 <div class="driver-contact-name">${driverObj.name||'Driver'}</div>
+                 <div class="driver-contact-role">${driverRole}</div>
+               </div>
+             </div>
+             <div class="driver-contact-row">
+               <span class="contact-info-icon">📞</span>
+               ${phoneLink(driverObj.contact_no)}
+             </div>
+             ${driverObj.vehicle_info
+               ? `<div class="driver-contact-row"><span class="contact-info-icon">🚘</span><span>${driverObj.vehicle_info}</span></div>`
+               : ''}
+           </div>`
+        : (r.accepted_by || r.countered_by)
+          ? `<div class="driver-loading">⏳ Loading driver details…</div>`
+          : '';
 
       extra = `
-        <div class="status-note ok">🎉 <span>Confirmed at <strong>$${offeredPrice}</strong> — your driver is on the way. Safe travels!</span></div>
+        <div class="status-note ok">${statusIcon} <span>${statusMsg}</span></div>
         ${driverBlock}`;
     }
 
-    if (r.status === 'completed') {
-      extra = `<div class="status-note ok">🏁 <span>Ride completed at <strong>$${offeredPrice}</strong>. Thanks for riding!</span></div>`;
-    }
     if (r.status === 'rejected') {
       extra = `<div class="status-note closed">— <span>This one didn't land. Feel free to submit a fresh offer — sometimes a small bump makes all the difference.</span></div>`;
     }
@@ -1534,11 +1535,11 @@ a.phone-link .phone-icon {
         <div class="ride-card-top">
           <div>
             ${badgeHTML(r.status)}
-            <div style="margin-top:8px; font-size:0.71rem; color:var(--text-muted);">${timeAgo(r.created_at)}</div>
+            <div style="margin-top:8px;font-size:0.71rem;color:var(--text-muted);">${timeAgo(r.created_at)}</div>
           </div>
           <div class="price-block">
             <div class="price-label-sm">Your offer</div>
-            <div class="price-big ${r.status === 'countered' ? 'counter-col' : ''}">$${offeredPrice}</div>
+            <div class="price-big ${r.status==='countered'?'counter-col':''}">$${offeredPrice}</div>
           </div>
         </div>
         <div class="route">
@@ -1583,7 +1584,6 @@ a.phone-link .phone-icon {
     const emptyEl = document.getElementById('all-rides-empty');
     if (!listEl) return;
 
-    // Use allRides (the full unfiltered dataset) — never myRides
     let filtered = allRides;
     if (passengerRideFilter === 'pending')   filtered = allRides.filter(r => r.status === 'pending' || r.status === 'countered');
     if (passengerRideFilter === 'confirmed') filtered = allRides.filter(r => r.status === 'confirmed' || r.status === 'completed');
@@ -1603,7 +1603,7 @@ a.phone-link .phone-icon {
         <div class="ride-card-top">
           <div>
             ${badgeHTML(r.status)}
-            <div style="margin-top:8px; font-size:0.71rem; color:var(--text-muted);">${r.passenger_name} · ${timeAgo(r.created_at)}</div>
+            <div style="margin-top:8px;font-size:0.71rem;color:var(--text-muted);">${r.passenger_name} · ${timeAgo(r.created_at)}</div>
           </div>
           <div class="price-block">
             <div class="price-label-sm">Offer</div>
@@ -1622,10 +1622,8 @@ a.phone-link .phone-icon {
     const listEl  = document.getElementById('driver-requests-list');
     const emptyEl = document.getElementById('driver-requests-empty');
     const countEl = document.getElementById('driver-count');
-
     if (!listEl) return;
 
-    // Driver always reads from allRides
     countEl.textContent = allRides.filter(r => r.status === 'pending' || r.status === 'countered').length;
 
     let filtered = allRides;
@@ -1643,9 +1641,9 @@ a.phone-link .phone-icon {
   }
 
   function renderDriverCard(r) {
-    const isClosed      = r.status === 'confirmed' || r.status === 'rejected';
-    const offeredPrice  = r.offered_fare;
-    const counteredPrice= r.counter_fare;
+    const isClosed       = r.status === 'confirmed' || r.status === 'rejected';
+    const offeredPrice   = r.offered_fare;
+    const counteredPrice = r.counter_fare;
     let actions    = '';
     let closedNote = '';
 
@@ -1657,13 +1655,12 @@ a.phone-link .phone-icon {
             <button class="btn btn-amber   btn-sm" onclick="toggleCounterForm('${r.id}')">Propose a Counter</button>
             <button class="btn btn-danger  btn-sm" onclick="driverReject('${r.id}')">Pass</button>
           </div>`;
-
         if (r.counterInputVisible) {
           actions += `
             <div class="counter-form">
               <div class="field">
                 <label>Your counter offer ($) — must exceed $${offeredPrice}</label>
-                <input type="number" id="counter-input-${r.id}" placeholder="${Math.round(offeredPrice * 1.2)}" min="${offeredPrice + 1}" />
+                <input type="number" id="counter-input-${r.id}" placeholder="${Math.round(offeredPrice*1.2)}" min="${offeredPrice+1}" />
               </div>
               <button class="btn btn-amber btn-sm" onclick="driverCounter('${r.id}')">Send Counter</button>
               <button class="btn btn-ghost btn-sm" onclick="toggleCounterForm('${r.id}')">Cancel</button>
@@ -1681,7 +1678,7 @@ a.phone-link .phone-icon {
           <div class="contact-info-block-header">
             <div class="contact-avatar-sm">${(r.passenger_name||'P')[0].toUpperCase()}</div>
             <div>
-              <div class="contact-info-name">${r.passenger_name || 'Passenger'}</div>
+              <div class="contact-info-name">${r.passenger_name||'Passenger'}</div>
               <div class="contact-info-role">Confirmed Passenger</div>
             </div>
           </div>
@@ -1694,11 +1691,9 @@ a.phone-link .phone-icon {
           <button class="btn btn-primary btn-sm" onclick="driverComplete('${r.id}')">Mark Completed</button>
         </div>`;
     }
-
     if (r.status === 'rejected') {
       closedNote = `<div class="status-note closed" style="margin-top:12px;">— <span>You passed on this one. Plenty more offers on the way.</span></div>`;
     }
-
     if (r.status === 'completed') {
       closedNote = `<div class="status-note ok" style="margin-top:12px;">🏁 <span>Ride completed at <strong>$${offeredPrice}</strong>.</span></div>`;
     }
@@ -1716,9 +1711,9 @@ a.phone-link .phone-icon {
           </div>
           <div class="price-block">
             <div class="price-label-sm">${priceLabel}</div>
-            <div class="price-big ${r.status === 'countered' ? 'counter-col' : ''}">$${showingPrice}</div>
-            ${r.status === 'countered' && counteredPrice
-              ? `<div class="price-label-sm" style="text-decoration:line-through; color:var(--text-muted);">was $${offeredPrice}</div>`
+            <div class="price-big ${r.status==='countered'?'counter-col':''}">$${showingPrice}</div>
+            ${r.status==='countered' && counteredPrice
+              ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">was $${offeredPrice}</div>`
               : ''}
           </div>
         </div>
@@ -1727,29 +1722,25 @@ a.phone-link .phone-icon {
           <div class="route-line"></div>
           <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
         </div>
-        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:6px;">${timeAgo(r.created_at)}</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;">${timeAgo(r.created_at)}</div>
         ${actions}
         ${closedNote}
       </div>`;
   }
 
   /* ═══════════ HELPERS ═══════════ */
-  /*
-   * getRide — looks in allRides for driver actions (counter form toggle etc.)
-   * since those actions always originate from the driver view.
-   */
   function getRide(id) { return allRides.find(r => r.id === id); }
 
   function badgeHTML(status) {
     const labels = { pending:'Awaiting response', countered:'Counter proposed', confirmed:'Confirmed', completed:'Completed', rejected:'Closed' };
-    return `<span class="badge badge-${status}">${labels[status] || status}</span>`;
+    return `<span class="badge badge-${status}">${labels[status]||status}</span>`;
   }
 
   function timeAgo(date) {
     const s = Math.floor((new Date() - new Date(date)) / 1000);
     if (s < 60)   return 'Just now';
-    if (s < 3600) return Math.floor(s / 60) + 'm ago';
-    return Math.floor(s / 3600) + 'h ago';
+    if (s < 3600) return Math.floor(s/60) + 'm ago';
+    return Math.floor(s/3600) + 'h ago';
   }
 
   /* ═══════════ TOASTS ═══════════ */
@@ -1775,8 +1766,36 @@ a.phone-link .phone-icon {
   connectWebSocket();
   checkSavedPassenger();
   checkSavedDriver();
-  loadAllRides();      // pre-load all rides on page load regardless of login state
+  loadAllRides();
   switchTab('passenger');
 </script>
+
+<!--
+  ════════════════════════════════════════════════════════════════
+  BACKEND NOTE — one small addition needed in server.js
+  ════════════════════════════════════════════════════════════════
+  The driverCache fetch calls GET /api/drivers/:id/profile.
+  Add this route to server.js so the frontend can hydrate
+  driver details for historical rides:
+
+  app.get('/api/drivers/:id/profile', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { data: driver, error } = await supabase
+        .from('drivers')
+        .select('id, name, contact_no, vehicle_info')
+        .eq('id', id)
+        .single();
+      if (error || !driver) return res.status(404).json({ error: 'Driver not found' });
+      res.json({ driver });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  This endpoint is read-only (no sensitive fields like password_hash)
+  and mirrors the same driver shape already returned by /accept and /counter.
+  ════════════════════════════════════════════════════════════════
+-->
 </body>
 </html>
