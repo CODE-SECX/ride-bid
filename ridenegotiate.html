@@ -980,7 +980,8 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       if (res.ok) {
         const data = await res.json();
         driverCache[driverId] = data.driver || null;
-        renderPassengerRequests(); // re-draw cards with the now-available driver info
+        renderPassengerRequests();
+        renderAllRides();
       }
     } catch (e) {
       console.warn('Could not fetch driver profile for', driverId, e);
