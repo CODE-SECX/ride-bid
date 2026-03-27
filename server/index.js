@@ -713,7 +713,7 @@ app.post('/api/admin/expire-rides', async (req, res) => {
 app.patch('/api/drivers/:id/profile', async (req, res) => {
     try {
       const { id } = req.params;
-      const { name, contact_no, vehicle_info, password } = req.body;
+      const { name, contact_no, vehicle_info, password, username } = req.body;
       
       // Build update object with only provided fields
       const updateData = {};
@@ -726,6 +726,7 @@ app.patch('/api/drivers/:id/profile', async (req, res) => {
         const saltRounds = 10;
         updateData.password_hash = await bcrypt.hash(password, saltRounds);
       }
+      if (username) updateData.username = username;
       
       const { data: driver, error } = await supabase
         .from('drivers')
