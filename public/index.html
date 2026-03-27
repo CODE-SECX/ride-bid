@@ -534,6 +534,82 @@ select { cursor: pointer; }
 .status-note.closed { background: var(--surface3);     color: var(--text-muted); border-color: var(--border); }
 .status-note.wait   { background: var(--violet-light); color: var(--violet); border-color: var(--violet-border); }
 
+/* ─── Contact Link ─── */
+a.phone-link {
+  color: inherit;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color var(--t);
+  border-radius: 4px;
+  padding: 1px 3px;
+  margin: -1px -3px;
+}
+a.phone-link:hover {
+  color: var(--blue);
+  background: var(--blue-light);
+  text-decoration: underline;
+}
+a.phone-link .phone-icon {
+  font-size: 0.8em;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+/* ─── Contact Info Block (driver confirmed view) ─── */
+.contact-info-block {
+  margin-top: 12px;
+  background: var(--blue-light);
+  border: 1px solid var(--blue-border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+.contact-info-block-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px;
+}
+.contact-avatar-sm {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), #6366f1);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.82rem; color: #fff;
+  flex-shrink: 0;
+}
+.contact-info-name { font-size: 0.86rem; font-weight: 700; color: var(--text); }
+.contact-info-role { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--blue); margin-top: 1px; }
+.contact-info-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid var(--blue-border);
+  font-size: 0.79rem; color: var(--text-secondary);
+}
+.contact-info-icon { font-size: 0.9rem; flex-shrink: 0; opacity: 0.75; }
+
+/* ─── Driver Contact Block (passenger confirmed view) ─── */
+.driver-contact-block {
+  margin-top: 12px;
+  background: var(--green-light);
+  border: 1px solid var(--green-border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+.driver-contact-block-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px;
+}
+.contact-avatar-sm.green-avatar {
+  background: linear-gradient(135deg, var(--green), #059669);
+}
+.driver-contact-name { font-size: 0.86rem; font-weight: 700; color: var(--text); }
+.driver-contact-role { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--green); margin-top: 1px; }
+.driver-contact-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid var(--green-border);
+  font-size: 0.79rem; color: var(--text-secondary);
+}
+
 /* ─── Driver Header ─── */
 .driver-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -841,16 +917,15 @@ select { cursor: pointer; }
   let driver = null;
   let driverFilter = 'all';
 
-  /* ═══════════ TABS ═══════════ */
-  function switchTab(tab) {
-    document.getElementById('view-passenger').classList.toggle('active', tab === 'passenger');
-    document.getElementById('view-driver').classList.toggle('active', tab === 'driver');
-
-    document.getElementById('tab-passenger').className = 'tab-btn' + (tab === 'passenger' ? ' active-passenger' : '');
-    document.getElementById('tab-driver').className    = 'tab-btn' + (tab === 'driver'    ? ' active-driver'    : '');
-
-    if (tab === 'driver')    renderDriverView();
-    if (tab === 'passenger') renderPassengerRequests();
+  /* ═══════════ PHONE LINK HELPER ═══════════ */
+  // Makes a phone number into a tappable tel: link with a phone icon
+  function phoneLink(phoneStr, labelClass) {
+    if (!phoneStr || phoneStr === 'N/A') {
+      return `<span class="${labelClass || ''}">N/A</span>`;
+    }
+    // Strip spaces for the href but keep display formatting
+    const dialable = phoneStr.replace(/\s+/g, '');
+    return `<a href="tel:${dialable}" class="phone-link ${labelClass || ''}"><span class="phone-icon">📞</span>${phoneStr}</a>`;
   }
 
   /* ═══════════ WEBSOCKET ═══════════ */
@@ -862,22 +937,13 @@ select { cursor: pointer; }
       return;
     }
     ws = new WebSocket(WS_URL);
-    
-    ws.onopen = () => {
-      console.log('WebSocket connected');
-    };
-    
+    ws.onopen = () => console.log('WebSocket connected');
     ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
-        if (msg.type === 'ride_update') {
-          handleRideUpdate(msg.data);
-        }
-      } catch (e) {
-        console.error('WebSocket message error:', e);
-      }
+        if (msg.type === 'ride_update') handleRideUpdate(msg.data);
+      } catch (e) { console.error('WebSocket message error:', e); }
     };
-    
     ws.onclose = () => {
       console.log('WebSocket disconnected, reconnecting...');
       setTimeout(connectWebSocket, 3000);
@@ -891,10 +957,7 @@ select { cursor: pointer; }
     } else if (ride.status === 'pending' || ride.status === 'countered') {
       rides.unshift(ride);
     }
-    
-    if (passenger && ride.passenger_phone === passenger.phone) {
-      renderPassengerRequests();
-    }
+    if (passenger && ride.passenger_phone === passenger.phone) renderPassengerRequests();
     renderDriverView();
   }
 
@@ -918,11 +981,8 @@ select { cursor: pointer; }
     document.getElementById('tab-driver').className    = 'tab-btn' + (tab === 'driver'    ? ' active-driver'    : '');
 
     if (tab === 'driver') {
-      if (!driver) {
-        showDriverLogin();
-      } else {
-        loadRides();
-      }
+      if (!driver) showDriverLogin();
+      else loadRides();
     }
     if (tab === 'passenger') {
       loadRides();
@@ -948,7 +1008,6 @@ select { cursor: pointer; }
         body: JSON.stringify({ name, phone: fullPhone })
       });
       const data = await res.json();
-      
       if (!res.ok) throw new Error(data.error);
 
       passenger = { id: data.passenger.id, name, phone: fullPhone };
@@ -987,9 +1046,7 @@ select { cursor: pointer; }
         document.getElementById('p-display-phone').textContent = passenger.phone;
         document.getElementById('p-avatar').textContent        = passenger.name[0].toUpperCase();
         loadRides();
-      } catch (e) {
-        localStorage.removeItem('passenger');
-      }
+      } catch (e) { localStorage.removeItem('passenger'); }
     }
   }
 
@@ -1015,16 +1072,12 @@ select { cursor: pointer; }
         </div>
       </div>
     `;
-    
-    const driverView = document.getElementById('view-driver');
-    driverView.innerHTML = loginHtml;
+    document.getElementById('view-driver').innerHTML = loginHtml;
   }
 
   async function loginDriver() {
     const username = document.getElementById('d-username').value.trim();
     const password = document.getElementById('d-password').value;
-
-    console.log('[DEBUG] Login attempt:', { username, apiUrl: API_URL });
 
     if (!username || !password) {
       toast('⚠️', 'Credentials required', 'Please enter username and password.', 'amber');
@@ -1032,17 +1085,12 @@ select { cursor: pointer; }
     }
 
     try {
-      console.log('[DEBUG] Sending request to:', `${API_URL}/drivers`);
       const res = await fetch(`${API_URL}/drivers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
-      console.log('[DEBUG] Response status:', res.status);
-      
       const data = await res.json();
-      console.log('[DEBUG] Response data:', data);
-      
       if (!res.ok) throw new Error(data.error);
 
       driver = data.driver;
@@ -1117,7 +1165,6 @@ select { cursor: pointer; }
       </div>
       <div id="driver-requests-list" class="scroll-list"></div>
     `;
-    
     document.getElementById('view-driver').innerHTML = html;
   }
 
@@ -1125,12 +1172,9 @@ select { cursor: pointer; }
   async function loadRides() {
     try {
       let url = `${API_URL}/rides`;
-      
-      // If passenger is logged in, filter by their phone to show only their rides
       if (passenger && passenger.phone) {
         url += `?passengerPhone=${encodeURIComponent(passenger.phone)}`;
       }
-      
       const res = await fetch(url);
       const data = await res.json();
       rides = data.rides || [];
@@ -1166,7 +1210,6 @@ select { cursor: pointer; }
         })
       });
       const data = await res.json();
-      
       if (!res.ok) throw new Error(data.error);
 
       document.getElementById('p-pickup').value = '';
@@ -1174,7 +1217,6 @@ select { cursor: pointer; }
       document.getElementById('p-price').value  = '';
 
       toast('📤', 'Offer sent!', 'Drivers can see your $' + price + ' bid. Sit tight.', 'green');
-      
       rides.unshift(data.ride);
       renderPassengerRequests();
     } catch (err) {
@@ -1193,7 +1235,6 @@ select { cursor: pointer; }
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      
       sendRideUpdate(data.ride);
       toast('✅', 'Ride accepted!', 'Locked in at $' + data.ride.offered_fare + '.', 'green');
     } catch (err) {
@@ -1211,7 +1252,6 @@ select { cursor: pointer; }
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      
       sendRideUpdate(data.ride);
       toast('👋', 'Passed on this one', "You declined the offer. Plenty more coming.", 'amber');
     } catch (err) {
@@ -1227,16 +1267,10 @@ select { cursor: pointer; }
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ driverId: driver.id })
       });
-      
       if (!res.ok) {
-        const text = await res.text();
-        if (res.status === 404) {
-          toast('❌', 'Error', 'Ride not found or already completed', 'red');
-          return;
-        }
-        throw new Error(text);
+        if (res.status === 404) { toast('❌', 'Error', 'Ride not found or already completed', 'red'); return; }
+        throw new Error(await res.text());
       }
-      
       const data = await res.json();
       sendRideUpdate(data.ride);
       toast('🏁', 'Ride completed!', 'Great job! Ride marked as completed.', 'green');
@@ -1249,7 +1283,7 @@ select { cursor: pointer; }
     if (!driver) return;
     const input = document.getElementById('counter-input-' + rideId);
     const val   = parseFloat(input ? input.value : 0);
-    const ride = getRide(rideId);
+    const ride  = getRide(rideId);
 
     if (!val || val <= ride.offered_fare) {
       toast('⚠️', 'Counter must be higher', 'Your counter needs to beat their $' + ride.offered_fare + ' offer.', 'amber');
@@ -1264,7 +1298,6 @@ select { cursor: pointer; }
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      
       sendRideUpdate(data.ride);
       toast('💬', 'Counter sent', '$' + val + " is now with the passenger. Ball's in their court.", 'blue');
     } catch (err) {
@@ -1282,7 +1315,6 @@ select { cursor: pointer; }
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      
       sendRideUpdate(data.ride);
       toast('🎉', 'Ride confirmed!', 'Deal locked at $' + data.ride.offered_fare + '. Your driver is on the way.', 'green');
     } catch (err) {
@@ -1298,7 +1330,6 @@ select { cursor: pointer; }
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      
       sendRideUpdate(data.ride);
       toast('👋', 'Counter declined', "No worries — try a fresh request.", 'amber');
     } catch (err) {
@@ -1309,8 +1340,7 @@ select { cursor: pointer; }
   /* ═══════════ RENDER: PASSENGER ═══════════ */
   function renderPassengerRequests() {
     if (!passenger) return;
-    
-    // Render my rides
+
     const myRides = rides.filter(r => r.passenger_name === passenger.name && r.passenger_phone === passenger.phone);
     const listEl  = document.getElementById('passenger-requests-list');
     const emptyEl = document.getElementById('passenger-requests-empty');
@@ -1322,50 +1352,77 @@ select { cursor: pointer; }
       emptyEl.style.display = 'none';
       listEl.innerHTML = myRides.map(renderPassengerCard).join('');
     }
-    
-    // Always render all rides section
     renderAllRides();
   }
 
   function renderPassengerCard(r) {
     let extra = '';
-    const offeredPrice = r.offered_fare;
+    const offeredPrice   = r.offered_fare;
     const counteredPrice = r.counter_fare;
 
     if (r.status === 'countered') {
-      const driverInfo = r.driver ? `
-        <div style="margin-top:10px; padding:10px; background:var(--violet-light); border:1px solid var(--violet-border); border-radius:var(--radius-sm);">
-          <div style="font-size:0.73rem; font-weight:600; color:var(--violet);">🚗 ${r.driver.name || 'Driver'} · ${r.driver.contact_no || 'N/A'}</div>
-          ${r.driver.vehicle_info ? `<div style="font-size:0.71rem; color:var(--text-muted); margin-top:2px;">${r.driver.vehicle_info}</div>` : ''}
+      // Driver info inside the counter banner (no separate duplicate block)
+      const driverDetail = r.driver ? `
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid var(--violet-border);">
+          <div class="contact-avatar-sm green-avatar" style="background:linear-gradient(135deg,var(--violet),#6d28d9);">
+            ${(r.driver.name||'D')[0].toUpperCase()}
+          </div>
+          <div>
+            <div style="font-size:0.84rem; font-weight:700; color:var(--text);">${r.driver.name || 'Driver'}</div>
+            <div style="font-size:0.69rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--violet);">Your Driver</div>
+          </div>
         </div>
+        <div style="display:flex; align-items:center; gap:6px; font-size:0.79rem; color:var(--text-secondary); margin-bottom:${r.driver.vehicle_info ? '6px' : '10px'};">
+          ${phoneLink(r.driver.contact_no)}
+        </div>
+        ${r.driver.vehicle_info ? `<div style="font-size:0.74rem; color:var(--text-muted); margin-bottom:10px;">🚘 ${r.driver.vehicle_info}</div>` : ''}
       ` : '';
+
       extra = `
         <div class="counter-banner">
-          <div class="counter-banner-head">💬 The driver has a counter proposal</div>
+          <div class="counter-banner-head">💬 Driver has a counter proposal</div>
+          ${driverDetail}
           <div class="price-compare">
             <span class="price-was">Your offer: $${offeredPrice}</span>
             <span style="color:var(--text-dim); margin:0 2px;">→</span>
             <span class="price-now">$${counteredPrice}</span>
           </div>
           <p>They think $${counteredPrice} is a fair deal. Accept and you're on your way — or decline and try a new request.</p>
-          ${driverInfo}
           <div class="action-row">
             <button class="btn btn-primary btn-sm" onclick="passengerAcceptCounter('${r.id}')">Accept $${counteredPrice}</button>
             <button class="btn btn-ghost   btn-sm" onclick="passengerRejectCounter('${r.id}')">Decline &amp; Close</button>
           </div>
         </div>`;
     }
+
     if (r.status === 'confirmed') {
-      const driverInfo = r.driver ? `
-        <div style="margin-top:12px; padding:12px; background:var(--green-light); border:1px solid var(--green-border); border-radius:var(--radius-sm);">
-          <div style="font-size:0.75rem; font-weight:700; color:var(--green); margin-bottom:6px;">🚗 Driver Details</div>
-          <div style="font-size:0.82rem; font-weight:600; color:var(--text);">${r.driver.name || 'Driver'}</div>
-          <div style="font-size:0.76rem; color:var(--text-secondary);">📞 ${r.driver.contact_no || 'N/A'}</div>
-          ${r.driver.vehicle_info ? `<div style="font-size:0.74rem; color:var(--text-muted); margin-top:4px;">${r.driver.vehicle_info}</div>` : ''}
+      // Single clean driver contact block
+      const driverBlock = r.driver ? `
+        <div class="driver-contact-block">
+          <div class="driver-contact-block-header">
+            <div class="contact-avatar-sm green-avatar">${(r.driver.name||'D')[0].toUpperCase()}</div>
+            <div>
+              <div class="driver-contact-name">${r.driver.name || 'Driver'}</div>
+              <div class="driver-contact-role">Your Driver · En Route</div>
+            </div>
+          </div>
+          <div class="driver-contact-row">
+            <span class="contact-info-icon">📞</span>
+            ${phoneLink(r.driver.contact_no)}
+          </div>
+          ${r.driver.vehicle_info ? `
+          <div class="driver-contact-row">
+            <span class="contact-info-icon">🚘</span>
+            <span>${r.driver.vehicle_info}</span>
+          </div>` : ''}
         </div>
       ` : '';
-      extra = `<div class="status-note ok">🎉 <span>Confirmed at <strong>$${offeredPrice}</strong> — your driver is on the way. Safe travels!</span></div>${driverInfo}`;
+
+      extra = `
+        <div class="status-note ok">🎉 <span>Confirmed at <strong>$${offeredPrice}</strong> — your driver is on the way. Safe travels!</span></div>
+        ${driverBlock}`;
     }
+
     if (r.status === 'completed') {
       extra = `<div class="status-note ok">🏁 <span>Ride completed at <strong>$${offeredPrice}</strong>. Thanks for riding!</span></div>`;
     }
@@ -1423,12 +1480,12 @@ select { cursor: pointer; }
   }
 
   function renderAllRides() {
-    const listEl = document.getElementById('all-rides-list');
+    const listEl  = document.getElementById('all-rides-list');
     const emptyEl = document.getElementById('all-rides-empty');
     if (!listEl) return;
 
     let filtered = rides;
-    if (passengerRideFilter === 'pending') filtered = rides.filter(r => r.status === 'pending' || r.status === 'countered');
+    if (passengerRideFilter === 'pending')   filtered = rides.filter(r => r.status === 'pending' || r.status === 'countered');
     if (passengerRideFilter === 'confirmed') filtered = rides.filter(r => r.status === 'confirmed' || r.status === 'completed');
 
     if (filtered.length === 0) {
@@ -1441,7 +1498,6 @@ select { cursor: pointer; }
   }
 
   function renderAllRidesCard(r) {
-    const offeredPrice = r.offered_fare;
     return `
       <div class="ride-card ${r.status}">
         <div class="ride-card-top">
@@ -1451,7 +1507,7 @@ select { cursor: pointer; }
           </div>
           <div class="price-block">
             <div class="price-label-sm">Offer</div>
-            <div class="price-big">$${offeredPrice}</div>
+            <div class="price-big">$${r.offered_fare}</div>
           </div>
         </div>
         <div class="route">
@@ -1486,10 +1542,11 @@ select { cursor: pointer; }
   }
 
   function renderDriverCard(r) {
-    const isClosed = r.status === 'confirmed' || r.status === 'rejected';
-    let actions = '';
-    const offeredPrice = r.offered_fare;
-    const counteredPrice = r.counter_fare;
+    const isClosed     = r.status === 'confirmed' || r.status === 'rejected';
+    const offeredPrice  = r.offered_fare;
+    const counteredPrice= r.counter_fare;
+    let actions    = '';
+    let closedNote = '';
 
     if (!isClosed) {
       if (r.status === 'pending') {
@@ -1517,26 +1574,33 @@ select { cursor: pointer; }
       }
     }
 
-    let closedNote = '';
     if (r.status === 'confirmed') {
-      const phoneNum = r.passenger_phone || 'N/A';
-      const passengerInfo = `
-        <div style="margin-top:12px; padding:12px; background:var(--blue-light); border:1px solid var(--blue-border); border-radius:var(--radius-sm);">
-          <div style="font-size:0.75rem; font-weight:700; color:var(--blue); margin-bottom:6px;">👤 Passenger Details</div>
-          <div style="font-size:0.82rem; font-weight:600; color:var(--text);">${r.passenger_name || 'Unknown'}</div>
-          <div style="font-size:0.76rem; color:var(--text-secondary);">📞 ${phoneNum}</div>
+      // Single clean passenger contact block — no duplication
+      closedNote = `
+        <div class="contact-info-block" style="margin-top:12px;">
+          <div class="contact-info-block-header">
+            <div class="contact-avatar-sm">${(r.passenger_name||'P')[0].toUpperCase()}</div>
+            <div>
+              <div class="contact-info-name">${r.passenger_name || 'Passenger'}</div>
+              <div class="contact-info-role">Confirmed Passenger</div>
+            </div>
+          </div>
+          <div class="contact-info-row">
+            <span class="contact-info-icon">📞</span>
+            ${phoneLink(r.passenger_phone)}
+          </div>
         </div>
-      `;
-      closedNote = `<div class="status-note ok" style="margin-top:12px;">
-        <div>✅ <span>Ride confirmed at <strong>$${offeredPrice}</strong></span></div>
-        ${passengerInfo}
         <div style="margin-top:10px;">
           <button class="btn btn-primary btn-sm" onclick="driverComplete('${r.id}')">Mark Completed</button>
-        </div>
-      </div>`;
+        </div>`;
     }
+
     if (r.status === 'rejected') {
       closedNote = `<div class="status-note closed" style="margin-top:12px;">— <span>You passed on this one. Plenty more offers on the way.</span></div>`;
+    }
+
+    if (r.status === 'completed') {
+      closedNote = `<div class="status-note ok" style="margin-top:12px;">🏁 <span>Ride completed at <strong>$${offeredPrice}</strong>.</span></div>`;
     }
 
     const showingPrice = (r.status === 'countered' && counteredPrice) ? counteredPrice : offeredPrice;
@@ -1547,7 +1611,7 @@ select { cursor: pointer; }
         <div class="ride-card-top">
           <div>
             <div class="passenger-name">${r.passenger_name}</div>
-            <div class="passenger-phone">${r.passenger_phone}</div>
+            <div class="passenger-phone">${phoneLink(r.passenger_phone)}</div>
             <div style="margin-top:8px;">${badgeHTML(r.status)}</div>
           </div>
           <div class="price-block">
@@ -1573,13 +1637,7 @@ select { cursor: pointer; }
   function getRide(id) { return rides.find(r => r.id === id); }
 
   function badgeHTML(status) {
-    const labels = {
-      pending:   'Awaiting response',
-      countered: 'Counter proposed',
-      confirmed: 'Confirmed',
-      completed: 'Completed',
-      rejected:  'Closed',
-    };
+    const labels = { pending:'Awaiting response', countered:'Counter proposed', confirmed:'Confirmed', completed:'Completed', rejected:'Closed' };
     return `<span class="badge badge-${status}">${labels[status] || status}</span>`;
   }
 
@@ -1592,7 +1650,7 @@ select { cursor: pointer; }
 
   /* ═══════════ TOASTS ═══════════ */
   function toast(icon, title, msg, type) {
-    const palette = { green: '#16a34a', amber: '#d97706', red: '#dc2626', blue: '#2563eb' };
+    const palette = { green:'#16a34a', amber:'#d97706', red:'#dc2626', blue:'#2563eb' };
     const el = document.createElement('div');
     el.className = 'toast';
     el.style.borderLeftColor = palette[type] || palette.green;
