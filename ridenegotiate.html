@@ -1598,6 +1598,44 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   }
 
   function renderAllRidesCard(r) {
+    let extra = '';
+    
+    // Show driver details for confirmed/completed rides (same logic as passenger's own rides)
+    if (r.status === 'confirmed' || r.status === 'completed') {
+      const driverObj = resolveDriver(r);
+      const isComplete = r.status === 'completed';
+      const statusIcon = isComplete ? '🏁' : '🎉';
+      const statusMsg  = isComplete
+        ? `Ride completed at <strong>$${r.offered_fare}</strong>. Thanks for riding!`
+        : `Confirmed at <strong>$${r.offered_fare}</strong> — driver is on the way.`;
+      const driverRole = isComplete ? 'Driver · Ride Complete' : 'Driver · En Route';
+
+      const driverBlock = driverObj
+        ? `<div class="driver-contact-block">
+             <div class="driver-contact-block-header">
+               <div class="contact-avatar-sm green-avatar">${(driverObj.name||'D')[0].toUpperCase()}</div>
+               <div>
+                 <div class="driver-contact-name">${driverObj.name||'Driver'}</div>
+                 <div class="driver-contact-role">${driverRole}</div>
+               </div>
+             </div>
+             <div class="driver-contact-row">
+               <span class="contact-info-icon">📞</span>
+               ${phoneLink(driverObj.contact_no)}
+             </div>
+             ${driverObj.vehicle_info
+               ? `<div class="driver-contact-row"><span class="contact-info-icon">🚘</span><span>${driverObj.vehicle_info}</span></div>`
+               : ''}
+           </div>`
+        : (r.accepted_by || r.countered_by)
+          ? `<div class="driver-loading">⏳ Loading driver details…</div>`
+          : '';
+
+      extra = `
+        <div class="status-note ok">${statusIcon} <span>${statusMsg}</span></div>
+        ${driverBlock}`;
+    }
+
     return `
       <div class="ride-card ${r.status}">
         <div class="ride-card-top">
@@ -1615,6 +1653,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div class="route-line"></div>
           <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
         </div>
+        ${extra}
       </div>`;
   }
 
