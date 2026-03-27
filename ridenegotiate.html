@@ -940,7 +940,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   const API_URL = (window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin) + '/api';
   
   // Initialize Supabase client with config from server
-  let supabase = null;
+  let supabaseClient = null;
   let realtimeSubscription = null;
   let passenger = null;
   
@@ -952,7 +952,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       
       if (config.supabaseUrl && config.supabaseAnonKey) {
         const { createClient } = window.supabase;
-        supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
+        supabaseClient = createClient(config.supabaseUrl, config.supabaseAnonKey);
         console.log('✅ Supabase client initialized');
         return true;
       } else {
@@ -1061,7 +1061,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     console.log('Connecting to Supabase Realtime...');
     
     // Subscribe to ride_requests table changes
-    realtimeSubscription = supabase
+    realtimeSubscription = supabaseClient
       .channel('ride_requests')
       .on('postgres_changes', 
         { 
@@ -1088,7 +1088,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
   function disconnectRealtime() {
     if (realtimeSubscription) {
-      supabase.removeChannel(realtimeSubscription);
+      supabaseClient.removeChannel(realtimeSubscription);
       realtimeSubscription = null;
       console.log('Disconnected from Supabase Realtime');
     }
