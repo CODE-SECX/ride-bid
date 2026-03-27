@@ -1,782 +1,2004 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const { createClient } = require('@supabase/supabase-js');
-const WebSocket = require('ws');
-const http = require('http');
-const path = require('path');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RideNego — Fair Fares, Every Time</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+/* ─── Reset & Design Tokens ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+:root {
+  --bg:           #f4f5f7;
+  --surface:      #ffffff;
+  --surface2:     #f8f9fb;
+  --surface3:     #f0f2f5;
+  --border:       #e4e7ec;
+  --border-mid:   #d0d5dd;
+  --border-focus: #2563eb;
 
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, '..')));
+  --text:           #111827;
+  --text-secondary: #374151;
+  --text-muted:     #9ca3af;
+  --text-dim:       #d1d5db;
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'ridenegotiate.html'));
-});
+  --green:        #16a34a;
+  --green-mid:    #22c55e;
+  --green-light:  #f0fdf4;
+  --green-border: #bbf7d0;
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
+  --blue:         #2563eb;
+  --blue-mid:     #3b82f6;
+  --blue-light:   #eff6ff;
+  --blue-border:  #bfdbfe;
 
-if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('your-project')) {
-  console.log('⚠️  Please configure your .env file with valid Supabase credentials');
-  console.log('   SUPABASE_URL and SUPABASE_ANON_KEY are required');
-} else {
-  console.log('✓ Supabase client configured');
+  --amber:        #d97706;
+  --amber-light:  #fffbeb;
+  --amber-border: #fde68a;
+
+  --red:          #dc2626;
+  --red-light:    #fef2f2;
+  --red-border:   #fecaca;
+
+  --violet:       #7c3aed;
+  --violet-light: #f5f3ff;
+  --violet-border:#ddd6fe;
+
+  --radius:    16px;
+  --radius-sm: 10px;
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 28px rgba(0,0,0,0.09), 0 4px 10px rgba(0,0,0,0.04);
+  --t: 0.18s cubic-bezier(0.4,0,0.2,1);
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+html { scroll-behavior: smooth; }
 
-const PORT = process.env.PORT || 3000;
-
-const clients = new Set();
-
-wss.on('connection', (ws) => {
-  clients.add(ws);
-  console.log('WebSocket client connected');
-
-  ws.on('close', () => {
-    clients.delete(ws);
-    console.log('WebSocket client disconnected');
-  });
-});
-
-function broadcastRideUpdate(ride) {
-  const message = JSON.stringify({ type: 'ride_update', data: ride });
-  clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(message);
-    }
-  });
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
-async function checkAndExpireRides() {
-  try {
-    await supabase.rpc('expire_pending_rides');
-    const { data } = await supabase.from('ride_requests').select('*').in('status', ['pending', 'countered']).gt('expires_at', new Date().toISOString());
-    if (data) data.forEach(ride => broadcastRideUpdate(ride));
-  } catch (err) {
-    console.error('Error expiring rides:', err);
-  }
+/* ─── Header ─── */
+header {
+  position: sticky; top: 0; z-index: 100;
+  height: 62px;
+  background: rgba(255,255,255,0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+  display: flex; align-items: center; justify-content: space-between;
 }
 
-setInterval(checkAndExpireRides, 30000);
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 1.15rem; font-weight: 800;
+  letter-spacing: -0.03em; color: var(--text);
+}
+.logo-mark {
+  width: 32px; height: 32px; border-radius: 9px;
+  background: linear-gradient(135deg, #2563eb 0%, #16a34a 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; box-shadow: 0 2px 8px rgba(37,99,235,0.22);
+}
+.logo em { font-style: normal; color: var(--blue); }
 
-// ─────────────────────────────────────────────
-// PASSENGERS
-// ─────────────────────────────────────────────
+.header-badge {
+  font-size: 0.67rem; font-weight: 700;
+  letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  padding: 4px 11px; border-radius: 20px;
+}
 
-/**
- * POST /api/passengers
- * Register or look up a passenger by phone number.
- * - If phone already exists: returns existing record (name is IGNORED — phone is the identity).
- * - If phone is new: creates a new record with the provided name.
- * FIX: previously, a new name could silently shadow an existing account.
- * Now we always return the authoritative record for that phone.
- */
-app.post('/api/passengers', async (req, res) => {
-  try {
-    const { name, phone } = req.body;
-    if (!name || !phone) {
-      return res.status(400).json({ error: 'Name and phone are required' });
-    }
+/* ─── Tab Switcher ─── */
+.tab-bar {
+  display: flex; gap: 3px;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 50px; padding: 4px;
+}
+.tab-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.79rem; font-weight: 600;
+  padding: 7px 17px; border-radius: 50px;
+  border: none; cursor: pointer;
+  transition: all var(--t);
+  color: var(--text-muted); background: transparent;
+  display: flex; align-items: center; gap: 6px;
+  letter-spacing: -0.01em;
+}
+.tab-btn:hover:not(.active-passenger):not(.active-driver) {
+  color: var(--text-secondary);
+  background: rgba(0,0,0,0.04);
+}
+.tab-btn.active-passenger {
+  background: var(--surface); color: var(--blue);
+  box-shadow: var(--shadow-sm);
+}
+.tab-btn.active-driver {
+  background: var(--surface); color: var(--green);
+  box-shadow: var(--shadow-sm);
+}
+.tab-pip {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor; opacity: 0.7;
+}
 
-    // Check if passenger already exists for this phone
-    let { data: existing } = await supabase
-      .from('passengers')
-      .select('*')
-      .eq('phone', phone)
-      .single();
+/* ─── Main ─── */
+.main {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 36px 24px 80px;
+}
 
-    if (existing) {
-      // Phone is the unique identity — return existing record regardless of supplied name
-      return res.json({ passenger: existing });
-    }
+.view { display: none; animation: rise 0.28s ease; }
+.view.active { display: block; }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-    // New phone — create the passenger
-    const { data, error } = await supabase
-      .from('passengers')
-      .insert([{ name, phone }])
-      .select()
-      .single();
+/* ─── Typography Helpers ─── */
+.label-eyebrow {
+  font-size: 0.67rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--text-muted); margin-bottom: 5px;
+}
+.section-heading {
+  font-size: 1.05rem; font-weight: 700;
+  color: var(--text); letter-spacing: -0.02em;
+  margin-bottom: 3px;
+}
+.section-caption {
+  font-size: 0.81rem; color: var(--text-muted);
+  line-height: 1.55; margin-bottom: 20px;
+}
 
-    if (error) throw error;
-    res.status(201).json({ passenger: data });
-  } catch (err) {
-    console.error('Error creating passenger:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
+/* ─── Cards ─── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--t), border-color var(--t);
+}
+.card:hover { box-shadow: var(--shadow-md); }
 
-app.get('/api/passengers/:phone', async (req, res) => {
-  try {
-    const { phone } = req.params;
-    const { data, error } = await supabase
-      .from('passengers')
-      .select('*')
-      .eq('phone', phone)
-      .single();
+/* ─── Forms ─── */
+.form-grid { display: grid; gap: 16px; }
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({ error: 'Passenger not found' });
+label {
+  display: block;
+  font-size: 0.71rem; font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em; margin-bottom: 6px;
+}
+
+input, select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 13px;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem; font-weight: 400;
+  outline: none;
+  transition: all var(--t);
+  -webkit-appearance: none;
+}
+input:focus, select:focus {
+  border-color: var(--border-focus);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+input::placeholder { color: var(--text-dim); }
+select { cursor: pointer; }
+
+.phone-row { display: flex; gap: 8px; }
+.phone-row select { width: 118px; flex-shrink: 0; }
+
+/* ─── Buttons ─── */
+.btn {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600; font-size: 0.82rem;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all var(--t);
+  display: inline-flex; align-items: center; gap: 6px;
+  white-space: nowrap; letter-spacing: -0.01em;
+}
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: var(--green); color: #fff;
+  border-color: var(--green);
+  box-shadow: 0 2px 8px rgba(22,163,74,0.22);
+}
+.btn-primary:hover {
+  background: #15803d; border-color: #15803d;
+  box-shadow: 0 4px 14px rgba(22,163,74,0.3);
+  transform: translateY(-1px);
+}
+
+.btn-blue {
+  background: var(--blue); color: #fff;
+  border-color: var(--blue);
+  box-shadow: 0 2px 8px rgba(37,99,235,0.2);
+}
+.btn-blue:hover {
+  background: #1d4ed8; border-color: #1d4ed8;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.28);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  background: var(--surface); color: var(--text-secondary);
+  border-color: var(--border);
+  box-shadow: var(--shadow-xs);
+}
+.btn-ghost:hover { border-color: var(--border-mid); color: var(--text); background: var(--surface2); }
+
+.btn-danger {
+  background: var(--red-light); color: var(--red);
+  border-color: var(--red-border);
+}
+.btn-danger:hover { background: #fee2e2; border-color: #fca5a5; }
+
+.btn-amber {
+  background: var(--amber-light); color: var(--amber);
+  border-color: var(--amber-border);
+}
+.btn-amber:hover { background: #fef3c7; border-color: #fcd34d; }
+
+.btn-sm  { padding: 7px 13px; font-size: 0.77rem; }
+.btn-full { width: 100%; justify-content: center; }
+
+/* ─── Badges ─── */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.66rem; font-weight: 700;
+  padding: 3px 9px; border-radius: 20px;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  border: 1px solid transparent;
+}
+.badge::before {
+  content: ''; width: 5px; height: 5px;
+  border-radius: 50%; background: currentColor; flex-shrink: 0;
+}
+.badge-pending   { color: var(--amber);  background: var(--amber-light);  border-color: var(--amber-border);  }
+.badge-countered { color: var(--violet); background: var(--violet-light); border-color: var(--violet-border); }
+.badge-confirmed { color: var(--green);  background: var(--green-light);  border-color: var(--green-border);  }
+.badge-completed { color: var(--blue);  background: var(--blue-light);   border-color: var(--blue-border);   }
+.badge-rejected  { color: var(--text-muted); background: var(--surface3); border-color: var(--border);       }
+
+/* ─── Toast ─── */
+#toast-container {
+  position: fixed; bottom: 26px; right: 26px;
+  z-index: 9999;
+  display: flex; flex-direction: column; gap: 10px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: var(--radius);
+  padding: 13px 15px;
+  display: flex; align-items: flex-start; gap: 11px;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  max-width: 316px; pointer-events: auto;
+}
+.toast.removing { animation: toastOut 0.22s ease forwards; }
+@keyframes toastIn  { from { opacity:0; transform:translateY(14px) scale(0.96); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes toastOut { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(8px); } }
+.toast-icon  { font-size: 1.1rem; margin-top: 1px; }
+.toast-title { font-size: 0.81rem; font-weight: 700; margin-bottom: 2px; }
+.toast-msg   { font-size: 0.76rem; color: var(--text-secondary); line-height: 1.45; }
+
+/* ─── Hero ─── */
+.hero {
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 48px 40px 44px;
+  text-align: center;
+  margin-bottom: 36px;
+  position: relative; overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 15% 50%, rgba(37,99,235,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 50%, rgba(22,163,74,0.06) 0%, transparent 55%);
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--blue);
+  background: var(--blue-light); border: 1px solid var(--blue-border);
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+}
+.hero-title {
+  font-size: 2.15rem; font-weight: 800;
+  letter-spacing: -0.045em; line-height: 1.13;
+  color: var(--text); margin-bottom: 14px;
+}
+.hero-title .accent-blue  { color: var(--blue); }
+.hero-title .accent-green { color: var(--green); }
+.hero-sub {
+  font-size: 0.93rem; color: var(--text-secondary);
+  max-width: 430px; margin: 0 auto 28px;
+  line-height: 1.65; font-weight: 400;
+}
+.hero-pills { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.hero-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.74rem; font-weight: 500;
+  padding: 6px 13px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; color: var(--text-secondary);
+  box-shadow: var(--shadow-xs);
+}
+
+/* ─── Auth ─── */
+.auth-wrap { max-width: 418px; margin: 0 auto; }
+.auth-heading {
+  font-size: 1.3rem; font-weight: 800;
+  letter-spacing: -0.035em; text-align: center;
+  margin-bottom: 4px;
+}
+.auth-sub {
+  font-size: 0.81rem; color: var(--text-muted);
+  text-align: center; margin-bottom: 24px; line-height: 1.55;
+}
+
+/* ─── Account Bar ─── */
+.account-bar {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--blue-light);
+  border: 1px solid var(--blue-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px; margin-bottom: 20px;
+}
+.account-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), #6366f1);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.88rem; color: #fff;
+  flex-shrink: 0; box-shadow: 0 2px 6px rgba(37,99,235,0.22);
+}
+.account-name  { font-size: 0.85rem; font-weight: 700; }
+.account-phone { font-size: 0.72rem; color: var(--text-secondary); margin-top: 1px; }
+
+/* ─── Layout ─── */
+.two-col {
+  display: grid;
+  grid-template-columns: 356px 1fr;
+  gap: 24px; align-items: start;
+}
+@media(max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+@media(max-width: 600px) {
+  header { padding: 0 16px; height: 56px; }
+  .logo { font-size: 1rem; }
+  .logo-mark { width: 28px; height: 28px; font-size: 13px; }
+  .header-badge { display: none; }
+  .tab-bar { gap: 2px; padding: 3px; }
+  .tab-btn { font-size: 0.7rem; padding: 6px 12px; }
+  .main { padding: 20px 16px 60px; }
+  .hero { padding: 32px 20px 28px; }
+  .hero-title { font-size: 1.6rem; }
+  .hero-sub { font-size: 0.85rem; }
+  .hero-pills { gap: 6px; }
+  .hero-pill { font-size: 0.65rem; padding: 5px 10px; }
+  .auth-wrap { max-width: 100%; }
+  .card { padding: 16px; border-radius: 12px; }
+  .form-grid { gap: 12px; }
+  input, select { padding: 10px 12px; font-size: 0.85rem; }
+  .btn { padding: 10px 14px; font-size: 0.78rem; }
+  .account-bar { padding: 10px 12px; }
+  .account-avatar { width: 32px; height: 32px; font-size: 0.8rem; }
+  .section-heading { font-size: 0.95rem; }
+  .label-eyebrow { font-size: 0.6rem; }
+  .section-caption { font-size: 0.75rem; }
+  .inner-tabs { width: 100%; overflow-x: auto; }
+  .inner-tab { font-size: 0.7rem; padding: 6px 12px; white-space: nowrap; }
+  .driver-header { flex-direction: column; gap: 12px; padding: 14px; }
+  .driver-online { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .count-chip { font-size: 0.65rem; }
+  .ride-card { padding: 14px; }
+  .ride-card-top { flex-direction: column; gap: 10px; }
+  .price-block { text-align: left; flex-direction: row; align-items: baseline; gap: 8px; }
+  .price-big { font-size: 1.3rem; }
+  .price-label-sm { font-size: 0.6rem; }
+  .route { padding: 10px 12px; }
+  .route-row { font-size: 0.78rem; }
+  .action-row { flex-direction: column; }
+  .action-row .btn { width: 100%; justify-content: center; }
+  .counter-form { flex-direction: column; }
+  .counter-form .btn { width: 100%; }
+  .counter-banner { padding: 12px; }
+  .price-compare { flex-direction: column; gap: 4px; }
+  .price-now { font-size: 1.2rem; }
+  .status-note { padding: 10px 12px; font-size: 0.72rem; }
+  .toast-container { bottom: 12px; right: 12px; left: 12px; }
+  .toast { max-width: 100%; }
+  .badge { font-size: 0.6rem; padding: 3px 7px; }
+  .scroll-list { max-height: 50vh; }
+  .tip { padding: 10px 12px; font-size: 0.72rem; }
+  .address-callout { padding: 11px 12px; font-size: 0.72rem; }
+}
+
+/* ─── Ride Card ─── */
+.ride-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-xs);
+  transition: all var(--t);
+  position: relative; overflow: hidden;
+}
+.ride-card:hover { box-shadow: var(--shadow-md); border-color: #cdd2da; }
+.ride-card + .ride-card { margin-top: 12px; }
+.ride-card::before {
+  content: ''; position: absolute;
+  left: 0; top: 0; bottom: 0; width: 3px;
+}
+.ride-card.pending::before   { background: var(--amber); }
+.ride-card.countered::before { background: var(--violet); }
+.ride-card.confirmed::before { background: var(--green-mid); }
+.ride-card.completed::before { background: var(--blue-mid); }
+.ride-card.rejected::before  { background: var(--text-dim); }
+
+.ride-card-top {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 12px;
+  margin-bottom: 14px;
+}
+.passenger-name  { font-size: 0.94rem; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.passenger-phone { font-size: 0.74rem; color: var(--text-muted); }
+
+.price-block { text-align: right; flex-shrink: 0; }
+.price-label-sm { font-size: 0.63rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+.price-big  { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1.1; color: var(--green); }
+.price-big.counter-col { color: var(--amber); }
+
+/* ─── Route ─── */
+.route {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px; margin-bottom: 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.route-row { display: flex; align-items: center; gap: 10px; font-size: 0.84rem; color: var(--text-secondary); }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot.from { background: var(--blue-mid); box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+.dot.to   { background: var(--red);     box-shadow: 0 0 0 2px rgba(220,38,38,0.2); }
+.route-line { width: 1px; height: 12px; background: var(--border); margin-left: 3.5px; }
+
+/* ─── Action Row ─── */
+.action-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+/* ─── Counter Form ─── */
+.counter-form {
+  display: flex; gap: 8px; align-items: flex-end;
+  margin-top: 12px; padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.counter-form .field { flex: 1; }
+.counter-form input { padding: 9px 12px; }
+
+/* ─── Counter Banner (passenger) ─── */
+.counter-banner {
+  margin-top: 12px;
+  background: var(--violet-light);
+  border: 1px solid var(--violet-border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  animation: rise 0.3s ease;
+}
+.counter-banner-head {
+  font-size: 0.79rem; font-weight: 700; color: var(--violet);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.price-compare { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.price-was { font-size: 0.81rem; color: var(--text-muted); text-decoration: line-through; }
+.price-now { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; color: var(--amber); }
+.counter-banner p { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: 12px; }
+
+/* ─── Status Banners ─── */
+.status-note {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin-top: 12px; padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.79rem; line-height: 1.5; font-weight: 500;
+  border: 1px solid transparent;
+}
+.status-note.ok     { background: var(--green-light);  color: var(--green); border-color: var(--green-border); }
+.status-note.closed { background: var(--surface3);     color: var(--text-muted); border-color: var(--border); }
+.status-note.wait   { background: var(--violet-light); color: var(--violet); border-color: var(--violet-border); }
+
+/* ─── Contact Link ─── */
+a.phone-link {
+  color: inherit; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 4px;
+  transition: color var(--t);
+  border-radius: 4px; padding: 1px 3px; margin: -1px -3px;
+}
+a.phone-link:hover { color: var(--blue); background: var(--blue-light); text-decoration: underline; }
+a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
+
+/* ─── Contact Info Block (driver confirmed view) ─── */
+.contact-info-block {
+  margin-top: 12px;
+  background: var(--blue-light);
+  border: 1px solid var(--blue-border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+.contact-info-block-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.contact-avatar-sm {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), #6366f1);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.82rem; color: #fff; flex-shrink: 0;
+}
+.contact-info-name { font-size: 0.86rem; font-weight: 700; color: var(--text); }
+.contact-info-role { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--blue); margin-top: 1px; }
+.contact-info-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 0; border-top: 1px solid var(--blue-border);
+  font-size: 0.79rem; color: var(--text-secondary);
+}
+.contact-info-icon { font-size: 0.9rem; flex-shrink: 0; opacity: 0.75; }
+
+/* ─── Driver Contact Block (passenger confirmed/completed view) ─── */
+.driver-contact-block {
+  margin-top: 12px;
+  background: var(--green-light);
+  border: 1px solid var(--green-border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+.driver-contact-block-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.contact-avatar-sm.green-avatar { background: linear-gradient(135deg, var(--green), #059669); }
+.driver-contact-name { font-size: 0.86rem; font-weight: 700; color: var(--text); }
+.driver-contact-role { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--green); margin-top: 1px; }
+.driver-contact-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 0; border-top: 1px solid var(--green-border);
+  font-size: 0.79rem; color: var(--text-secondary);
+}
+
+/* ─── Driver Header ─── */
+.driver-header {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--green-light);
+  border: 1px solid var(--green-border);
+  border-radius: var(--radius);
+  padding: 16px 20px; margin-bottom: 20px;
+  box-shadow: var(--shadow-xs);
+}
+.driver-online { display: flex; align-items: center; gap: 10px; }
+.live-pip {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--green-mid);
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
+  animation: breathe 2.2s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%,100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.2); }
+  50%      { box-shadow: 0 0 0 7px rgba(34,197,94,0.05); }
+}
+.driver-label { font-size: 0.84rem; font-weight: 700; color: var(--green); }
+.driver-sub   { font-size: 0.71rem; color: #15803d; margin-top: 1px; }
+.count-chip {
+  font-size: 0.73rem; font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 5px 13px;
+  box-shadow: var(--shadow-xs);
+}
+.count-chip strong { color: var(--text); }
+
+/* ─── Inner Tabs ─── */
+.inner-tabs {
+  display: flex; gap: 2px;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 3px;
+  width: fit-content; margin-bottom: 20px;
+}
+.inner-tab {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem; font-weight: 600;
+  padding: 6px 15px; border-radius: 8px;
+  border: none; cursor: pointer;
+  background: transparent; color: var(--text-muted);
+  transition: all var(--t); letter-spacing: -0.01em;
+}
+.inner-tab.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-xs); }
+
+/* ─── Empty States ─── */
+.empty {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 60px 20px; text-align: center;
+  box-shadow: var(--shadow-xs);
+}
+.empty-icon  { font-size: 2.4rem; margin-bottom: 14px; display: block; }
+.empty-head  { font-size: 0.9rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; }
+.empty-body  { font-size: 0.79rem; color: var(--text-muted); line-height: 1.65; }
+
+/* ─── Tips ─── */
+.tip-list { display: flex; flex-direction: column; gap: 8px; }
+.tip {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 11px 14px;
+  box-shadow: var(--shadow-xs);
+  font-size: 0.78rem; color: var(--text-secondary); line-height: 1.55;
+}
+.tip-i { flex-shrink: 0; font-size: 1rem; }
+
+/* ─── Scroll List ─── */
+.scroll-list { max-height: 72vh; overflow-y: auto; padding-right: 2px; }
+.scroll-list::-webkit-scrollbar { width: 4px; }
+.scroll-list::-webkit-scrollbar-track { background: transparent; }
+.scroll-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ═══ NEW: Address Callout ═══
+   Amber-tinted guidance banner placed directly above the location
+   fields inside the ride-request form. Amber = attention without
+   alarm. Border is slightly heavier (1.5px) to hold focus.
+   ─────────────────────────────────── */
+.address-callout {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: #fffbeb;
+  border: 1.5px solid #fbbf24;
+  border-radius: var(--radius-sm);
+  padding: 13px 15px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(217,119,6,0.08);
+}
+.address-callout-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+.address-callout-title {
+  font-size: 0.76rem; font-weight: 700;
+  color: #92400e; letter-spacing: 0.01em; margin-bottom: 3px;
+}
+.address-callout-desc {
+  font-size: 0.72rem; color: #78350f; line-height: 1.6;
+}
+.address-callout-desc strong { font-weight: 700; color: #92400e; }
+
+/* ═══ NEW: Driver-loading placeholder ═══
+   Shown while driverCache is being populated so the card
+   doesn't look broken while the fetch is in flight.
+   ─────────────────────────────────── */
+.driver-loading {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.72rem; color: var(--text-muted);
+  padding: 8px 0; font-style: italic;
+}
+
+/* ─── Utils ─── */
+.divider { height: 1px; background: var(--border); margin: 24px 0; }
+.hidden  { display: none !important; }
+.mt-3    { margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<!-- ────────────── Header ────────────── -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">🚗</div>
+    Ride<em>Nego</em>
+  </div>
+  <div class="header-badge">Fair Fares · No Surge</div>
+  <div class="tab-bar">
+    <button class="tab-btn" id="tab-passenger" onclick="switchTab('passenger')">
+      <div class="tab-pip"></div>I'm a Rider
+    </button>
+    <button class="tab-btn" id="tab-driver" onclick="switchTab('driver')">
+      <div class="tab-pip"></div>I'm a Driver
+    </button>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- ══════════════════════════════════════
+       PASSENGER VIEW
+  ══════════════════════════════════════ -->
+  <div class="view" id="view-passenger">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-eyebrow">✦ The smarter way to get around</div>
+      <h1 class="hero-title">
+        Your price.<br>
+        <span class="accent-blue">Your terms.</span>
+        <span class="accent-green"> Your ride.</span>
+      </h1>
+      <p class="hero-sub">
+        Name what you think is fair. Drivers respond — accept your offer,
+        suggest a counter, or move on. Transparent pricing, every time.
+      </p>
+      <div class="hero-pills">
+        <span class="hero-pill">⚡ Real-time offers</span>
+        <span class="hero-pill">🤝 You set the opening bid</span>
+        <span class="hero-pill">🔒 Zero surge pricing</span>
+        <span class="hero-pill">💬 Direct driver dialogue</span>
+      </div>
+    </div>
+
+    <!-- ── Not logged in ── -->
+    <div id="passenger-auth">
+      <div class="auth-wrap">
+        <h2 class="auth-heading">Let's get you set up</h2>
+        <p class="auth-sub">Just your name and number — no OTP, no waiting, no drama.</p>
+        <div class="card">
+          <div class="form-grid">
+            <div>
+              <label>What should drivers call you?</label>
+              <input id="p-name" type="text" placeholder="e.g. Priya Sharma" autocomplete="name" />
+            </div>
+            <div>
+              <label>Your mobile — strictly for ride coordination</label>
+              <div class="phone-row">
+                <select id="p-code">
+                  <option value="+1" selected>🇨🇦 +1</option>
+                  <option value="+91">🇮🇳 +91</option>
+                  <option value="+44">🇬🇧 +44</option>
+                  <option value="+65">🇸🇬 +65</option>
+                  <option value="+971">🇦🇪 +971</option>
+                </select>
+                <input id="p-phone" type="tel" placeholder="(555) 123-4567" autocomplete="tel" />
+              </div>
+            </div>
+            <button class="btn btn-blue btn-full mt-3" onclick="createPassengerAccount()">
+              Start Negotiating →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Logged in Dashboard ── -->
+    <div id="passenger-dashboard" class="hidden">
+      <div class="two-col">
+
+        <!-- Left: Request form -->
+        <div>
+          <div class="account-bar">
+            <div class="account-avatar" id="p-avatar">P</div>
+            <div>
+              <div class="account-name"  id="p-display-name">—</div>
+              <div class="account-phone" id="p-display-phone">—</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="logoutPassenger()">
+              Sign out
+            </button>
+          </div>
+
+          <div class="label-eyebrow">New Ride Request</div>
+          <div class="section-heading">Where are you headed?</div>
+          <div class="section-caption">Fill in your route and name your price — let drivers come to you.</div>
+
+          <div class="card">
+
+            <!-- ══ ADDRESS CALLOUT (NEW) ══
+                 Prominent amber guidance banner placed at the very top of the
+                 form, before the pickup/dropoff fields. Passengers see it
+                 before they start typing, not after they submit.
+                 Amber border stands out in a sea of blue/grey without
+                 looking like an error. -->
+            <div class="address-callout">
+              <div class="address-callout-icon">📍</div>
+              <div>
+                <div class="address-callout-title">Use your full address — it gets you picked up faster</div>
+                <div class="address-callout-desc">
+                  Include the <strong>door number, street name, and a nearby landmark</strong> for both
+                  pickup and drop-off. "Near the mall" won't cut it — drivers need enough detail
+                  to commit without back-and-forth.
+                </div>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div>
+                <label>Pickup — the more specific, the better</label>
+                <input id="p-pickup" type="text" placeholder="e.g. 14, 5th Cross, Koramangala 5th Block, near Café Coffee Day" />
+              </div>
+              <div>
+                <label>Drop-off — where the journey ends</label>
+                <input id="p-drop" type="text" placeholder="e.g. 100 Feet Rd, Indiranagar 12th Main, opp. CMH Road signal" />
+              </div>
+              <div>
+                <label>Your offer — make it worth their ride ($)</label>
+                <input id="p-price" type="number" placeholder="e.g. 140" min="1" />
+              </div>
+              <button class="btn btn-blue btn-full" onclick="submitRideRequest()">
+                Send Offer to Drivers →
+              </button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="label-eyebrow">Tips for better deals</div>
+          <div class="tip-list" style="margin-top:8px;">
+            <div class="tip"><span class="tip-i">📍</span><span>Precise locations help drivers commit faster — vague gets you vague.</span></div>
+            <div class="tip"><span class="tip-i">💡</span><span>Think of your opening offer as a handshake, not a lowball — a fair price invites faster replies.</span></div>
+            <div class="tip"><span class="tip-i">🤝</span><span>A counter offer is good news — it means a driver wants your ride. A small nudge often seals the deal.</span></div>
+          </div>
+        </div>
+
+        <!-- Right: My requests -->
+        <div>
+          <div class="label-eyebrow">Live Updates</div>
+          <div class="section-heading">Your Negotiations</div>
+          <div class="section-caption">Every offer, counter, and outcome — tracked in real time.</div>
+
+          <div id="passenger-requests-empty" class="empty">
+            <span class="empty-icon">🛣️</span>
+            <div class="empty-head">No active negotiations yet</div>
+            <div class="empty-body">Send your first offer and watch drivers respond.<br>It usually doesn't take long.</div>
+          </div>
+          <div id="passenger-requests-list" class="scroll-list"></div>
+        </div>
+
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- All Rides Section for Passengers -->
+      <div>
+        <div class="label-eyebrow">All Rides</div>
+        <div class="section-heading">Available Ride Requests</div>
+        <div class="section-caption">See what other passengers are offering — find trends and plan your own.</div>
+
+        <div class="inner-tabs">
+          <button class="inner-tab active" id="ptab-all"       onclick="filterPassengerRides('all')">All</button>
+          <button class="inner-tab"        id="ptab-pending"   onclick="filterPassengerRides('pending')">Pending</button>
+          <button class="inner-tab"        id="ptab-confirmed" onclick="filterPassengerRides('confirmed')">Confirmed</button>
+        </div>
+
+        <div id="all-rides-empty" class="empty">
+          <span class="empty-icon">🚗</span>
+          <div class="empty-head">No rides available</div>
+          <div class="empty-body">Check back soon for available rides.</div>
+        </div>
+        <div id="all-rides-list" class="scroll-list"></div>
+      </div>
+    </div>
+
+  </div><!-- /passenger view -->
+
+
+  <!-- ══════════════════════════════════════
+       DRIVER VIEW
+  ══════════════════════════════════════ -->
+  <div class="view" id="view-driver">
+
+    <div class="driver-header">
+      <div class="driver-online">
+        <div class="live-pip"></div>
+        <div>
+          <div class="driver-label">Online &amp; Ready</div>
+          <div class="driver-sub">New rider offers appear below the moment they're submitted</div>
+        </div>
+      </div>
+      <div class="count-chip">
+        <strong id="driver-count">0</strong> awaiting your call
+      </div>
+    </div>
+
+    <div class="inner-tabs">
+      <button class="inner-tab active" id="dtab-all"       onclick="filterDriver('all')">All</button>
+      <button class="inner-tab"        id="dtab-pending"   onclick="filterDriver('pending')">Pending</button>
+      <button class="inner-tab"        id="dtab-countered" onclick="filterDriver('countered')">Countered</button>
+      <button class="inner-tab"        id="dtab-closed"    onclick="filterDriver('closed')">Closed</button>
+    </div>
+
+    <div id="driver-requests-empty" class="empty">
+      <span class="empty-icon">⏳</span>
+      <div class="empty-head">Quiet for now</div>
+      <div class="empty-body">Switch to the Rider tab to place a sample offer —<br>it'll land here instantly.</div>
+    </div>
+    <div id="driver-requests-list" class="scroll-list"></div>
+
+  </div><!-- /driver view -->
+
+</div><!-- /main -->
+
+<script>
+  /* ═══════════ STATE ═══════════ */
+  const API_URL = (window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin) + '/api';
+  let ws = null;
+  let passenger = null;
+
+  /*
+   * allRides  — every ride on the platform (driver view + "All Rides" section).
+   * myRides   — only this passenger's rides (history endpoint, all statuses).
+   */
+  let allRides = [];
+  let myRides  = [];
+
+  /*
+   * driverCache — keyed by driver ID, value is the driver object or null.
+   *
+   * WHY THIS EXISTS (driver details in history):
+   * The history endpoint returns raw ride_requests rows. The `driver` sub-object
+   * that the live accept/counter endpoints attach is NOT stored in the DB — it is
+   * composed on the fly in the server response. So r.driver is always undefined
+   * for rides fetched from history.
+   *
+   * The fix: resolveDriver(r) looks up accepted_by / countered_by, checks this
+   * cache, and if missing fires fetchDriverById() which GETs the driver profile
+   * and stores the result here. After the fetch completes it calls
+   * renderPassengerRequests() so the card re-renders with real driver info.
+   *
+   * A value of `null` means "fetch was attempted but failed" — we won't retry.
+   * A value of `undefined` means "not yet fetched".
+   */
+  const driverCache = {};
+
+  /*
+   * fetchDriverById — async, fires once per unknown driver ID.
+   * Calls GET /api/drivers/:id/profile which you need to add to server.js
+   * (see the backend note at the bottom of this file). Falls back gracefully
+   * if the endpoint doesn't exist yet — the card just won't show driver details.
+   */
+  async function fetchDriverById(driverId) {
+    if (!driverId || driverCache[driverId] !== undefined) return;
+    driverCache[driverId] = null; // mark in-flight to prevent duplicate fetches
+    try {
+      const res = await fetch(`${API_URL}/drivers/${driverId}/profile`);
+      if (res.ok) {
+        const data = await res.json();
+        driverCache[driverId] = data.driver || null;
+        renderPassengerRequests();
+        renderAllRides();
       }
-      throw error;
+    } catch (e) {
+      console.warn('Could not fetch driver profile for', driverId, e);
     }
-    res.json({ passenger: data });
-  } catch (err) {
-    console.error('Error getting passenger:', err);
-    res.status(500).json({ error: err.message });
   }
-});
 
-// ─────────────────────────────────────────────
-// DRIVERS
-// ─────────────────────────────────────────────
+  /*
+   * resolveDriver(r) — returns a hydrated driver object for a ride, or null.
+   *
+   * Lookup priority:
+   *   1. r.driver  — already hydrated by a live WebSocket push (accept/counter).
+   *   2. driverCache[id]  — previously fetched and cached.
+   *   3. null + triggers fetchDriverById() — re-renders when the fetch lands.
+   *
+   * Driver ID: accepted_by covers the direct-accept flow; countered_by covers
+   * the counter-then-passenger-accept flow. Both end up as confirmed status.
+   */
+  function resolveDriver(r) {
+    // Always return driver data if it's already attached to the ride
+    if (r.driver) return r.driver;
+    
+    const driverId = r.accepted_by || r.countered_by;
+    if (!driverId) return null;
+    
+    // Check cache first
+    if (driverCache[driverId] !== undefined) return driverCache[driverId];
+    
+    // For passenger view, always fetch driver details for confirmed/completed rides
+    // For driver view, only fetch if it's the current driver's ride
+    if ((passenger && (r.status === 'confirmed' || r.status === 'completed')) ||
+        (driver && (r.accepted_by === driver.id || r.countered_by === driver.id))) {
+      fetchDriverById(driverId); // fire and forget — re-render on completion
+    }
+    
+    return null;
+  }
 
-app.post('/api/drivers', async (req, res) => {
-  try {
-    const { username, password } = req.body;
+  let driver = null;
+  let driverFilter = 'all';
+
+  /* ═══════════ PHONE LINK HELPER ═══════════ */
+  function phoneLink(phoneStr, labelClass) {
+    if (!phoneStr || phoneStr === 'N/A') {
+      return `<span class="${labelClass || ''}">N/A</span>`;
+    }
+    const dialable = phoneStr.replace(/\s+/g, '');
+    return `<a href="tel:${dialable}" class="phone-link ${labelClass || ''}"><span class="phone-icon">📞</span>${phoneStr}</a>`;
+  }
+
+  /* ═══════════ WEBSOCKET ═══════════ */
+  const WS_URL = window.location.hostname === 'localhost' 
+    ? 'ws://localhost:3000' 
+    : window.location.protocol === 'https:' 
+      ? `wss://${window.location.hostname}` 
+      : `ws://${window.location.hostname}:3000`;
+
+  function connectWebSocket() {
+    if (!WS_URL) { 
+      console.log('WebSocket URL not determined'); 
+      return; 
+    }
+    
+    console.log('Connecting to WebSocket at:', WS_URL);
+    ws = new WebSocket(WS_URL);
+    ws.onopen = () => console.log('WebSocket connected');
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'ride_update') handleRideUpdate(msg.data);
+      } catch (e) { console.error('WebSocket message error:', e); }
+    };
+    ws.onclose = () => {
+      console.log('WebSocket disconnected, reconnecting...');
+      setTimeout(connectWebSocket, 3000);
+    };
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+  }
+
+  function handleRideUpdate(ride) {
+    const allIdx = allRides.findIndex(r => r.id === ride.id);
+    if (allIdx >= 0) { allRides[allIdx] = { ...allRides[allIdx], ...ride }; }
+    else { allRides.unshift(ride); }
+
+    if (passenger && ride.passenger_phone === passenger.phone) {
+      const myIdx = myRides.findIndex(r => r.id === ride.id);
+      if (myIdx >= 0) { myRides[myIdx] = { ...myRides[myIdx], ...ride }; }
+      else { myRides.unshift(ride); }
+    }
+
+    renderPassengerRequests();
+    renderAllRides();
+    renderDriverView();
+  }
+
+  function sendRideUpdate(ride) {
+    const allIdx = allRides.findIndex(r => r.id === ride.id);
+    if (allIdx >= 0) { allRides[allIdx] = { ...allRides[allIdx], ...ride }; }
+    else { allRides.unshift(ride); }
+
+    if (passenger && ride.passenger_phone === passenger.phone) {
+      const myIdx = myRides.findIndex(r => r.id === ride.id);
+      if (myIdx >= 0) { myRides[myIdx] = { ...myRides[myIdx], ...ride }; }
+      else { myRides.unshift(ride); }
+    }
+
+    renderPassengerRequests();
+    renderAllRides();
+    renderDriverView();
+  }
+
+  /* ═══════════ TABS ═══════════ */
+  function switchTab(tab) {
+    document.getElementById('view-passenger').classList.toggle('active', tab === 'passenger');
+    document.getElementById('view-driver').classList.toggle('active', tab === 'driver');
+    document.getElementById('tab-passenger').className = 'tab-btn' + (tab === 'passenger' ? ' active-passenger' : '');
+    document.getElementById('tab-driver').className    = 'tab-btn' + (tab === 'driver'    ? ' active-driver'    : '');
+
+    if (tab === 'driver') {
+      if (!driver) showDriverLogin();
+      else loadAllRides();
+    }
+    if (tab === 'passenger') {
+      loadAllRides();
+      if (passenger) loadMyRides();
+    }
+  }
+
+  /* ═══════════ ACCOUNT: PASSENGER ═══════════ */
+  async function createPassengerAccount() {
+    const nameInput = document.getElementById('p-name').value.trim();
+    const code      = document.getElementById('p-code').value;
+    const phone     = document.getElementById('p-phone').value.trim();
+
+    if (!nameInput)                { toast('⚠️', 'Name required', 'Drivers need something to call you.', 'amber'); return; }
+    if (!phone || phone.length < 6){ toast('⚠️', 'Check your number', "That doesn't look right — try again.", 'amber'); return; }
+
+    const fullPhone = code + ' ' + phone;
+
+    try {
+      const res = await fetch(`${API_URL}/passengers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: nameInput, phone: fullPhone })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      const canonicalName = data.passenger.name;
+      passenger = { id: data.passenger.id, name: canonicalName, phone: fullPhone };
+      localStorage.setItem('passenger', JSON.stringify(passenger));
+
+      showPassengerDashboard();
+
+      if (canonicalName !== nameInput) {
+        toast('ℹ️', 'Welcome back, ' + canonicalName.split(' ')[0] + '!',
+          'This number is already registered — signed in as ' + canonicalName + '.', 'blue');
+      } else {
+        toast('👋', "You're in, " + canonicalName.split(' ')[0] + '!',
+          'Name your price and see who bites.', 'blue');
+      }
+
+      loadAllRides();
+      loadMyRides();
+    } catch (err) {
+      toast('❌', 'Error', err.message, 'red');
+    }
+  }
+
+  function showPassengerDashboard() {
+    document.getElementById('passenger-auth').classList.add('hidden');
+    document.getElementById('passenger-dashboard').classList.remove('hidden');
+    document.getElementById('p-display-name').textContent  = passenger.name;
+    document.getElementById('p-display-phone').textContent = passenger.phone;
+    document.getElementById('p-avatar').textContent        = passenger.name[0].toUpperCase();
+  }
+
+  function logoutPassenger() {
+    passenger = null;
+    myRides   = [];
+    localStorage.removeItem('passenger');
+    document.getElementById('passenger-auth').classList.remove('hidden');
+    document.getElementById('passenger-dashboard').classList.add('hidden');
+    document.getElementById('p-name').value  = '';
+    document.getElementById('p-phone').value = '';
+  }
+
+  function checkSavedPassenger() {
+    const saved = localStorage.getItem('passenger');
+    if (saved) {
+      try {
+        passenger = JSON.parse(saved);
+        showPassengerDashboard();
+        loadMyRides();
+      } catch (e) { localStorage.removeItem('passenger'); }
+    }
+  }
+
+  /* ═══════════ ACCOUNT: DRIVER ═══════════ */
+  function showDriverLogin() {
+    const loginHtml = `
+      <div class="auth-wrap" style="max-width:380px; margin:40px auto;">
+        <h2 class="auth-heading">Driver Login</h2>
+        <p class="auth-sub">Enter your credentials to access ride requests</p>
+        <div class="card">
+          <div class="form-grid">
+            <div><label>Username</label><input id="d-username" type="text" placeholder="username" /></div>
+            <div><label>Password</label><input id="d-password" type="password" placeholder="password" /></div>
+            <button class="btn btn-primary btn-full" onclick="loginDriver()">Login</button>
+            <button class="btn btn-ghost btn-full" onclick="switchTab('passenger')">Back to Rider</button>
+          </div>
+        </div>
+      </div>`;
+    document.getElementById('view-driver').innerHTML = loginHtml;
+  }
+
+  async function loginDriver() {
+    const username = document.getElementById('d-username').value.trim();
+    const password = document.getElementById('d-password').value;
+
     if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password required' });
+      toast('⚠️', 'Credentials required', 'Please enter username and password.', 'amber');
+      return;
     }
 
-    const { data: driver, error } = await supabase
-      .from('drivers')
-      .select('*')
-      .eq('username', username)
-      .single();
+    try {
+      const res = await fetch(`${API_URL}/drivers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
 
-    if (error || !driver) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      driver = data.driver;
+      localStorage.setItem('driver', JSON.stringify(driver));
+      toast('✅', 'Welcome, ' + driver.name + '!', 'You are now online.', 'green');
+      renderDriverDashboard();
+      loadAllRides();
+    } catch (err) {
+      toast('❌', 'Login failed', err.message, 'red');
     }
-
-    const bcrypt = require('bcryptjs');
-    const validPassword = await bcrypt.compare(password, driver.password_hash);
-
-    if (!validPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    res.json({
-      driver: {
-        id: driver.id,
-        name: driver.name,
-        contact_no: driver.contact_no,
-        vehicle_info: driver.vehicle_info,
-        username: driver.username
-      }
-    });
-  } catch (err) {
-    console.error('Error logging in driver:', err);
-    res.status(500).json({ error: err.message });
   }
-});
 
-app.post('/api/drivers/logout', async (req, res) => {
-  try {
-    const { driverId } = req.body;
-    await supabase
-      .from('drivers')
-      .update({ is_online: false })
-      .eq('id', driverId);
-    res.json({ success: true });
-  } catch (err) {
-    console.error('Error logging out driver:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ─────────────────────────────────────────────
-// RIDES
-// ─────────────────────────────────────────────
-
-/**
- * POST /api/rides
- * Create a new ride request.
- * FIX: We now look up the passenger by phone to enforce that the authoritative
- * name (from the passengers table) is always used, preventing a caller from
- * submitting a ride with an arbitrary name for an existing phone number.
- */
-app.post('/api/rides', async (req, res) => {
-  try {
-    const {
-      passengerId,
-      passengerPhone,
-      pickupLocation,
-      dropoffLocation,
-      offeredFare
-    } = req.body;
-
-    // passengerName is no longer trusted from the request body for existing passengers.
-    // We resolve the canonical name from the passengers table using the phone number.
-    if (!passengerPhone || !pickupLocation || !dropoffLocation || !offeredFare) {
-      return res.status(400).json({ error: 'Phone, pickup, dropoff and fare are required' });
-    }
-
-    // Resolve canonical passenger record by phone
-    const { data: passenger, error: passengerError } = await supabase
-      .from('passengers')
-      .select('id, name')
-      .eq('phone', passengerPhone)
-      .single();
-
-    if (passengerError || !passenger) {
-      return res.status(400).json({
-        error: 'Passenger not found. Please register first using your phone number.'
+  function logoutDriver() {
+    if (driver) {
+      fetch(`${API_URL}/drivers/logout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ driverId: driver.id })
       });
     }
-
-    // Use the canonical name and id from the passengers table
-    const resolvedPassengerId = passenger.id;
-    const resolvedPassengerName = passenger.name;
-
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-
-    const { data, error } = await supabase
-      .from('ride_requests')
-      .insert([{
-        passenger_id: resolvedPassengerId,
-        passenger_name: resolvedPassengerName,
-        passenger_phone: passengerPhone,
-        pickup_location: pickupLocation,
-        dropoff_location: dropoffLocation,
-        offered_fare: offeredFare,
-        status: 'pending',
-        expires_at: expiresAt
-      }])
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    broadcastRideUpdate(data);
-    res.status(201).json({ ride: data });
-  } catch (err) {
-    console.error('Error creating ride request:', err);
-    res.status(500).json({ error: err.message });
+    driver = null;
+    localStorage.removeItem('driver');
+    showDriverLogin();
   }
-});
 
-app.get('/api/rides', async (req, res) => {
-  try {
-    const { status, passengerId, passengerPhone } = req.query;
-
-    let query = supabase
-      .from('ride_requests')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (passengerId) {
-      query = query.eq('passenger_id', passengerId);
-    } else if (passengerPhone) {
-      query = query.eq('passenger_phone', passengerPhone);
-    } else if (status === 'pending' || status === 'countered') {
-      query = query.in('status', ['pending', 'countered']).gt('expires_at', new Date().toISOString());
+  function checkSavedDriver() {
+    const saved = localStorage.getItem('driver');
+    if (saved) {
+      try {
+        driver = JSON.parse(saved);
+        renderDriverDashboard();
+        loadAllRides();
+      } catch (e) {
+        localStorage.removeItem('driver');
+        showDriverLogin();
+      }
     } else {
-      query = query.in('status', ['pending', 'countered', 'confirmed', 'completed']);
+      showDriverLogin();
     }
-
-    const { data: rides, error } = await query;
-    if (error) throw error;
-
-    res.json({ rides: rides || [] });
-  } catch (err) {
-    console.error('Error fetching rides:', err);
-    res.status(500).json({ error: err.message });
   }
-});
 
-app.get('/api/rides/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { data, error } = await supabase
-      .from('ride_requests')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({ error: 'Ride not found' });
-      }
-      throw error;
-    }
-    res.json({ ride: data });
-  } catch (err) {
-    console.error('Error getting ride:', err);
-    res.status(500).json({ error: err.message });
+  function showDriverProfileEdit() {
+    if (!driver) return;
+    
+    const modalHtml = `
+      <div class="auth-wrap" style="max-width:480px; margin:40px auto;">
+        <h2 class="auth-heading">Edit Driver Profile</h2>
+        <p class="auth-sub">Update your information that passengers see</p>
+        <div class="card">
+          <div class="form-grid">
+            <div>
+              <label>Username</label>
+              <input id="edit-username" type="text" value="${driver.username || ''}" placeholder="username" />
+            </div>
+            <div>
+              <label>Full Name</label>
+              <input id="edit-name" type="text" value="${driver.name || ''}" placeholder="e.g. Raj Sharma" />
+            </div>
+            <div>
+              <label>Contact Number</label>
+              <input id="edit-contact" type="tel" value="${driver.contact_no || ''}" placeholder="+91 98765 43210" />
+            </div>
+            <div>
+              <label>Vehicle Information</label>
+              <input id="edit-vehicle" type="text" value="${driver.vehicle_info || ''}" placeholder="e.g. Swift Dzire, White, KA01AB1234" />
+            </div>
+            <div>
+              <label>Current Password</label>
+              <input id="edit-current-password" type="password" placeholder="Enter current password to confirm changes" />
+            </div>
+            <div>
+              <label>New Password (optional)</label>
+              <input id="edit-new-password" type="password" placeholder="Leave blank to keep current password" />
+            </div>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button class="btn btn-primary" onclick="updateDriverProfile()">Save Changes</button>
+              <button class="btn btn-ghost" onclick="closeDriverProfileEdit()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.id = 'driver-profile-modal';
+    modal.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); z-index: 10000;
+      display: flex; align-items: center; justify-content: center;
+    `;
+    modal.innerHTML = modalHtml;
+    document.body.appendChild(modal);
   }
-});
 
-app.patch('/api/rides/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status, counterFare, counteredBy, acceptedBy } = req.body;
-
-    const updateData = { status };
-    if (counterFare) updateData.counter_fare = counterFare;
-    if (counteredBy) updateData.countered_by = counteredBy;
-    if (acceptedBy) updateData.accepted_by = acceptedBy;
-
-    const { data, error } = await supabase
-      .from('ride_requests')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    broadcastRideUpdate(data);
-    res.json({ ride: data });
-  } catch (err) {
-    console.error('Error updating ride:', err);
-    res.status(500).json({ error: err.message });
+  async function updateDriverProfile() {
+    if (!driver) return;
+    
+    const username = document.getElementById('edit-username').value.trim();
+    const name = document.getElementById('edit-name').value.trim();
+    const contact = document.getElementById('edit-contact').value.trim();
+    const vehicle = document.getElementById('edit-vehicle').value.trim();
+    const currentPassword = document.getElementById('edit-current-password').value;
+    const newPassword = document.getElementById('edit-new-password').value;
+    
+    if (!username) { toast('⚠️', 'Username required', 'Username is required for login.', 'amber'); return; }
+    if (!name) { toast('⚠️', 'Name required', 'Your name is required for identification.', 'amber'); return; }
+    if (!contact) { toast('⚠️', 'Contact required', 'Passengers need to reach you.', 'amber'); return; }
+    if (!currentPassword) { toast('⚠️', 'Password required', 'Enter current password to confirm changes.', 'amber'); return; }
+    
+    try {
+      // First verify current password
+      const loginRes = await fetch(`${API_URL}/drivers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: driver.username, password: currentPassword })
+      });
+      
+      const loginData = await loginRes.json();
+      if (!loginRes.ok) throw new Error('Current password is incorrect');
+      
+      // Update profile data
+      const updateData = { username, name, contact_no: contact, vehicle_info: vehicle };
+      if (newPassword.trim()) updateData.password = newPassword;
+      
+      const updateRes = await fetch(`${API_URL}/drivers/${driver.id}/profile`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData)
+      });
+      
+      const updateResult = await updateRes.json();
+      if (!updateRes.ok) throw new Error(updateResult.error || 'Update failed');
+      
+      // Update local driver object
+      driver = { ...driver, ...updateData };
+      localStorage.setItem('driver', JSON.stringify(driver));
+      
+      closeDriverProfileEdit();
+      renderDriverDashboard(); // Refresh dashboard to show updated info
+      toast('✅', 'Profile Updated', 'Your driver information has been updated successfully.', 'green');
+      
+    } catch (err) {
+      toast('❌', 'Update Failed', err.message, 'red');
+    }
   }
-});
 
-app.post('/api/rides/:id/counter', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { counterFare, driverId } = req.body;
-
-    if (!counterFare || !driverId) {
-      return res.status(400).json({ error: 'Counter fare and driver ID required' });
-    }
-
-    const { data, error } = await supabase
-      .from('ride_requests')
-      .update({
-        status: 'countered',
-        counter_fare: counterFare,
-        countered_by: driverId
-      })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({ error: 'Ride not found or already processed' });
-      }
-      throw error;
-    }
-
-    const { data: driver } = await supabase
-      .from('drivers')
-      .select('name, contact_no, vehicle_info')
-      .eq('id', driverId)
-      .single();
-
-    data.driver = driver;
-    broadcastRideUpdate(data);
-    res.json({ ride: data });
-  } catch (err) {
-    console.error('Error counter-offering ride:', err);
-    res.status(500).json({ error: err.message });
+  function closeDriverProfileEdit() {
+    const modal = document.getElementById('driver-profile-modal');
+    if (modal) modal.remove();
   }
-});
 
-app.post('/api/rides/:id/accept', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { driverId } = req.body;
-
-    const { data, error } = await supabase
-      .from('ride_requests')
-      .update({
-        status: 'confirmed',
-        accepted_by: driverId
-      })
-      .eq('id', id)
-      .in('status', ['pending', 'countered'])
-      .select()
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({ error: 'Ride not found or already processed' });
-      }
-      throw error;
-    }
-
-    const { data: driver } = await supabase
-      .from('drivers')
-      .select('name, contact_no, vehicle_info')
-      .eq('id', driverId)
-      .single();
-
-    data.driver = driver;
-    broadcastRideUpdate(data);
-    res.json({ ride: data });
-  } catch (err) {
-    console.error('Error accepting ride:', err);
-    res.status(500).json({ error: err.message });
+  function renderDriverDashboard() {
+    const html = `
+      <div class="driver-header">
+        <div class="driver-online">
+          <div class="live-pip"></div>
+          <div>
+            <div class="driver-label">Online & Ready</div>
+            <div class="driver-sub">New rider offers appear below the moment they're submitted</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div class="count-chip"><strong id="driver-count">0</strong> awaiting your call</div>
+          <button class="btn btn-blue btn-sm" onclick="showDriverProfileEdit()">Edit Profile</button>
+          <button class="btn btn-ghost btn-sm" onclick="logoutDriver()">Logout</button>
+        </div>
+      </div>
+      <div class="inner-tabs">
+        <button class="inner-tab active" id="dtab-all"       onclick="filterDriver('all')">All</button>
+        <button class="inner-tab"        id="dtab-pending"   onclick="filterDriver('pending')">Pending</button>
+        <button class="inner-tab"        id="dtab-countered" onclick="filterDriver('countered')">Countered</button>
+        <button class="inner-tab"        id="dtab-closed"    onclick="filterDriver('closed')">Closed</button>
+      </div>
+      <div id="driver-requests-empty" class="empty">
+        <span class="empty-icon">⏳</span>
+        <div class="empty-head">Quiet for now</div>
+        <div class="empty-body">Switch to the Rider tab to place a sample offer —<br>it'll land here instantly.</div>
+      </div>
+      <div id="driver-requests-list" class="scroll-list"></div>`;
+    document.getElementById('view-driver').innerHTML = html;
   }
-});
 
-app.post('/api/rides/:id/reject', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { driverId } = req.body;
+  /* ═══════════ API: RIDES ═══════════ */
+  async function loadAllRides() {
+    try {
+      const res  = await fetch(`${API_URL}/rides`);
+      const data = await res.json();
+      allRides   = data.rides || [];
+      renderAllRides();
+      renderDriverView();
+    } catch (err) { console.error('Error loading all rides:', err); }
+  }
 
-    const { data: ride, error: fetchError } = await supabase
-      .from('ride_requests')
-      .select('*')
-      .eq('id', id)
-      .single();
+  async function loadMyRides() {
+    if (!passenger || !passenger.phone) return;
+    try {
+      const res  = await fetch(`${API_URL}/rides/history/${encodeURIComponent(passenger.phone)}`);
+      const data = await res.json();
+      myRides    = data.rides || [];
+      renderPassengerRequests();
+    } catch (err) { console.error('Error loading my rides:', err); }
+  }
 
-    if (fetchError || !ride) {
-      return res.status(404).json({ error: 'Ride not found' });
-    }
+  async function submitRideRequest() {
+    if (!passenger) { toast('🔒', 'Hold on', "You'll need an account before sending offers.", 'amber'); return; }
 
-    if (ride.status === 'countered' && ride.countered_by === driverId) {
-      const { data, error } = await supabase
-        .from('ride_requests')
-        .update({
-          status: 'pending',
-          counter_fare: null,
-          countered_by: null
+    const pickup = document.getElementById('p-pickup').value.trim();
+    const drop   = document.getElementById('p-drop').value.trim();
+    const price  = parseFloat(document.getElementById('p-price').value);
+
+    if (!pickup) { toast('📍', 'Pickup missing', "Let drivers know where to find you.", 'amber'); return; }
+    if (!drop)   { toast('📍', 'Drop-off missing', "Where are you headed? Add your destination.", 'amber'); return; }
+    if (!price || price <= 0) { toast('💰', 'Set a price', "Enter what you'd like to pay — keep it fair.", 'amber'); return; }
+
+    try {
+      const res = await fetch(`${API_URL}/rides`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          passengerId:     passenger.id,
+          passengerPhone:  passenger.phone,
+          pickupLocation:  pickup,
+          dropoffLocation: drop,
+          offeredFare:     price
         })
-        .eq('id', id)
-        .select()
-        .single();
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
 
-      if (error) throw error;
-      broadcastRideUpdate(data);
-      return res.json({ ride: data });
-    }
+      document.getElementById('p-pickup').value = '';
+      document.getElementById('p-drop').value   = '';
+      document.getElementById('p-price').value  = '';
 
-    const { data, error } = await supabase
-      .from('ride_requests')
-      .update({ status: 'rejected' })
-      .eq('id', id)
-      .eq('status', 'pending')
-      .select()
-      .single();
+      toast('📤', 'Offer sent!', 'Drivers can see your $' + price + ' bid. Sit tight.', 'green');
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({ error: 'Ride not found or already processed' });
+      myRides.unshift(data.ride);
+      allRides.unshift(data.ride);
+      renderPassengerRequests();
+      renderAllRides();
+      renderDriverView();
+    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
+  }
+
+  /* ═══════════ DRIVER ACTIONS ═══════════ */
+  async function driverAccept(rideId) {
+    if (!driver) return;
+    try {
+      const res = await fetch(`${API_URL}/rides/${rideId}/accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ driverId: driver.id })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      sendRideUpdate(data.ride);
+      toast('✅', 'Ride accepted!', 'Locked in at $' + data.ride.offered_fare + '.', 'green');
+    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
+  }
+
+  async function driverReject(rideId) {
+    if (!driver) return;
+    try {
+      const res = await fetch(`${API_URL}/rides/${rideId}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ driverId: driver.id })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      sendRideUpdate(data.ride);
+      toast('👋', 'Passed on this one', "You declined the offer. Plenty more coming.", 'amber');
+    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
+  }
+
+  async function driverComplete(rideId) {
+    if (!driver) return;
+    try {
+      const res = await fetch(`${API_URL}/rides/${rideId}/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ driverId: driver.id })
+      });
+      if (!res.ok) {
+        if (res.status === 404) { toast('❌', 'Error', 'Ride not found or already completed', 'red'); return; }
+        throw new Error(await res.text());
       }
-      throw error;
-    }
-
-    broadcastRideUpdate(data);
-    res.json({ ride: data });
-  } catch (err) {
-    console.error('Error rejecting ride:', err);
-    res.status(500).json({ error: err.message });
+      const data = await res.json();
+      sendRideUpdate(data.ride);
+      toast('🏁', 'Ride completed!', 'Great job! Ride marked as completed.', 'green');
+    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
-});
 
-app.post('/api/rides/:id/accept-counter', async (req, res) => {
-  try {
-    const { id } = req.params;
+  async function driverCounter(rideId) {
+    if (!driver) return;
+    const input = document.getElementById('counter-input-' + rideId);
+    const val   = parseFloat(input ? input.value : 0);
+    const ride  = getRide(rideId);
 
-    const { data: ride, error: fetchError } = await supabase
-      .from('ride_requests')
-      .select('counter_fare, countered_by')
-      .eq('id', id)
-      .single();
-
-    if (fetchError || !ride) {
-      return res.status(404).json({ error: 'Ride not found or counter expired' });
+    if (!val || val <= ride.offered_fare) {
+      toast('⚠️', 'Counter must be higher', 'Your counter needs to beat their $' + ride.offered_fare + ' offer.', 'amber');
+      return;
     }
 
-    const { data, error } = await supabase
-      .from('ride_requests')
-      .update({
-        status: 'confirmed',
-        offered_fare: ride.counter_fare
-      })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    if (ride.countered_by) {
-      const { data: driver } = await supabase
-        .from('drivers')
-        .select('name, contact_no, vehicle_info')
-        .eq('id', ride.countered_by)
-        .single();
-      data.driver = driver;
-    }
-
-    broadcastRideUpdate(data);
-    res.json({ ride: data });
-  } catch (err) {
-    console.error('Error accepting counter:', err);
-    res.status(500).json({ error: err.message });
+    try {
+      const res = await fetch(`${API_URL}/rides/${rideId}/counter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ counterFare: val, driverId: driver.id })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      sendRideUpdate(data.ride);
+      toast('💬', 'Counter sent', '$' + val + " is now with the passenger. Ball's in their court.", 'blue');
+    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
-});
 
-app.post('/api/rides/:id/complete', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { driverId } = req.body;
+  /* ═══════════ PASSENGER RESPONSES ═══════════ */
+  async function passengerAcceptCounter(rideId) {
+    try {
+      const res = await fetch(`${API_URL}/rides/${rideId}/accept-counter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      sendRideUpdate(data.ride);
+      toast('🎉', 'Ride confirmed!', 'Deal locked at $' + data.ride.offered_fare + '. Your driver is on the way.', 'green');
+    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
+  }
 
-    const { data, error } = await supabase.rpc('complete_ride', { p_ride_id: id });
+  async function passengerRejectCounter(rideId) {
+    try {
+      const res = await fetch(`${API_URL}/rides/${rideId}/decline-counter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      sendRideUpdate(data.ride);
+      toast('👋', 'Counter declined', "No worries — try a fresh request.", 'amber');
+    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
+  }
 
-    if (error) {
-      if (error.message.includes('not found') || error.message.includes('already completed')) {
-        return res.status(404).json({ error: error.message });
-      }
-      throw error;
+  /* ═══════════ RENDER: PASSENGER ═══════════ */
+  function renderPassengerRequests() {
+    if (!passenger) return;
+    const listEl  = document.getElementById('passenger-requests-list');
+    const emptyEl = document.getElementById('passenger-requests-empty');
+    if (!listEl) return;
+
+    if (myRides.length === 0) {
+      emptyEl.style.display = '';
+      listEl.innerHTML = '';
+    } else {
+      emptyEl.style.display = 'none';
+      listEl.innerHTML = myRides.map(renderPassengerCard).join('');
+    }
+  }
+
+  function renderPassengerCard(r) {
+    let extra = '';
+    const offeredPrice   = r.offered_fare;
+    const counteredPrice = r.counter_fare;
+
+    /* ── countered: show driver mini-profile alongside the counter proposal ── */
+    if (r.status === 'countered') {
+      const driverObj = resolveDriver(r);
+      const driverDetail = driverObj
+        ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--violet-border);">
+             <div class="contact-avatar-sm" style="background:linear-gradient(135deg,var(--violet),#6d28d9);">
+               ${(driverObj.name||'D')[0].toUpperCase()}
+             </div>
+             <div>
+               <div style="font-size:0.84rem;font-weight:700;color:var(--text);">${driverObj.name||'Driver'}</div>
+               <div style="font-size:0.69rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--violet);">Your Driver</div>
+             </div>
+           </div>
+           <div style="display:flex;align-items:center;gap:6px;font-size:0.79rem;color:var(--text-secondary);margin-bottom:${driverObj.vehicle_info?'6px':'10px'};">
+             ${phoneLink(driverObj.contact_no)}
+           </div>
+           ${driverObj.vehicle_info ? `<div style="font-size:0.74rem;color:var(--text-muted);margin-bottom:10px;">🚘 ${driverObj.vehicle_info}</div>` : ''}`
+        : (r.accepted_by || r.countered_by)
+          ? `<div class="driver-loading">⏳ Loading driver details…</div>`
+          : '';
+
+      extra = `
+        <div class="counter-banner">
+          <div class="counter-banner-head">💬 Driver has a counter proposal</div>
+          ${driverDetail}
+          <div class="price-compare">
+            <span class="price-was">Your offer: $${offeredPrice}</span>
+            <span style="color:var(--text-dim);margin:0 2px;">→</span>
+            <span class="price-now">$${counteredPrice}</span>
+          </div>
+          <p>They think $${counteredPrice} is a fair deal. Accept and you're on your way — or decline and try a new request.</p>
+          <div class="action-row">
+            <button class="btn btn-primary btn-sm" onclick="passengerAcceptCounter('${r.id}')">Accept $${counteredPrice}</button>
+            <button class="btn btn-ghost   btn-sm" onclick="passengerRejectCounter('${r.id}')">Decline &amp; Close</button>
+          </div>
+        </div>`;
     }
 
-    await supabase.from('ride_history').insert([{
-      request_id: id,
-      driver_id: driverId,
-      passenger_name: data[0].passenger_name,
-      pickup_location: data[0].pickup_location,
-      dropoff_location: data[0].dropoff_location,
-      final_fare: data[0].offered_fare
-    }]);
+    /* ── confirmed / completed: status note + driver contact block ──
+     *
+     * FIX: We now call resolveDriver() for BOTH confirmed and completed rides.
+     * Previously `r.driver` was used directly — which is null for history rows.
+     * resolveDriver() falls back to driverCache, and triggers a background
+     * fetch if the driver isn't cached yet. The card re-renders once the fetch
+     * completes, making driver details appear in history just like live rides.
+     */
+    if (r.status === 'confirmed' || r.status === 'completed') {
+      const driverObj = resolveDriver(r);
+      const isComplete = r.status === 'completed';
+      const statusIcon = isComplete ? '🏁' : '🎉';
+      const statusMsg  = isComplete
+        ? `Ride completed at <strong>$${offeredPrice}</strong>. Thanks for riding!`
+        : `Confirmed at <strong>$${offeredPrice}</strong> — your driver is on the way. Safe travels!`;
+      const driverRole = isComplete ? 'Your Driver · Ride Complete' : 'Your Driver · En Route';
 
-    broadcastRideUpdate(data[0]);
-    res.json({ ride: data[0] });
-  } catch (err) {
-    console.error('Error completing ride:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
+      const driverBlock = driverObj
+        ? `<div class="driver-contact-block">
+             <div class="driver-contact-block-header">
+               <div class="contact-avatar-sm green-avatar">${(driverObj.name||'D')[0].toUpperCase()}</div>
+               <div>
+                 <div class="driver-contact-name">${driverObj.name||'Driver'}</div>
+                 <div class="driver-contact-role">${driverRole}</div>
+               </div>
+             </div>
+             <div class="driver-contact-row">
+               <span class="contact-info-icon">📞</span>
+               ${phoneLink(driverObj.contact_no)}
+             </div>
+             ${driverObj.vehicle_info
+               ? `<div class="driver-contact-row"><span class="contact-info-icon">🚘</span><span>${driverObj.vehicle_info}</span></div>`
+               : ''}
+           </div>`
+        : (r.accepted_by || r.countered_by)
+          ? `<div class="driver-loading">⏳ Loading driver details…</div>`
+          : '';
 
-app.post('/api/rides/:id/decline-counter', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const { data, error } = await supabase
-      .from('ride_requests')
-      .update({
-        status: 'rejected',
-        counter_fare: null,
-        countered_by: null
-      })
-      .eq('id', id)
-      .eq('status', 'countered')
-      .select()
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({ error: 'Ride not found or already processed' });
-      }
-      throw error;
+      extra = `
+        <div class="status-note ok">${statusIcon} <span>${statusMsg}</span></div>
+        ${driverBlock}`;
     }
 
-    broadcastRideUpdate(data);
-    res.json({ ride: data });
-  } catch (err) {
-    console.error('Error declining counter:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ─────────────────────────────────────────────
-// HISTORY
-// ─────────────────────────────────────────────
-
-/**
- * GET /api/rides/history/passenger/:phone
- * Full ride history for a passenger identified by phone number.
- * FIX: Was previously at /api/rides/history/:phone — kept that alias too for
- * backwards compatibility, but the preferred path is more explicit.
- * Includes ALL statuses (completed, rejected, expired, etc.) so the passenger
- * can see their complete record, not just active rides.
- */
-app.get('/api/rides/history/passenger/:phone', async (req, res) => {
-  try {
-    const { phone } = req.params;
-
-    // Verify the passenger exists
-    const { data: passenger, error: passengerError } = await supabase
-      .from('passengers')
-      .select('id, name')
-      .eq('phone', phone)
-      .single();
-
-    if (passengerError || !passenger) {
-      return res.status(404).json({ error: 'Passenger not found' });
+    if (r.status === 'rejected') {
+      extra = `<div class="status-note closed">— <span>This one didn't land. Feel free to submit a fresh offer — sometimes a small bump makes all the difference.</span></div>`;
     }
 
-    const { data, error } = await supabase
-      .from('ride_requests')
-      .select('*')
-      .eq('passenger_phone', phone)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    res.json({ passenger, rides: data || [] });
-  } catch (err) {
-    console.error('Error fetching passenger history:', err);
-    res.status(500).json({ error: err.message });
+    return `
+      <div class="ride-card ${r.status}">
+        <div class="ride-card-top">
+          <div>
+            ${badgeHTML(r.status)}
+            <div style="margin-top:8px;font-size:0.71rem;color:var(--text-muted);">${timeAgo(r.created_at)}</div>
+          </div>
+          <div class="price-block">
+            <div class="price-label-sm">Your offer</div>
+            <div class="price-big ${r.status==='countered'?'counter-col':''}">$${offeredPrice}</div>
+          </div>
+        </div>
+        <div class="route">
+          <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
+          <div class="route-line"></div>
+          <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
+        </div>
+        ${extra}
+      </div>`;
   }
-});
 
-// Backwards-compatible alias
-app.get('/api/rides/history/:phone', async (req, res) => {
-  try {
-    const { phone } = req.params;
-    const { data, error } = await supabase
-      .from('ride_requests')
-      .select('*')
-      .eq('passenger_phone', phone)
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    res.json({ rides: data || [] });
-  } catch (err) {
-    console.error('Error fetching history:', err);
-    res.status(500).json({ error: err.message });
+  /* ═══════════ RENDER: DRIVER ═══════════ */
+  function toggleCounterForm(rideId) {
+    const ride = getRide(rideId); if (!ride) return;
+    ride.counterInputVisible = !ride.counterInputVisible;
+    renderDriverView();
   }
-});
 
-/**
- * GET /api/drivers/:id/history
- * Full ride history for a driver.
- * FIX: This endpoint was entirely missing. Drivers had no way to retrieve
- * their past rides. Now queries ride_history joined with ride_requests
- * for the full picture.
- */
-app.get('/api/drivers/:id/history', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Verify driver exists
-    const { data: driver, error: driverError } = await supabase
-      .from('drivers')
-      .select('id, name, username')
-      .eq('id', id)
-      .single();
-
-    if (driverError || !driver) {
-      return res.status(404).json({ error: 'Driver not found' });
-    }
-
-    // Query ride_history for completed rides by this driver
-    const { data: historyRows, error: histError } = await supabase
-      .from('ride_history')
-      .select('*')
-      .eq('driver_id', id)
-      .order('created_at', { ascending: false });
-
-    if (histError) throw histError;
-
-    // Also pull any confirmed/completed ride_requests accepted by this driver
-    // (covers cases where ride_history insert may have failed or ride is still in-progress)
-    const { data: activeRides, error: activeError } = await supabase
-      .from('ride_requests')
-      .select('*')
-      .eq('accepted_by', id)
-      .order('created_at', { ascending: false });
-
-    if (activeError) throw activeError;
-
-    res.json({
-      driver,
-      history: historyRows || [],
-      rides: activeRides || []
+  function filterDriver(f) {
+    driverFilter = f;
+    ['all','pending','countered','closed'].forEach(id => {
+      const el = document.getElementById('dtab-' + id);
+      if (el) el.classList.toggle('active', id === f);
     });
-  } catch (err) {
-    console.error('Error fetching driver history:', err);
-    res.status(500).json({ error: err.message });
+    renderDriverView();
   }
-});
 
-// ─────────────────────────────────────────────
-// ADMIN
-// ─────────────────────────────────────────────
+  /* ═══════════ RENDER: ALL RIDES (PASSENGER) ═══════════ */
+  let passengerRideFilter = 'all';
 
-app.post('/api/admin/expire-rides', async (req, res) => {
-  try {
-    const { data, error } = await supabase.rpc('expire_pending_rides');
-    if (error) throw error;
-    res.json({ success: true });
-  } catch (err) {
-    console.error('Error expiring rides:', err);
-    res.status(500).json({ error: err.message });
+  function filterPassengerRides(f) {
+    passengerRideFilter = f;
+    ['all','pending','confirmed'].forEach(id => {
+      const el = document.getElementById('ptab-' + id);
+      if (el) el.classList.toggle('active', id === f);
+    });
+    renderAllRides();
   }
-});
 
-// ─────────────────────────────────────────────
-// SERVER BOOT
-// ─────────────────────────────────────────────
+  function renderAllRides() {
+    const listEl  = document.getElementById('all-rides-list');
+    const emptyEl = document.getElementById('all-rides-empty');
+    if (!listEl) return;
 
-app.get('/api/drivers/:id/profile', async (req, res) => {
+    let filtered = allRides;
+    
+    // If passenger is logged in, show only their own rides
+    if (passenger) {
+      filtered = allRides.filter(r => r.passenger_phone === passenger.phone);
+    }
+    // If driver is logged in, show only rides that are still available (not yet accepted)
+    else if (driver) {
+      filtered = allRides.filter(r => r.status === 'pending' || r.status === 'countered');
+    }
+    
+    // Apply additional filter based on passenger tabs
+    if (passenger) {
+      if (passengerRideFilter === 'pending')   filtered = filtered.filter(r => r.status === 'pending' || r.status === 'countered');
+      if (passengerRideFilter === 'confirmed') filtered = filtered.filter(r => r.status === 'confirmed' || r.status === 'completed');
+    }
+
+    if (filtered.length === 0) {
+      emptyEl.style.display = '';
+      listEl.innerHTML = '';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    listEl.innerHTML = filtered.map(renderAllRidesCard).join('');
+  }
+
+  function renderAllRidesCard(r) {
+    let extra = '';
+    
+    // Show driver details for confirmed/completed rides (same logic as passenger's own rides)
+    if (r.status === 'confirmed' || r.status === 'completed') {
+      const driverObj = resolveDriver(r);
+      const isComplete = r.status === 'completed';
+      const statusIcon = isComplete ? '🏁' : '🎉';
+      const statusMsg  = isComplete
+        ? `Ride completed at <strong>$${r.offered_fare}</strong>. Thanks for riding!`
+        : `Confirmed at <strong>$${r.offered_fare}</strong> — driver is on the way.`;
+      const driverRole = isComplete ? 'Driver · Ride Complete' : 'Driver · En Route';
+
+      const driverBlock = driverObj
+        ? `<div class="driver-contact-block">
+             <div class="driver-contact-block-header">
+               <div class="contact-avatar-sm green-avatar">${(driverObj.name||'D')[0].toUpperCase()}</div>
+               <div>
+                 <div class="driver-contact-name">${driverObj.name||'Driver'}</div>
+                 <div class="driver-contact-role">${driverRole}</div>
+               </div>
+             </div>
+             <div class="driver-contact-row">
+               <span class="contact-info-icon">📞</span>
+               ${phoneLink(driverObj.contact_no)}
+             </div>
+             ${driverObj.vehicle_info
+               ? `<div class="driver-contact-row"><span class="contact-info-icon">🚘</span><span>${driverObj.vehicle_info}</span></div>`
+               : ''}
+           </div>`
+        : (r.accepted_by || r.countered_by)
+          ? `<div class="driver-loading">⏳ Loading driver details…</div>`
+          : '';
+
+      extra = `
+        <div class="status-note ok">${statusIcon} <span>${statusMsg}</span></div>
+        ${driverBlock}`;
+    }
+
+    return `
+      <div class="ride-card ${r.status}">
+        <div class="ride-card-top">
+          <div>
+            ${badgeHTML(r.status)}
+            <div style="margin-top:8px;font-size:0.71rem;color:var(--text-muted);">${r.passenger_name} · ${timeAgo(r.created_at)}</div>
+          </div>
+          <div class="price-block">
+            <div class="price-label-sm">Offer</div>
+            <div class="price-big">$${r.offered_fare}</div>
+          </div>
+        </div>
+        <div class="route">
+          <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
+          <div class="route-line"></div>
+          <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
+        </div>
+        ${extra}
+      </div>`;
+  }
+
+  function renderDriverView() {
+    const listEl  = document.getElementById('driver-requests-list');
+    const emptyEl = document.getElementById('driver-requests-empty');
+    const countEl = document.getElementById('driver-count');
+    if (!listEl) return;
+
+    // Count only available rides (not yet accepted by anyone)
+    const availableRides = allRides.filter(r => r.status === 'pending' || r.status === 'countered');
+    countEl.textContent = availableRides.length;
+
+    let filtered = allRides;
+    
+    // Filter rides based on driver context:
+    // - Show only available rides (pending/countered) for general view
+    // - Show driver's own rides in closed tab
+    if (driverFilter === 'all') {
+      filtered = availableRides;
+    } else if (driverFilter === 'pending') {
+      filtered = allRides.filter(r => r.status === 'pending');
+    } else if (driverFilter === 'countered') {
+      filtered = allRides.filter(r => r.status === 'countered');
+    } else if (driverFilter === 'closed') {
+      // Show only rides that belong to this driver (accepted, rejected, or completed)
+      filtered = allRides.filter(r => 
+        (r.status === 'confirmed' || r.status === 'rejected' || r.status === 'completed') &&
+        (r.accepted_by === driver.id || r.countered_by === driver.id)
+      );
+    }
+
+    if (filtered.length === 0) {
+      emptyEl.style.display = '';
+      listEl.innerHTML = '';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    listEl.innerHTML = filtered.map(renderDriverCard).join('');
+  }
+
+  function renderDriverCard(r) {
+    const isClosed       = r.status === 'confirmed' || r.status === 'rejected';
+    const offeredPrice   = r.offered_fare;
+    const counteredPrice = r.counter_fare;
+    let actions    = '';
+    let closedNote = '';
+
+    if (!isClosed) {
+      if (r.status === 'pending') {
+        actions = `
+          <div class="action-row">
+            <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept $${offeredPrice}</button>
+            <button class="btn btn-amber   btn-sm" onclick="toggleCounterForm('${r.id}')">Propose a Counter</button>
+            <button class="btn btn-danger  btn-sm" onclick="driverReject('${r.id}')">Pass</button>
+          </div>`;
+        if (r.counterInputVisible) {
+          actions += `
+            <div class="counter-form">
+              <div class="field">
+                <label>Your counter offer ($) — must exceed $${offeredPrice}</label>
+                <input type="number" id="counter-input-${r.id}" placeholder="${Math.round(offeredPrice*1.2)}" min="${offeredPrice+1}" />
+              </div>
+              <button class="btn btn-amber btn-sm" onclick="driverCounter('${r.id}')">Send Counter</button>
+              <button class="btn btn-ghost btn-sm" onclick="toggleCounterForm('${r.id}')">Cancel</button>
+            </div>`;
+        }
+      }
+      if (r.status === 'countered') {
+        actions = `<div class="status-note wait" style="margin-top:12px;">⏳ <span>Your counter of <strong>$${counteredPrice}</strong> is with the rider — waiting on their move.</span></div>`;
+      }
+    }
+
+    if (r.status === 'confirmed') {
+      closedNote = `
+        <div class="contact-info-block" style="margin-top:12px;">
+          <div class="contact-info-block-header">
+            <div class="contact-avatar-sm">${(r.passenger_name||'P')[0].toUpperCase()}</div>
+            <div>
+              <div class="contact-info-name">${r.passenger_name||'Passenger'}</div>
+              <div class="contact-info-role">Confirmed Passenger</div>
+            </div>
+          </div>
+          <div class="contact-info-row">
+            <span class="contact-info-icon">📞</span>
+            ${phoneLink(r.passenger_phone)}
+          </div>
+        </div>
+        <div style="margin-top:10px;">
+          <button class="btn btn-primary btn-sm" onclick="driverComplete('${r.id}')">Mark Completed</button>
+        </div>`;
+    }
+    if (r.status === 'rejected') {
+      closedNote = `<div class="status-note closed" style="margin-top:12px;">— <span>You passed on this one. Plenty more offers on the way.</span></div>`;
+    }
+    if (r.status === 'completed') {
+      closedNote = `<div class="status-note ok" style="margin-top:12px;">🏁 <span>Ride completed at <strong>$${offeredPrice}</strong>.</span></div>`;
+    }
+
+    const showingPrice = (r.status === 'countered' && counteredPrice) ? counteredPrice : offeredPrice;
+    const priceLabel   = (r.status === 'countered') ? "Your counter" : "Rider's offer";
+
+    return `
+      <div class="ride-card ${r.status}">
+        <div class="ride-card-top">
+          <div>
+            <div class="passenger-name">${r.passenger_name}</div>
+            <div class="passenger-phone">${phoneLink(r.passenger_phone)}</div>
+            <div style="margin-top:8px;">${badgeHTML(r.status)}</div>
+          </div>
+          <div class="price-block">
+            <div class="price-label-sm">${priceLabel}</div>
+            <div class="price-big ${r.status==='countered'?'counter-col':''}">$${showingPrice}</div>
+            ${r.status==='countered' && counteredPrice
+              ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">was $${offeredPrice}</div>`
+              : ''}
+          </div>
+        </div>
+        <div class="route">
+          <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
+          <div class="route-line"></div>
+          <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
+        </div>
+        <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;">${timeAgo(r.created_at)}</div>
+        ${actions}
+        ${closedNote}
+      </div>`;
+  }
+
+  /* ═══════════ HELPERS ═══════════ */
+  function getRide(id) { return allRides.find(r => r.id === id); }
+
+  function badgeHTML(status) {
+    const labels = { pending:'Awaiting response', countered:'Counter proposed', confirmed:'Confirmed', completed:'Completed', rejected:'Closed' };
+    return `<span class="badge badge-${status}">${labels[status]||status}</span>`;
+  }
+
+  function timeAgo(date) {
+    const s = Math.floor((new Date() - new Date(date)) / 1000);
+    if (s < 60)   return 'Just now';
+    if (s < 3600) return Math.floor(s/60) + 'm ago';
+    return Math.floor(s/3600) + 'h ago';
+  }
+
+  /* ═══════════ TOASTS ═══════════ */
+  function toast(icon, title, msg, type) {
+    const palette = { green:'#16a34a', amber:'#d97706', red:'#dc2626', blue:'#2563eb' };
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.style.borderLeftColor = palette[type] || palette.green;
+    el.innerHTML = `
+      <div class="toast-icon">${icon}</div>
+      <div>
+        <div class="toast-title" style="color:${palette[type]||palette.green}">${title}</div>
+        <div class="toast-msg">${msg}</div>
+      </div>`;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(() => {
+      el.classList.add('removing');
+      el.addEventListener('animationend', () => el.remove(), { once: true });
+    }, 3800);
+  }
+
+  /* ═══════════ INIT ═══════════ */
+  connectWebSocket();
+  checkSavedPassenger();
+  checkSavedDriver();
+  loadAllRides();
+  switchTab('passenger');
+</script>
+
+<!--
+  ════════════════════════════════════════════════════════════════
+  BACKEND NOTE — one small addition needed in server.js
+  ════════════════════════════════════════════════════════════════
+  The driverCache fetch calls GET /api/drivers/:id/profile.
+  Add this route to server.js so the frontend can hydrate
+  driver details for historical rides:
+
+  app.get('/api/drivers/:id/profile', async (req, res) => {
     try {
       const { id } = req.params;
       const { data: driver, error } = await supabase
         .from('drivers')
-        .select('id, name, username, contact_no, vehicle_info')
+        .select('id, name, contact_no, vehicle_info')
         .eq('id', id)
         .single();
       if (error || !driver) return res.status(404).json({ error: 'Driver not found' });
       res.json({ driver });
     } catch (err) {
-      console.error('Error fetching driver profile:', err);
       res.status(500).json({ error: err.message });
     }
   });
 
-app.patch('/api/drivers/:id/profile', async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { name, contact_no, vehicle_info, password, username } = req.body;
-      
-      // Build update object with only provided fields
-      const updateData = {};
-      if (name) updateData.name = name;
-      if (contact_no) updateData.contact_no = contact_no;
-      if (vehicle_info) updateData.vehicle_info = vehicle_info;
-      if (password) {
-        // Hash new password if provided
-        const bcrypt = require('bcryptjs');
-        const saltRounds = 10;
-        updateData.password_hash = await bcrypt.hash(password, saltRounds);
-      }
-      if (username) updateData.username = username;
-      
-      const { data: driver, error } = await supabase
-        .from('drivers')
-        .update(updateData)
-        .eq('id', id)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      if (!driver) return res.status(404).json({ error: 'Driver not found' });
-      
-      // Return updated driver data (without password hash)
-      const { data: updatedDriver, error: fetchError } = await supabase
-        .from('drivers')
-        .select('id, name, username, contact_no, vehicle_info')
-        .eq('id', id)
-        .single();
-      
-      if (fetchError) throw fetchError;
-      res.json({ driver: updatedDriver });
-    } catch (err) {
-      console.error('Error updating driver profile:', err);
-      res.status(500).json({ error: err.message });
-    }
-  });
-
-server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`WebSocket server ready`);
-});
-
-if (require.main === module) {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
-
-module.exports = app;
+  This endpoint is read-only (no sensitive fields like password_hash)
+  and mirrors the same driver shape already returned by /accept and /counter.
+  ════════════════════════════════════════════════════════════════
+-->
+</body>
+</html>
