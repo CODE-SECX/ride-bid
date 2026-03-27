@@ -1032,10 +1032,19 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   }
 
   /* ═══════════ WEBSOCKET ═══════════ */
-  const WS_URL = window.location.hostname === 'localhost' ? 'ws://localhost:3000' : null;
+  const WS_URL = window.location.hostname === 'localhost' 
+    ? 'ws://localhost:3000' 
+    : window.location.protocol === 'https:' 
+      ? `wss://${window.location.hostname}` 
+      : `ws://${window.location.hostname}:3000`;
 
   function connectWebSocket() {
-    if (!WS_URL) { console.log('WebSocket not available in production'); return; }
+    if (!WS_URL) { 
+      console.log('WebSocket URL not determined'); 
+      return; 
+    }
+    
+    console.log('Connecting to WebSocket at:', WS_URL);
     ws = new WebSocket(WS_URL);
     ws.onopen = () => console.log('WebSocket connected');
     ws.onmessage = (event) => {
@@ -1047,6 +1056,9 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     ws.onclose = () => {
       console.log('WebSocket disconnected, reconnecting...');
       setTimeout(connectWebSocket, 3000);
+    };
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
     };
   }
 
