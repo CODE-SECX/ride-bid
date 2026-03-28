@@ -1721,7 +1721,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
           <div class="route-line"></div>
           <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
-          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>Pick-up time: ${new Date(r.pickup_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}, ${new Date(r.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</span></div>` : ''}
+          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>Pick-up time: ${new Date(r.pickup_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}, ${new Date(r.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} [Raw: ${r.pickup_time}]</span></div>` : ''}
         </div>
         ${extra}
       </div>`;
@@ -1841,7 +1841,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
           <div class="route-line"></div>
           <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
-          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>Pick-up time: ${new Date(r.pickup_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}, ${new Date(r.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</span></div>` : ''}
+          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>Pick-up time: ${new Date(r.pickup_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}, ${new Date(r.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} [Raw: ${r.pickup_time}]</span></div>` : ''}
         </div>
         ${extra}
       </div>`;
@@ -1966,7 +1966,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
           <div class="route-line"></div>
           <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
-          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>Pick-up time: ${new Date(r.pickup_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}, ${new Date(r.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</span></div>` : ''}
+          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>Pick-up time: ${new Date(r.pickup_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}, ${new Date(r.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} [Raw: ${r.pickup_time}]</span></div>` : ''}
         </div>
         <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;">${timeAgo(r.created_at, r.pickup_time)}</div>
         ${actions}
