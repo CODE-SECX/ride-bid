@@ -218,6 +218,7 @@ app.post('/api/rides', async (req, res) => {
       passengerPhone,
       pickupLocation,
       dropoffLocation,
+      pickupTime,
       offeredFare
     } = req.body;
 
@@ -254,6 +255,7 @@ app.post('/api/rides', async (req, res) => {
         passenger_phone: passengerPhone,
         pickup_location: pickupLocation,
         dropoff_location: dropoffLocation,
+        pickup_time: pickupTime,
         offered_fare: offeredFare,
         status: 'pending',
         expires_at: expiresAt
