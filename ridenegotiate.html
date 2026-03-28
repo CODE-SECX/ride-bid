@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>RideBid — Fair Fares, Every Time</title>
+<title>RideNego — Fair Fares, Every Time</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
 /* ─── Reset & Design Tokens ─── */
@@ -714,7 +714,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 <header>
   <div class="logo">
     <div class="logo-mark">🚗</div>
-    Ride<em>Bid</em>
+    Ride<em>Nego</em>
   </div>
   <div class="header-badge">Fair Fares · No Surge</div>
   <div class="tab-bar">
@@ -835,6 +835,10 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
               <div>
                 <label>Drop-off — where the journey ends</label>
                 <input id="p-drop" type="text" placeholder="e.g. 100 Feet Rd, Indiranagar 12th Main, opp. CMH Road signal" />
+              </div>
+              <div>
+                <label>Pick-up Time — when do you want to ride?</label>
+                <input id="p-pickup-time" type="datetime-local" />
               </div>
               <div>
                 <label>Your offer — make it worth their ride ($)</label>
@@ -1070,6 +1074,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           table: 'ride_requests' 
         }, 
         (payload) => {
+          console.log('Realtime update received:', payload);
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             handleRideUpdate(payload.new);
           }
@@ -1077,6 +1082,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
+          console.log('✅ Supabase Realtime connected');
         } else if (status === 'CHANNEL_ERROR') {
           console.error('❌ Supabase Realtime connection error');
           setTimeout(connectRealtime, 3000);
@@ -1088,6 +1094,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (realtimeSubscription) {
       supabaseClient.removeChannel(realtimeSubscription);
       realtimeSubscription = null;
+      console.log('Disconnected from Supabase Realtime');
     }
   }
 
@@ -1452,10 +1459,12 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
     const pickup = document.getElementById('p-pickup').value.trim();
     const drop   = document.getElementById('p-drop').value.trim();
+    const pickupTime = document.getElementById('p-pickup-time').value;
     const price  = parseFloat(document.getElementById('p-price').value);
 
     if (!pickup) { toast('📍', 'Pickup missing', "Let drivers know where to find you.", 'amber'); return; }
     if (!drop)   { toast('📍', 'Drop-off missing', "Where are you headed? Add your destination.", 'amber'); return; }
+    if (!pickupTime) { toast('⏰', 'Pickup time missing', "When do you want to ride? Select a pickup time.", 'amber'); return; }
     if (!price || price <= 0) { toast('💰', 'Set a price', "Enter what you'd like to pay — keep it fair.", 'amber'); return; }
 
     try {
@@ -1467,6 +1476,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           passengerPhone:  passenger.phone,
           pickupLocation:  pickup,
           dropoffLocation: drop,
+          pickupTime:       pickupTime,
           offeredFare:     price
         })
       });
@@ -1475,9 +1485,10 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
       document.getElementById('p-pickup').value = '';
       document.getElementById('p-drop').value   = '';
+      document.getElementById('p-pickup-time').value = '';
       document.getElementById('p-price').value  = '';
 
-      toast('📤', 'Offer sent!', 'Drivers can see your $' + price + ' bid. Sit tight.', 'green');
+      toast('📤', 'Offer sent!', 'Drivers can see your $' + price + ' bid for ' + new Date(pickupTime).toLocaleString() + '. Sit tight.', 'green');
 
       myRides.unshift(data.ride);
       allRides.unshift(data.ride);
@@ -1710,6 +1721,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
           <div class="route-line"></div>
           <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
+          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>🕐 ${new Date(r.pickup_time).toLocaleString()}</span></div>` : ''}
         </div>
         ${extra}
       </div>`;
@@ -1818,7 +1830,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         <div class="ride-card-top">
           <div>
             ${badgeHTML(r.status)}
-            <div style="margin-top:8px;font-size:0.71rem;color:var(--text-muted);">${r.passenger_name} · ${timeAgo(r.created_at)}</div>
+            <div style="margin-top:8px;">${r.passenger_name} · ${timeAgo(r.created_at)}</div>
           </div>
           <div class="price-block">
             <div class="price-label-sm">Offer</div>
@@ -1829,6 +1841,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
           <div class="route-line"></div>
           <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
+          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>🕐 ${new Date(r.pickup_time).toLocaleString()}</span></div>` : ''}
         </div>
         ${extra}
       </div>`;
@@ -1953,6 +1966,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
           <div class="route-line"></div>
           <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
+          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>🕐 ${new Date(r.pickup_time).toLocaleString()}</span></div>` : ''}
         </div>
         <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;">${timeAgo(r.created_at)}</div>
         ${actions}
