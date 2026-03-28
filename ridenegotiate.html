@@ -1710,7 +1710,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         <div class="ride-card-top">
           <div>
             ${badgeHTML(r.status)}
-            <div style="margin-top:8px;font-size:0.71rem;color:var(--text-muted);">${timeAgo(r.created_at)}</div>
+            <div style="margin-top:8px;font-size:0.71rem;color:var(--text-muted);">${timeAgo(r.created_at, r.pickup_time)}</div>
           </div>
           <div class="price-block">
             <div class="price-label-sm">Your offer</div>
@@ -1830,7 +1830,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         <div class="ride-card-top">
           <div>
             ${badgeHTML(r.status)}
-            <div style="margin-top:8px;">${r.passenger_name} · ${timeAgo(r.created_at)}</div>
+            <div style="margin-top:8px;">${r.passenger_name} · ${timeAgo(r.created_at, r.pickup_time)}</div>
           </div>
           <div class="price-block">
             <div class="price-label-sm">Offer</div>
@@ -1968,7 +1968,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
           ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>🕐 ${new Date(r.pickup_time).toLocaleString()}</span></div>` : ''}
         </div>
-        <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;">${timeAgo(r.created_at)}</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;">${timeAgo(r.created_at, r.pickup_time)}</div>
         ${actions}
         ${closedNote}
       </div>`;
@@ -1982,9 +1982,11 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     return `<span class="badge badge-${status}">${labels[status]||status}</span>`;
   }
 
-  function timeAgo(date) {
-    const s = Math.floor((new Date() - new Date(date)) / 1000);
-    const actualTime = new Date(date).toLocaleString('en-US', { 
+  function timeAgo(date, pickupTime) {
+    // Use pickup_time if available, otherwise fall back to created_at
+    const targetDate = pickupTime || date;
+    const s = Math.floor((new Date() - new Date(targetDate)) / 1000);
+    const actualTime = new Date(targetDate).toLocaleString('en-US', { 
       month: 'short', 
       day: 'numeric', 
       hour: '2-digit', 
