@@ -1362,8 +1362,10 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       // Hydrate previous_counter_fare for loaded rides.
       // For rides already in allRides (with previous_counter_fare set), preserve it.
       const incoming = data.rides || [];
+      // Store existing rides before overwriting
+      const existingAllRides = [...allRides];
       allRides = incoming.map(r => {
-        const existing = allRides.find(e => e.id === r.id);
+        const existing = existingAllRides.find(e => e.id === r.id);
         return {
           ...r,
           previous_counter_fare: existing ? existing.previous_counter_fare : r.offered_fare,
@@ -1382,14 +1384,20 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       const res  = await fetch(`${API_URL}/rides/history/${encodeURIComponent(passenger.phone)}`);
       const data = await res.json();
       const incoming = data.rides || [];
+      // Store existing myRides before overwriting
+      const existingMyRides = [...myRides];
       // Preserve previous_counter_fare from allRides if available
       myRides = incoming.map(r => {
         const fromAll = allRides.find(e => e.id === r.id);
+        const fromMy = existingMyRides.find(e => e.id === r.id);
+        // Prefer previous_counter_fare from myRides first, then allRides
+        const previousFare = fromMy ? fromMy.previous_counter_fare : 
+                           (fromAll ? fromAll.previous_counter_fare : r.offered_fare);
         return {
           ...r,
-          previous_counter_fare: fromAll ? fromAll.previous_counter_fare : r.offered_fare,
-          counterInputVisible:          fromAll ? fromAll.counterInputVisible          : false,
-          passengerCounterInputVisible: fromAll ? fromAll.passengerCounterInputVisible : false,
+          previous_counter_fare: previousFare,
+          counterInputVisible:          fromMy ? fromMy.counterInputVisible          : false,
+          passengerCounterInputVisible: fromMy ? fromMy.passengerCounterInputVisible : false,
         };
       });
       renderPassengerRequests();
