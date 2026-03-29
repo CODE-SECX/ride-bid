@@ -666,11 +666,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 .scroll-list::-webkit-scrollbar-track { background: transparent; }
 .scroll-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-/* ═══ NEW: Address Callout ═══
-   Amber-tinted guidance banner placed directly above the location
-   fields inside the ride-request form. Amber = attention without
-   alarm. Border is slightly heavier (1.5px) to hold focus.
-   ─────────────────────────────────── */
 .address-callout {
   display: flex; align-items: flex-start; gap: 10px;
   background: #fffbeb;
@@ -690,10 +685,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 }
 .address-callout-desc strong { font-weight: 700; color: #92400e; }
 
-/* ═══ NEW: Driver-loading placeholder ═══
-   Shown while driverCache is being populated so the card
-   doesn't look broken while the fetch is in flight.
-   ─────────────────────────────────── */
 .driver-loading {
   display: flex; align-items: center; gap: 6px;
   font-size: 0.72rem; color: var(--text-muted);
@@ -710,7 +701,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
 <div id="toast-container"></div>
 
-<!-- ────────────── Header ────────────── -->
 <header>
   <div class="logo">
     <div class="logo-mark">🚗</div>
@@ -729,12 +719,9 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
 <div class="main">
 
-  <!-- ══════════════════════════════════════
-       PASSENGER VIEW
-  ══════════════════════════════════════ -->
+  <!-- PASSENGER VIEW -->
   <div class="view" id="view-passenger">
 
-    <!-- Hero -->
     <div class="hero">
       <div class="hero-eyebrow">✦ The smarter way to get around</div>
       <h1 class="hero-title">
@@ -754,7 +741,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       </div>
     </div>
 
-    <!-- ── Not logged in ── -->
     <div id="passenger-auth">
       <div class="auth-wrap">
         <h2 class="auth-heading">Let's get you set up</h2>
@@ -786,11 +772,9 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       </div>
     </div>
 
-    <!-- ── Logged in Dashboard ── -->
     <div id="passenger-dashboard" class="hidden">
       <div class="two-col">
 
-        <!-- Left: Request form -->
         <div>
           <div class="account-bar">
             <div class="account-avatar" id="p-avatar">P</div>
@@ -808,13 +792,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div class="section-caption">Fill in your route and name your price — let drivers come to you.</div>
 
           <div class="card">
-
-            <!-- ══ ADDRESS CALLOUT (NEW) ══
-                 Prominent amber guidance banner placed at the very top of the
-                 form, before the pickup/dropoff fields. Passengers see it
-                 before they start typing, not after they submit.
-                 Amber border stands out in a sea of blue/grey without
-                 looking like an error. -->
             <div class="address-callout">
               <div class="address-callout-icon">📍</div>
               <div>
@@ -860,7 +837,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           </div>
         </div>
 
-        <!-- Right: My requests -->
         <div>
           <div class="label-eyebrow">Live Updates</div>
           <div class="section-heading">Your Negotiations</div>
@@ -878,7 +854,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
       <div class="divider"></div>
 
-      <!-- All Rides Section for Passengers -->
       <div>
         <div class="label-eyebrow">All Rides</div>
         <div class="section-heading">Available Ride Requests</div>
@@ -902,9 +877,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   </div><!-- /passenger view -->
 
 
-  <!-- ══════════════════════════════════════
-       DRIVER VIEW
-  ══════════════════════════════════════ -->
+  <!-- DRIVER VIEW -->
   <div class="view" id="view-driver">
 
     <div class="driver-header">
@@ -943,12 +916,10 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   /* ═══════════ STATE ═══════════ */
   const API_URL = (window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin) + '/api';
   
-  // Initialize Supabase client with config from server
   let supabaseClient = null;
   let realtimeSubscription = null;
   let passenger = null;
   
-  // Fetch Supabase config and initialize client
   async function initializeSupabase() {
     try {
       const response = await fetch(`${API_URL}/config`);
@@ -969,41 +940,13 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     }
   }
 
-  /*
-   * allRides  — every ride on the platform (driver view + "All Rides" section).
-   * myRides   — only this passenger's rides (history endpoint, all statuses).
-   */
   let allRides = [];
   let myRides  = [];
-
-  /*
-   * driverCache — keyed by driver ID, value is the driver object or null.
-   *
-   * WHY THIS EXISTS (driver details in history):
-   * The history endpoint returns raw ride_requests rows. The `driver` sub-object
-   * that the live accept/counter endpoints attach is NOT stored in the DB — it is
-   * composed on the fly in the server response. So r.driver is always undefined
-   * for rides fetched from history.
-   *
-   * The fix: resolveDriver(r) looks up accepted_by / countered_by, checks this
-   * cache, and if missing fires fetchDriverById() which GETs the driver profile
-   * and stores the result here. After the fetch completes it calls
-   * renderPassengerRequests() so the card re-renders with real driver info.
-   *
-   * A value of `null` means "fetch was attempted but failed" — we won't retry.
-   * A value of `undefined` means "not yet fetched".
-   */
   const driverCache = {};
 
-  /*
-   * fetchDriverById — async, fires once per unknown driver ID.
-   * Calls GET /api/drivers/:id/profile which you need to add to server.js
-   * (see the backend note at the bottom of this file). Falls back gracefully
-   * if the endpoint doesn't exist yet — the card just won't show driver details.
-   */
   async function fetchDriverById(driverId) {
     if (!driverId || driverCache[driverId] !== undefined) return;
-    driverCache[driverId] = null; // mark in-flight to prevent duplicate fetches
+    driverCache[driverId] = null;
     try {
       const res = await fetch(`${API_URL}/drivers/${driverId}/profile`);
       if (res.ok) {
@@ -1017,34 +960,15 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     }
   }
 
-  /*
-   * resolveDriver(r) — returns a hydrated driver object for a ride, or null.
-   *
-   * Lookup priority:
-   *   1. r.driver  — already hydrated by a live WebSocket push (accept/counter).
-   *   2. driverCache[id]  — previously fetched and cached.
-   *   3. null + triggers fetchDriverById() — re-renders when the fetch lands.
-   *
-   * Driver ID: accepted_by covers the direct-accept flow; countered_by covers
-   * the counter-then-passenger-accept flow. Both end up as confirmed status.
-   */
   function resolveDriver(r) {
-    // Always return driver data if it's already attached to the ride
     if (r.driver) return r.driver;
-    
     const driverId = r.accepted_by || r.countered_by;
     if (!driverId) return null;
-    
-    // Check cache first
     if (driverCache[driverId] !== undefined) return driverCache[driverId];
-    
-    // For passenger view, always fetch driver details for confirmed/completed rides
-    // For driver view, only fetch if it's the current driver's ride
     if ((passenger && (r.status === 'confirmed' || r.status === 'completed')) ||
         (driver && (r.accepted_by === driver.id || r.countered_by === driver.id))) {
-      fetchDriverById(driverId); // fire and forget — re-render on completion
+      fetchDriverById(driverId);
     }
-    
     return null;
   }
 
@@ -1063,16 +987,10 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   /* ═══════════ SUPABASE REALTIME ═══════════ */
   function connectRealtime() {
     console.log('Connecting to Supabase Realtime...');
-    
-    // Subscribe to ride_requests table changes
     realtimeSubscription = supabaseClient
       .channel('ride_requests')
       .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'ride_requests' 
-        }, 
+        { event: '*', schema: 'public', table: 'ride_requests' }, 
         (payload) => {
           console.log('Realtime update received:', payload);
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
@@ -1094,19 +1012,62 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (realtimeSubscription) {
       supabaseClient.removeChannel(realtimeSubscription);
       realtimeSubscription = null;
-      console.log('Disconnected from Supabase Realtime');
     }
   }
 
-  function handleRideUpdate(ride) {
-    const allIdx = allRides.findIndex(r => r.id === ride.id);
-    if (allIdx >= 0) { allRides[allIdx] = { ...allRides[allIdx], ...ride }; }
-    else { allRides.unshift(ride); }
+  /*
+   * ─────────────────────────────────────────────────────────────────────
+   * handleRideUpdate  —  called when Supabase Realtime pushes a change.
+   *
+   * KEY FIX: Supabase only sends DB columns. `previous_counter_fare` is a
+   * frontend-only field we attach in memory so the UI can show correct
+   * "previous price" labels during multi-round negotiations.
+   *
+   * Strategy: if the incoming ride has a changed counter_fare, we derive
+   * previous_counter_fare from the existing local record's counter_fare
+   * (which was the "current" value before this update arrived).
+   * If we have no existing record, we fall back to offered_fare.
+   * ─────────────────────────────────────────────────────────────────────
+   */
+  function handleRideUpdate(incomingRide) {
+    // Look up existing local copy so we can preserve / compute previous_counter_fare
+    const existingAll = allRides.find(r => r.id === incomingRide.id);
+    const existingMy  = myRides.find(r => r.id === incomingRide.id);
+    const existing    = existingAll || existingMy;
 
-    if (passenger && ride.passenger_phone === passenger.phone) {
-      const myIdx = myRides.findIndex(r => r.id === ride.id);
-      if (myIdx >= 0) { myRides[myIdx] = { ...myRides[myIdx], ...ride }; }
-      else { myRides.unshift(ride); }
+    // Compute previous_counter_fare:
+    // If counter_fare just changed (a new counter was submitted), the old
+    // counter_fare becomes the "previous" value.  If this is the very first
+    // counter (no prior counter_fare), fall back to offered_fare.
+    let previousCounterFare = existing ? existing.previous_counter_fare : undefined;
+
+    if (incomingRide.counter_fare !== undefined) {
+      const oldCounterFare = existing ? existing.counter_fare : undefined;
+      if (oldCounterFare !== undefined && oldCounterFare !== incomingRide.counter_fare) {
+        // counter_fare changed → old value becomes "previous"
+        previousCounterFare = oldCounterFare;
+      } else if (previousCounterFare === undefined) {
+        // No prior counter at all — the "previous" was the passenger's original offer
+        previousCounterFare = incomingRide.offered_fare;
+      }
+    }
+
+    const mergedRide = {
+      ...incomingRide,
+      previous_counter_fare: previousCounterFare,
+      // Preserve UI-only toggle state from existing record
+      counterInputVisible:          existing ? existing.counterInputVisible          : false,
+      passengerCounterInputVisible: existing ? existing.passengerCounterInputVisible : false,
+    };
+
+    const allIdx = allRides.findIndex(r => r.id === incomingRide.id);
+    if (allIdx >= 0) { allRides[allIdx] = mergedRide; }
+    else             { allRides.unshift(mergedRide); }
+
+    if (passenger && incomingRide.passenger_phone === passenger.phone) {
+      const myIdx = myRides.findIndex(r => r.id === incomingRide.id);
+      if (myIdx >= 0) { myRides[myIdx] = mergedRide; }
+      else            { myRides.unshift(mergedRide); }
     }
 
     renderPassengerRequests();
@@ -1114,20 +1075,13 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     renderDriverView();
   }
 
+  /*
+   * sendRideUpdate  —  called after a local action (accept/counter/reject).
+   * The server response already has the freshly updated ride; we merge it
+   * the same way as handleRideUpdate so previous_counter_fare is always set.
+   */
   function sendRideUpdate(ride) {
-    const allIdx = allRides.findIndex(r => r.id === ride.id);
-    if (allIdx >= 0) { allRides[allIdx] = { ...allRides[allIdx], ...ride }; }
-    else { allRides.unshift(ride); }
-
-    if (passenger && ride.passenger_phone === passenger.phone) {
-      const myIdx = myRides.findIndex(r => r.id === ride.id);
-      if (myIdx >= 0) { myRides[myIdx] = { ...myRides[myIdx], ...ride }; }
-      else { myRides.unshift(ride); }
-    }
-
-    renderPassengerRequests();
-    renderAllRides();
-    renderDriverView();
+    handleRideUpdate(ride);
   }
 
   /* ═══════════ TABS ═══════════ */
@@ -1294,37 +1248,18 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
   function showDriverProfileEdit() {
     if (!driver) return;
-    
     const modalHtml = `
       <div class="auth-wrap" style="max-width:480px; margin:40px auto;">
         <h2 class="auth-heading">Edit Driver Profile</h2>
         <p class="auth-sub">Update your information that passengers see</p>
         <div class="card">
           <div class="form-grid">
-            <div>
-              <label>Username</label>
-              <input id="edit-username" type="text" value="${driver.username || ''}" placeholder="username" />
-            </div>
-            <div>
-              <label>Full Name</label>
-              <input id="edit-name" type="text" value="${driver.name || ''}" placeholder="e.g. Raj Sharma" />
-            </div>
-            <div>
-              <label>Contact Number</label>
-              <input id="edit-contact" type="tel" value="${driver.contact_no || ''}" placeholder="+91 98765 43210" />
-            </div>
-            <div>
-              <label>Vehicle Information</label>
-              <input id="edit-vehicle" type="text" value="${driver.vehicle_info || ''}" placeholder="e.g. Swift Dzire, White, KA01AB1234" />
-            </div>
-            <div>
-              <label>Current Password</label>
-              <input id="edit-current-password" type="password" placeholder="Enter current password to confirm changes" />
-            </div>
-            <div>
-              <label>New Password (optional)</label>
-              <input id="edit-new-password" type="password" placeholder="Leave blank to keep current password" />
-            </div>
+            <div><label>Username</label><input id="edit-username" type="text" value="${driver.username || ''}" placeholder="username" /></div>
+            <div><label>Full Name</label><input id="edit-name" type="text" value="${driver.name || ''}" placeholder="e.g. Raj Sharma" /></div>
+            <div><label>Contact Number</label><input id="edit-contact" type="tel" value="${driver.contact_no || ''}" placeholder="+91 98765 43210" /></div>
+            <div><label>Vehicle Information</label><input id="edit-vehicle" type="text" value="${driver.vehicle_info || ''}" placeholder="e.g. Swift Dzire, White, KA01AB1234" /></div>
+            <div><label>Current Password</label><input id="edit-current-password" type="password" placeholder="Enter current password to confirm changes" /></div>
+            <div><label>New Password (optional)</label><input id="edit-new-password" type="password" placeholder="Leave blank to keep current password" /></div>
             <div style="display:flex; gap:8px; margin-top:8px;">
               <button class="btn btn-primary" onclick="updateDriverProfile()">Save Changes</button>
               <button class="btn btn-ghost" onclick="closeDriverProfileEdit()">Cancel</button>
@@ -1332,22 +1267,15 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           </div>
         </div>
       </div>`;
-    
-    // Create modal overlay
     const modal = document.createElement('div');
     modal.id = 'driver-profile-modal';
-    modal.style.cssText = `
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5); z-index: 10000;
-      display: flex; align-items: center; justify-content: center;
-    `;
+    modal.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;`;
     modal.innerHTML = modalHtml;
     document.body.appendChild(modal);
   }
 
   async function updateDriverProfile() {
     if (!driver) return;
-    
     const username = document.getElementById('edit-username').value.trim();
     const name = document.getElementById('edit-name').value.trim();
     const contact = document.getElementById('edit-contact').value.trim();
@@ -1356,22 +1284,19 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     const newPassword = document.getElementById('edit-new-password').value;
     
     if (!username) { toast('⚠️', 'Username required', 'Username is required for login.', 'amber'); return; }
-    if (!name) { toast('⚠️', 'Name required', 'Your name is required for identification.', 'amber'); return; }
-    if (!contact) { toast('⚠️', 'Contact required', 'Passengers need to reach you.', 'amber'); return; }
+    if (!name)     { toast('⚠️', 'Name required', 'Your name is required for identification.', 'amber'); return; }
+    if (!contact)  { toast('⚠️', 'Contact required', 'Passengers need to reach you.', 'amber'); return; }
     if (!currentPassword) { toast('⚠️', 'Password required', 'Enter current password to confirm changes.', 'amber'); return; }
     
     try {
-      // First verify current password
       const loginRes = await fetch(`${API_URL}/drivers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: driver.username, password: currentPassword })
       });
-      
       const loginData = await loginRes.json();
       if (!loginRes.ok) throw new Error('Current password is incorrect');
       
-      // Update profile data
       const updateData = { username, name, contact_no: contact, vehicle_info: vehicle };
       if (newPassword.trim()) updateData.password = newPassword;
       
@@ -1380,18 +1305,14 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)
       });
-      
       const updateResult = await updateRes.json();
       if (!updateRes.ok) throw new Error(updateResult.error || 'Update failed');
       
-      // Update local driver object
       driver = { ...driver, ...updateData };
       localStorage.setItem('driver', JSON.stringify(driver));
-      
       closeDriverProfileEdit();
-      renderDriverDashboard(); // Refresh dashboard to show updated info
+      renderDriverDashboard();
       toast('✅', 'Profile Updated', 'Your driver information has been updated successfully.', 'green');
-      
     } catch (err) {
       toast('❌', 'Update Failed', err.message, 'red');
     }
@@ -1438,7 +1359,18 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     try {
       const res  = await fetch(`${API_URL}/rides`);
       const data = await res.json();
-      allRides   = data.rides || [];
+      // Hydrate previous_counter_fare for loaded rides.
+      // For rides already in allRides (with previous_counter_fare set), preserve it.
+      const incoming = data.rides || [];
+      allRides = incoming.map(r => {
+        const existing = allRides.find(e => e.id === r.id);
+        return {
+          ...r,
+          previous_counter_fare: existing ? existing.previous_counter_fare : r.offered_fare,
+          counterInputVisible:          existing ? existing.counterInputVisible          : false,
+          passengerCounterInputVisible: existing ? existing.passengerCounterInputVisible : false,
+        };
+      });
       renderAllRides();
       renderDriverView();
     } catch (err) { console.error('Error loading all rides:', err); }
@@ -1449,7 +1381,17 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     try {
       const res  = await fetch(`${API_URL}/rides/history/${encodeURIComponent(passenger.phone)}`);
       const data = await res.json();
-      myRides    = data.rides || [];
+      const incoming = data.rides || [];
+      // Preserve previous_counter_fare from allRides if available
+      myRides = incoming.map(r => {
+        const fromAll = allRides.find(e => e.id === r.id);
+        return {
+          ...r,
+          previous_counter_fare: fromAll ? fromAll.previous_counter_fare : r.offered_fare,
+          counterInputVisible:          fromAll ? fromAll.counterInputVisible          : false,
+          passengerCounterInputVisible: fromAll ? fromAll.passengerCounterInputVisible : false,
+        };
+      });
       renderPassengerRequests();
     } catch (err) { console.error('Error loading my rides:', err); }
   }
@@ -1462,9 +1404,9 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     const pickupTime = document.getElementById('p-pickup-time').value;
     const price  = parseFloat(document.getElementById('p-price').value);
 
-    if (!pickup) { toast('📍', 'Pickup missing', "Let drivers know where to find you.", 'amber'); return; }
-    if (!drop)   { toast('📍', 'Drop-off missing', "Where are you headed? Add your destination.", 'amber'); return; }
-    if (!pickupTime) { toast('⏰', 'Pickup time missing', "When do you want to ride? Select a pickup time.", 'amber'); return; }
+    if (!pickup)     { toast('📍', 'Pickup missing',       "Let drivers know where to find you.", 'amber'); return; }
+    if (!drop)       { toast('📍', 'Drop-off missing',     "Where are you headed? Add your destination.", 'amber'); return; }
+    if (!pickupTime) { toast('⏰', 'Pickup time missing',  "When do you want to ride? Select a pickup time.", 'amber'); return; }
     if (!price || price <= 0) { toast('💰', 'Set a price', "Enter what you'd like to pay — keep it fair.", 'amber'); return; }
 
     try {
@@ -1476,7 +1418,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           passengerPhone:  passenger.phone,
           pickupLocation:  pickup,
           dropoffLocation: drop,
-          pickupTime:       pickupTime,
+          pickupTime,
           offeredFare:     price
         })
       });
@@ -1490,8 +1432,10 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
       toast('📤', 'Offer sent!', 'Drivers can see your $' + price + ' bid for ' + new Date(pickupTime).toLocaleString() + '. Sit tight.', 'green');
 
-      myRides.unshift(data.ride);
-      allRides.unshift(data.ride);
+      // New ride: previous_counter_fare starts as offered_fare (no counter yet)
+      const newRide = { ...data.ride, previous_counter_fare: data.ride.offered_fare };
+      myRides.unshift(newRide);
+      allRides.unshift(newRide);
       renderPassengerRequests();
       renderAllRides();
       renderDriverView();
@@ -1547,6 +1491,14 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
+  /*
+   * driverCounter
+   * ─────────────
+   * Before sending the counter, we read the current ride's counter_fare
+   * (or offered_fare if no prior counter) and tag it as previous_counter_fare
+   * on the response ride. This lets the passenger card correctly show
+   * "Driver asked: $120" even after the passenger counters back with $110.
+   */
   async function driverCounter(rideId) {
     if (!driver) return;
     const input = document.getElementById('counter-input-' + rideId);
@@ -1566,6 +1518,21 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
+
+      /*
+       * Tag previous_counter_fare on the returned ride BEFORE calling sendRideUpdate.
+       * At this moment, ride.counter_fare is whatever the passenger last proposed
+       * (or undefined/null on first round). That value becomes "previous" now
+       * that the driver is setting a new counter.
+       *
+       * For the passenger card "Driver asked: $X → Your offer: $Y":
+       *   previous_counter_fare = the passenger's last value (ride.counter_fare || ride.offered_fare)
+       * But actually we want the DRIVER's new counter to be counter_fare,
+       * and the thing the driver is countering against (passenger's offer) to be previous.
+       * So: previous = ride.counter_fare (passenger's last counter) OR ride.offered_fare (first round).
+       */
+      data.ride.previous_counter_fare = ride.counter_fare || ride.offered_fare;
+
       sendRideUpdate(data.ride);
       toast('💬', 'Counter sent', '$' + val + " is now with the passenger. Ball's in their court.", 'blue');
     } catch (err) { toast('❌', 'Error', err.message, 'red'); }
@@ -1599,6 +1566,14 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
+  /*
+   * passengerCounter
+   * ────────────────
+   * Tag previous_counter_fare = ride.counter_fare (the driver's ask that the
+   * passenger is now countering against). After this, counter_fare will become
+   * the passenger's new value, and the driver card should show:
+   * "Your ask: $previous_counter_fare → Passenger countered: $counter_fare"
+   */
   async function passengerCounter(rideId) {
     const input = document.getElementById('passenger-counter-input-' + rideId);
     const val   = parseFloat(input ? input.value : 0);
@@ -1617,6 +1592,13 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
+
+      /*
+       * Tag previous_counter_fare = the driver's counter that the passenger just
+       * responded to. This will be shown on the driver card as "Your ask: $X".
+       */
+      data.ride.previous_counter_fare = ride.counter_fare;
+
       sendRideUpdate(data.ride);
       toast('💬', 'Counter sent', '$' + val + " is now with the driver. Ball's in their court.", 'blue');
     } catch (err) { toast('❌', 'Error', err.message, 'red'); }
@@ -1625,26 +1607,16 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   function togglePassengerCounterForm(rideId) {
     const ride = getRide(rideId); 
     if (!ride) return;
-    
-    // Initialize the property if it doesn't exist
     if (ride.passengerCounterInputVisible === undefined) {
       ride.passengerCounterInputVisible = false;
     }
-    
-    // Toggle the visibility
     ride.passengerCounterInputVisible = !ride.passengerCounterInputVisible;
-    
-    // Update both allRides and myRides to ensure consistency
+
     const allRidesIndex = allRides.findIndex(r => r.id === rideId);
-    const myRidesIndex = myRides.findIndex(r => r.id === rideId);
-    
-    if (allRidesIndex >= 0) {
-      allRides[allRidesIndex].passengerCounterInputVisible = ride.passengerCounterInputVisible;
-    }
-    if (myRidesIndex >= 0) {
-      myRides[myRidesIndex].passengerCounterInputVisible = ride.passengerCounterInputVisible;
-    }
-    
+    const myRidesIndex  = myRides.findIndex(r => r.id === rideId);
+    if (allRidesIndex >= 0) allRides[allRidesIndex].passengerCounterInputVisible = ride.passengerCounterInputVisible;
+    if (myRidesIndex  >= 0) myRides[myRidesIndex].passengerCounterInputVisible  = ride.passengerCounterInputVisible;
+
     renderPassengerRequests();
   }
 
@@ -1664,12 +1636,32 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     }
   }
 
+  /*
+   * renderPassengerCard
+   * ───────────────────
+   * Price label logic (the core of the fix):
+   *
+   * Scenario: Passenger $100 → Driver counters $120 → Passenger counters $110
+   *
+   * After driver counters ($120):
+   *   status = 'countered', passenger_countered = false
+   *   counter_fare = 120, previous_counter_fare = 100 (passenger's original)
+   *   Display: "Your offer: $100 → Driver asks: $120"  ✓
+   *
+   * After passenger counters back ($110):
+   *   status = 'countered', passenger_countered = true
+   *   counter_fare = 110, previous_counter_fare = 120 (driver's ask)
+   *   Display: "Driver asked: $120 → Your counter: $110"  ✓
+   *   (Waiting banner shows "Your counter of $110 is with the driver")  ✓
+   */
   function renderPassengerCard(r) {
     let extra = '';
-    const offeredPrice   = r.offered_fare;
-    const counteredPrice = r.counter_fare;
+    const offeredFare        = r.offered_fare;        // always passenger's ORIGINAL bid
+    const counterFare        = r.counter_fare;        // the LATEST counter (either side)
+    const previousCounterFare = r.previous_counter_fare != null
+      ? r.previous_counter_fare
+      : offeredFare;                                  // fallback for first counter round
 
-    /* ── countered: show driver mini-profile alongside the counter proposal ── */
     if (r.status === 'countered') {
       const driverObj = resolveDriver(r);
       const driverDetail = driverObj
@@ -1690,71 +1682,79 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           ? `<div class="driver-loading">⏳ Loading driver details…</div>`
           : '';
 
-      // Determine who made the last counter and what options the passenger should have
       const passengerCounteredLast = r.passenger_countered === true;
-      const driverCounteredLast = r.passenger_countered === false || r.passenger_countered === null;
 
-      if (driverCounteredLast) {
-        // Driver countered last - passenger can accept, decline, or counter back
+      if (!passengerCounteredLast) {
+        /*
+         * Driver countered last — passenger needs to respond.
+         *
+         * previousCounterFare = what passenger had offered before this counter.
+         * counterFare         = what driver is now asking.
+         *
+         * Example round 1: passenger offered $100, driver asks $120
+         *   → "Your offer: $100  →  Driver asks: $120"
+         * Example round 3: passenger countered $110, driver asks $115
+         *   → "Your offer: $110  →  Driver asks: $115"
+         */
         extra = `
           <div class="counter-banner">
             <div class="counter-banner-head">💬 Driver has a counter proposal</div>
             ${driverDetail}
             <div class="price-compare">
-              <span class="price-was">Your offer: $${offeredPrice}</span>
+              <span class="price-was">Your offer: $${previousCounterFare}</span>
               <span style="color:var(--text-dim);margin:0 2px;">→</span>
-              <span class="price-now">$${counteredPrice}</span>
+              <span class="price-now">Driver asks: $${counterFare}</span>
             </div>
-            <p>They think $${counteredPrice} is a fair deal. Accept and you're on your way — counter back, or decline and try a new request.</p>
+            <p>They think $${counterFare} is a fair deal. Accept and you're on your way — counter back, or decline and try a new request.</p>
             <div class="action-row">
-              <button class="btn btn-primary btn-sm" onclick="passengerAcceptCounter('${r.id}')">Accept $${counteredPrice}</button>
+              <button class="btn btn-primary btn-sm" onclick="passengerAcceptCounter('${r.id}')">Accept $${counterFare}</button>
               <button class="btn btn-amber btn-sm" onclick="togglePassengerCounterForm('${r.id}')">Propose a Counter</button>
               <button class="btn btn-ghost   btn-sm" onclick="passengerRejectCounter('${r.id}')">Decline &amp; Close</button>
             </div>
             ${r.passengerCounterInputVisible ? `
               <div class="counter-form" style="margin-top:12px;">
                 <div class="field">
-                  <label>Your counter offer ($) — must be lower than $${counteredPrice}</label>
-                  <input type="number" id="passenger-counter-input-${r.id}" placeholder="${Math.round(counteredPrice*0.9)}" max="${counteredPrice-1}" />
+                  <label>Your counter offer ($) — must be lower than $${counterFare}</label>
+                  <input type="number" id="passenger-counter-input-${r.id}" placeholder="${Math.round(counterFare*0.9)}" max="${counterFare-1}" />
                 </div>
                 <button class="btn btn-amber btn-sm" onclick="passengerCounter('${r.id}')">Send Counter</button>
                 <button class="btn btn-ghost btn-sm" onclick="togglePassengerCounterForm('${r.id}')">Cancel</button>
               </div>
             ` : ''}
           </div>`;
-      } else if (passengerCounteredLast) {
-        // Passenger countered last - passenger should wait for driver response
+      } else {
+        /*
+         * Passenger countered last — waiting for driver to respond.
+         *
+         * previousCounterFare = the driver's ask that triggered this response.
+         * counterFare         = the passenger's new counter.
+         *
+         * Example: driver asked $120, passenger countered $110
+         *   → "Driver asked: $120  →  Your counter: $110"
+         */
         extra = `
           <div class="counter-banner">
             <div class="counter-banner-head">⏳ Your counter is with the driver</div>
             <div class="price-compare">
-              <span class="price-was">Driver wanted: $${offeredPrice}</span>
+              <span class="price-was">Driver asked: $${previousCounterFare}</span>
               <span style="color:var(--text-dim);margin:0 2px;">→</span>
-              <span class="price-now">You offered: $${counteredPrice}</span>
+              <span class="price-now">Your counter: $${counterFare}</span>
             </div>
-            <p>Your counter of $${counteredPrice} has been sent to the driver. Waiting for their response — they can accept, decline, or counter again.</p>
+            <p>Your counter of $${counterFare} has been sent to the driver. Waiting for their response — they can accept, decline, or counter again.</p>
             <div class="status-note wait" style="margin-top:12px;">
-              ⏳ <span>Waiting for driver to respond to your $${counteredPrice} counter.</span>
+              ⏳ <span>Waiting for driver to respond to your $${counterFare} counter.</span>
             </div>
           </div>`;
       }
     }
 
-    /* ── confirmed / completed: status note + driver contact block ──
-     *
-     * FIX: We now call resolveDriver() for BOTH confirmed and completed rides.
-     * Previously `r.driver` was used directly — which is null for history rows.
-     * resolveDriver() falls back to driverCache, and triggers a background
-     * fetch if the driver isn't cached yet. The card re-renders once the fetch
-     * completes, making driver details appear in history just like live rides.
-     */
     if (r.status === 'confirmed' || r.status === 'completed') {
       const driverObj = resolveDriver(r);
       const isComplete = r.status === 'completed';
       const statusIcon = isComplete ? '🏁' : '🎉';
       const statusMsg  = isComplete
-        ? `Ride completed at <strong>$${offeredPrice}</strong>. Thanks for riding!`
-        : `Confirmed at <strong>$${offeredPrice}</strong> — your driver is on the way. Safe travels!`;
+        ? `Ride completed at <strong>$${offeredFare}</strong>. Thanks for riding!`
+        : `Confirmed at <strong>$${offeredFare}</strong> — your driver is on the way. Safe travels!`;
       const driverRole = isComplete ? 'Your Driver · Ride Complete' : 'Your Driver · En Route';
 
       const driverBlock = driverObj
@@ -1795,7 +1795,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           </div>
           <div class="price-block">
             <div class="price-label-sm">Your offer</div>
-            <div class="price-big ${r.status==='countered'?'counter-col':''}">$${offeredPrice}</div>
+            <div class="price-big ${r.status==='countered'?'counter-col':''}">$${offeredFare}</div>
           </div>
         </div>
         <div class="route">
@@ -1812,6 +1812,8 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   function toggleCounterForm(rideId) {
     const ride = getRide(rideId); if (!ride) return;
     ride.counterInputVisible = !ride.counterInputVisible;
+    const idx = allRides.findIndex(r => r.id === rideId);
+    if (idx >= 0) allRides[idx].counterInputVisible = ride.counterInputVisible;
     renderDriverView();
   }
 
@@ -1842,17 +1844,12 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (!listEl) return;
 
     let filtered = allRides;
-    
-    // If passenger is logged in, show only their own rides
     if (passenger) {
       filtered = allRides.filter(r => r.passenger_phone === passenger.phone);
-    }
-    // If driver is logged in, show only rides that are still available (not yet accepted)
-    else if (driver) {
+    } else if (driver) {
       filtered = allRides.filter(r => r.status === 'pending' || r.status === 'countered');
     }
     
-    // Apply additional filter based on passenger tabs
     if (passenger) {
       if (passengerRideFilter === 'pending')   filtered = filtered.filter(r => r.status === 'pending' || r.status === 'countered');
       if (passengerRideFilter === 'confirmed') filtered = filtered.filter(r => r.status === 'confirmed' || r.status === 'completed');
@@ -1869,8 +1866,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
   function renderAllRidesCard(r) {
     let extra = '';
-    
-    // Show driver details for confirmed/completed rides (same logic as passenger's own rides)
     if (r.status === 'confirmed' || r.status === 'completed') {
       const driverObj = resolveDriver(r);
       const isComplete = r.status === 'completed';
@@ -1928,21 +1923,33 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       </div>`;
   }
 
+  /*
+   * renderDriverCard
+   * ────────────────
+   * Price label logic (driver's perspective):
+   *
+   * Scenario: Passenger $100 → Driver counters $120 → Passenger counters $110
+   *
+   * After driver counters ($120):
+   *   status = 'countered', passenger_countered = false
+   *   counter_fare = 120, previous_counter_fare = 100 (passenger's offer)
+   *   Display: waiting banner → "Your counter $120 is with the passenger"  ✓
+   *
+   * After passenger counters back ($110):
+   *   status = 'countered', passenger_countered = true
+   *   counter_fare = 110, previous_counter_fare = 120 (driver's ask)
+   *   Display: "Your ask: $120  →  Passenger countered: $110"  ✓
+   */
   function renderDriverView() {
     const listEl  = document.getElementById('driver-requests-list');
     const emptyEl = document.getElementById('driver-requests-empty');
     const countEl = document.getElementById('driver-count');
     if (!listEl) return;
 
-    // Count only available rides (not yet accepted by anyone)
     const availableRides = allRides.filter(r => r.status === 'pending' || r.status === 'countered');
     countEl.textContent = availableRides.length;
 
     let filtered = allRides;
-    
-    // Filter rides based on driver context:
-    // - Show only available rides (pending/countered) for general view
-    // - Show driver's own rides in closed tab
     if (driverFilter === 'all') {
       filtered = availableRides;
     } else if (driverFilter === 'pending') {
@@ -1950,7 +1957,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     } else if (driverFilter === 'countered') {
       filtered = allRides.filter(r => r.status === 'countered');
     } else if (driverFilter === 'closed') {
-      // Show only rides that belong to this driver (accepted, rejected, or completed)
       filtered = allRides.filter(r => 
         (r.status === 'confirmed' || r.status === 'rejected' || r.status === 'completed') &&
         (r.accepted_by === driver.id || r.countered_by === driver.id)
@@ -1967,9 +1973,13 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   }
 
   function renderDriverCard(r) {
-    const isClosed       = r.status === 'confirmed' || r.status === 'rejected';
-    const offeredPrice   = r.offered_fare;
-    const counteredPrice = r.counter_fare;
+    const isClosed        = r.status === 'confirmed' || r.status === 'rejected';
+    const offeredFare     = r.offered_fare;
+    const counterFare     = r.counter_fare;
+    const previousCounterFare = r.previous_counter_fare != null
+      ? r.previous_counter_fare
+      : offeredFare;
+
     let actions    = '';
     let closedNote = '';
 
@@ -1977,7 +1987,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       if (r.status === 'pending') {
         actions = `
           <div class="action-row">
-            <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept $${offeredPrice}</button>
+            <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept $${offeredFare}</button>
             <button class="btn btn-amber   btn-sm" onclick="toggleCounterForm('${r.id}')">Propose a Counter</button>
             <button class="btn btn-danger  btn-sm" onclick="driverReject('${r.id}')">Pass</button>
           </div>`;
@@ -1985,80 +1995,101 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           actions += `
             <div class="counter-form">
               <div class="field">
-                <label>Your counter offer ($) — must exceed $${offeredPrice}</label>
-                <input type="number" id="counter-input-${r.id}" placeholder="${Math.round(offeredPrice*1.2)}" min="${offeredPrice+1}" />
+                <label>Your counter offer ($) — must exceed $${offeredFare}</label>
+                <input type="number" id="counter-input-${r.id}" placeholder="${Math.round(offeredFare*1.2)}" min="${offeredFare+1}" />
               </div>
               <button class="btn btn-amber btn-sm" onclick="driverCounter('${r.id}')">Send Counter</button>
               <button class="btn btn-ghost btn-sm" onclick="toggleCounterForm('${r.id}')">Cancel</button>
             </div>`;
         }
       }
+
       if (r.status === 'countered') {
-        // Determine who made the last counter and what options the driver should have
         const passengerCounteredLast = r.passenger_countered === true;
-        const driverCounteredLast = r.passenger_countered === false || r.passenger_countered === null;
 
         if (passengerCounteredLast) {
-          // Passenger countered last - driver can accept, decline, or counter again
+          /*
+           * Passenger countered last — driver needs to respond.
+           *
+           * previousCounterFare = driver's last ask (what passenger is responding to)
+           * counterFare         = passenger's new counter
+           *
+           * Example: driver asked $120, passenger countered $110
+           *   → "Your ask: $120  →  Passenger countered: $110"
+           */
           actions = `
             <div class="counter-banner" style="margin-top:12px;">
               <div class="counter-banner-head">💬 Passenger has a counter proposal</div>
               <div class="price-compare">
-                <span class="price-was">Your offer: $${offeredPrice}</span>
+                <span class="price-was">Your ask: $${previousCounterFare}</span>
                 <span style="color:var(--text-dim);margin:0 2px;">→</span>
-                <span class="price-now">$${counteredPrice}</span>
+                <span class="price-now">Passenger countered: $${counterFare}</span>
               </div>
-              <p>They think $${counteredPrice} is a fair deal. Accept and lock it in — counter again, or pass on this one.</p>
+              <p>They think $${counterFare} is a fair deal. Accept and lock it in — counter again, or pass on this one.</p>
               <div class="action-row">
-                <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept $${counteredPrice}</button>
+                <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept $${counterFare}</button>
                 <button class="btn btn-amber btn-sm" onclick="toggleCounterForm('${r.id}')">Propose a Counter</button>
                 <button class="btn btn-danger  btn-sm" onclick="driverReject('${r.id}')">Pass</button>
               </div>
               ${r.counterInputVisible ? `
                 <div class="counter-form" style="margin-top:12px;">
                   <div class="field">
-                    <label>Your counter offer ($) — must exceed $${counteredPrice}</label>
-                    <input type="number" id="counter-input-${r.id}" placeholder="${Math.round(counteredPrice*1.2)}" min="${counteredPrice+1}" />
+                    <label>Your counter offer ($) — must exceed $${counterFare}</label>
+                    <input type="number" id="counter-input-${r.id}" placeholder="${Math.round(counterFare*1.2)}" min="${counterFare+1}" />
                   </div>
                   <button class="btn btn-amber btn-sm" onclick="driverCounter('${r.id}')">Send Counter</button>
                   <button class="btn btn-ghost btn-sm" onclick="toggleCounterForm('${r.id}')">Cancel</button>
                 </div>
               ` : ''}
             </div>`;
-        } else if (driverCounteredLast) {
-          // Driver countered last - driver should wait for passenger response
-          actions = `<div class="status-note wait" style="margin-top:12px;">⏳ <span>Your counter of <strong>$${counteredPrice}</strong> is with the rider — waiting on their move.</span></div>`;
+        } else {
+          /*
+           * Driver countered last — waiting for passenger.
+           *
+           * previousCounterFare = what passenger offered before driver countered
+           * counterFare         = driver's ask (currently with the passenger)
+           *
+           * Example: passenger offered $100, driver asked $120
+           *   → "Your counter of $120 is with the passenger"
+           *   (No need to show the comparison here — passenger sees that)
+           */
+          actions = `<div class="status-note wait" style="margin-top:12px;">⏳ <span>Your counter of <strong>$${counterFare}</strong> is with the rider — waiting on their move.</span></div>`;
         }
       }
+    }
 
-      if (r.status === 'confirmed') {
-        closedNote = `
-          <div class="contact-info-block" style="margin-top:12px;">
-            <div class="contact-info-block-header">
-              <div class="contact-avatar-sm">${(r.passenger_name||'P')[0].toUpperCase()}</div>
-              <div>
-                <div class="contact-info-name">${r.passenger_name||'Passenger'}</div>
-                <div class="contact-info-role">Confirmed Passenger</div>
-              </div>
-            </div>
-            <div class="contact-info-row">
-              <span class="contact-info-icon">📞</span>
-              ${phoneLink(r.passenger_phone)}
+    if (r.status === 'confirmed') {
+      closedNote = `
+        <div class="contact-info-block" style="margin-top:12px;">
+          <div class="contact-info-block-header">
+            <div class="contact-avatar-sm">${(r.passenger_name||'P')[0].toUpperCase()}</div>
+            <div>
+              <div class="contact-info-name">${r.passenger_name||'Passenger'}</div>
+              <div class="contact-info-role">Confirmed Passenger</div>
             </div>
           </div>
-          <div style="margin-top:10px;">
-            <button class="btn btn-primary btn-sm" onclick="driverComplete('${r.id}')">Mark Completed</button>
-          </div>`;
+          <div class="contact-info-row">
+            <span class="contact-info-icon">📞</span>
+            ${phoneLink(r.passenger_phone)}
+          </div>
+        </div>
+        <div style="margin-top:10px;">
+          <button class="btn btn-primary btn-sm" onclick="driverComplete('${r.id}')">Mark Completed</button>
+        </div>`;
     }
     if (r.status === 'rejected') {
       closedNote = `<div class="status-note closed" style="margin-top:12px;">— <span>You passed on this one. Plenty more offers on the way.</span></div>`;
     }
     if (r.status === 'completed') {
-      closedNote = `<div class="status-note ok" style="margin-top:12px;">🏁 <span>Ride completed at <strong>$${offeredPrice}</strong>.</span></div>`;
+      closedNote = `<div class="status-note ok" style="margin-top:12px;">🏁 <span>Ride completed at <strong>$${offeredFare}</strong>.</span></div>`;
     }
 
-    const showingPrice = (r.status === 'countered' && counteredPrice) ? counteredPrice : offeredPrice;
-    const priceLabel   = (r.status === 'countered') ? "Your counter" : "Rider's offer";
+    // Header price: show counterFare when passenger just countered (they need to respond),
+    // else show the latest counter/offer value
+    const showingPrice = (r.status === 'countered' && counterFare) ? counterFare : offeredFare;
+    const priceLabel   = r.status === 'countered'
+      ? (r.passenger_countered ? 'Passenger\'s counter' : 'Your counter')
+      : 'Rider\'s offer';
 
     return `
       <div class="ride-card ${r.status}">
@@ -2071,8 +2102,8 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div class="price-block">
             <div class="price-label-sm">${priceLabel}</div>
             <div class="price-big ${r.status==='countered'?'counter-col':''}">$${showingPrice}</div>
-            ${r.status==='countered' && counteredPrice
-              ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">was $${offeredPrice}</div>`
+            ${r.status==='countered' && counterFare && !r.passenger_countered
+              ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">was $${previousCounterFare}</div>`
               : ''}
           </div>
         </div>
@@ -2089,7 +2120,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
   /* ═══════════ HELPERS ═══════════ */
   function getRide(id) { 
-    // First check allRides, then check myRides for passenger-specific rides
     return allRides.find(r => r.id === id) || myRides.find(r => r.id === id);
   }
 
@@ -2099,22 +2129,15 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   }
 
   function timeAgo(date, pickupTime) {
-    // Use pickup_time if available, otherwise fall back to created_at
     const targetDate = pickupTime || date;
     const s = Math.floor((new Date() - new Date(targetDate)) / 1000);
     const actualTime = new Date(targetDate).toLocaleString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      hour: 'numeric', 
-      minute: '2-digit',
-      hour12: true
+      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
     });
-    
     let relativeTime;
-    if (s < 60)   relativeTime = 'Just now';
+    if (s < 60)        relativeTime = 'Just now';
     else if (s < 3600) relativeTime = Math.floor(s/60) + 'm ago';
-    else relativeTime = Math.floor(s/3600) + 'h ago';
-    
+    else               relativeTime = Math.floor(s/3600) + 'h ago';
     return `${actualTime} · ${relativeTime}`;
   }
 
