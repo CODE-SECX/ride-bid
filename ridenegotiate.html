@@ -1690,32 +1690,54 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           ? `<div class="driver-loading">⏳ Loading driver details…</div>`
           : '';
 
-      extra = `
-        <div class="counter-banner">
-          <div class="counter-banner-head">💬 Driver has a counter proposal</div>
-          ${driverDetail}
-          <div class="price-compare">
-            <span class="price-was">Your offer: $${offeredPrice}</span>
-            <span style="color:var(--text-dim);margin:0 2px;">→</span>
-            <span class="price-now">$${counteredPrice}</span>
-          </div>
-          <p>They think $${counteredPrice} is a fair deal. Accept and you're on your way — counter back, or decline and try a new request.</p>
-          <div class="action-row">
-            <button class="btn btn-primary btn-sm" onclick="passengerAcceptCounter('${r.id}')">Accept $${counteredPrice}</button>
-            <button class="btn btn-amber btn-sm" onclick="togglePassengerCounterForm('${r.id}')">Propose a Counter</button>
-            <button class="btn btn-ghost   btn-sm" onclick="passengerRejectCounter('${r.id}')">Decline &amp; Close</button>
-          </div>
-          ${r.passengerCounterInputVisible ? `
-            <div class="counter-form" style="margin-top:12px;">
-              <div class="field">
-                <label>Your counter offer ($) — must be lower than $${counteredPrice}</label>
-                <input type="number" id="passenger-counter-input-${r.id}" placeholder="${Math.round(counteredPrice*0.9)}" max="${counteredPrice-1}" />
-              </div>
-              <button class="btn btn-amber btn-sm" onclick="passengerCounter('${r.id}')">Send Counter</button>
-              <button class="btn btn-ghost btn-sm" onclick="togglePassengerCounterForm('${r.id}')">Cancel</button>
+      // Determine who made the last counter and what options the passenger should have
+      const passengerCounteredLast = r.passenger_countered === true;
+      const driverCounteredLast = r.passenger_countered === false || r.passenger_countered === null;
+
+      if (driverCounteredLast) {
+        // Driver countered last - passenger can accept, decline, or counter back
+        extra = `
+          <div class="counter-banner">
+            <div class="counter-banner-head">💬 Driver has a counter proposal</div>
+            ${driverDetail}
+            <div class="price-compare">
+              <span class="price-was">Your offer: $${offeredPrice}</span>
+              <span style="color:var(--text-dim);margin:0 2px;">→</span>
+              <span class="price-now">$${counteredPrice}</span>
             </div>
-          ` : ''}
-        </div>`;
+            <p>They think $${counteredPrice} is a fair deal. Accept and you're on your way — counter back, or decline and try a new request.</p>
+            <div class="action-row">
+              <button class="btn btn-primary btn-sm" onclick="passengerAcceptCounter('${r.id}')">Accept $${counteredPrice}</button>
+              <button class="btn btn-amber btn-sm" onclick="togglePassengerCounterForm('${r.id}')">Propose a Counter</button>
+              <button class="btn btn-ghost   btn-sm" onclick="passengerRejectCounter('${r.id}')">Decline &amp; Close</button>
+            </div>
+            ${r.passengerCounterInputVisible ? `
+              <div class="counter-form" style="margin-top:12px;">
+                <div class="field">
+                  <label>Your counter offer ($) — must be lower than $${counteredPrice}</label>
+                  <input type="number" id="passenger-counter-input-${r.id}" placeholder="${Math.round(counteredPrice*0.9)}" max="${counteredPrice-1}" />
+                </div>
+                <button class="btn btn-amber btn-sm" onclick="passengerCounter('${r.id}')">Send Counter</button>
+                <button class="btn btn-ghost btn-sm" onclick="togglePassengerCounterForm('${r.id}')">Cancel</button>
+              </div>
+            ` : ''}
+          </div>`;
+      } else if (passengerCounteredLast) {
+        // Passenger countered last - passenger should wait for driver response
+        extra = `
+          <div class="counter-banner">
+            <div class="counter-banner-head">⏳ Your counter is with the driver</div>
+            <div class="price-compare">
+              <span class="price-was">Driver wanted: $${offeredPrice}</span>
+              <span style="color:var(--text-dim);margin:0 2px;">→</span>
+              <span class="price-now">You offered: $${counteredPrice}</span>
+            </div>
+            <p>Your counter of $${counteredPrice} has been sent to the driver. Waiting for their response — they can accept, decline, or counter again.</p>
+            <div class="status-note wait" style="margin-top:12px;">
+              ⏳ <span>Waiting for driver to respond to your $${counteredPrice} counter.</span>
+            </div>
+          </div>`;
+      }
     }
 
     /* ── confirmed / completed: status note + driver contact block ──
@@ -1972,7 +1994,41 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         }
       }
       if (r.status === 'countered') {
-        actions = `<div class="status-note wait" style="margin-top:12px;">⏳ <span>Your counter of <strong>$${counteredPrice}</strong> is with the rider — waiting on their move.</span></div>`;
+        // Determine who made the last counter and what options the driver should have
+        const passengerCounteredLast = r.passenger_countered === true;
+        const driverCounteredLast = r.passenger_countered === false || r.passenger_countered === null;
+
+        if (passengerCounteredLast) {
+          // Passenger countered last - driver can accept, decline, or counter again
+          actions = `
+            <div class="counter-banner" style="margin-top:12px;">
+              <div class="counter-banner-head">💬 Passenger has a counter proposal</div>
+              <div class="price-compare">
+                <span class="price-was">Your offer: $${offeredPrice}</span>
+                <span style="color:var(--text-dim);margin:0 2px;">→</span>
+                <span class="price-now">$${counteredPrice}</span>
+              </div>
+              <p>They think $${counteredPrice} is a fair deal. Accept and lock it in — counter again, or pass on this one.</p>
+              <div class="action-row">
+                <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept $${counteredPrice}</button>
+                <button class="btn btn-amber btn-sm" onclick="toggleCounterForm('${r.id}')">Propose a Counter</button>
+                <button class="btn btn-danger  btn-sm" onclick="driverReject('${r.id}')">Pass</button>
+              </div>
+              ${r.counterInputVisible ? `
+                <div class="counter-form" style="margin-top:12px;">
+                  <div class="field">
+                    <label>Your counter offer ($) — must exceed $${counteredPrice}</label>
+                    <input type="number" id="counter-input-${r.id}" placeholder="${Math.round(counteredPrice*1.2)}" min="${counteredPrice+1}" />
+                  </div>
+                  <button class="btn btn-amber btn-sm" onclick="driverCounter('${r.id}')">Send Counter</button>
+                  <button class="btn btn-ghost btn-sm" onclick="toggleCounterForm('${r.id}')">Cancel</button>
+                </div>
+              ` : ''}
+            </div>`;
+        } else if (driverCounteredLast) {
+          // Driver countered last - driver should wait for passenger response
+          actions = `<div class="status-note wait" style="margin-top:12px;">⏳ <span>Your counter of <strong>$${counteredPrice}</strong> is with the rider — waiting on their move.</span></div>`;
+        }
       }
     }
 
