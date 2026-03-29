@@ -1623,8 +1623,28 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   }
 
   function togglePassengerCounterForm(rideId) {
-    const ride = getRide(rideId); if (!ride) return;
+    const ride = getRide(rideId); 
+    if (!ride) return;
+    
+    // Initialize the property if it doesn't exist
+    if (ride.passengerCounterInputVisible === undefined) {
+      ride.passengerCounterInputVisible = false;
+    }
+    
+    // Toggle the visibility
     ride.passengerCounterInputVisible = !ride.passengerCounterInputVisible;
+    
+    // Update both allRides and myRides to ensure consistency
+    const allRidesIndex = allRides.findIndex(r => r.id === rideId);
+    const myRidesIndex = myRides.findIndex(r => r.id === rideId);
+    
+    if (allRidesIndex >= 0) {
+      allRides[allRidesIndex].passengerCounterInputVisible = ride.passengerCounterInputVisible;
+    }
+    if (myRidesIndex >= 0) {
+      myRides[myRidesIndex].passengerCounterInputVisible = ride.passengerCounterInputVisible;
+    }
+    
     renderPassengerRequests();
   }
 
