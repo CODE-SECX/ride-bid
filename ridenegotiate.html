@@ -4,98 +4,124 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>RideBid — Fair Fares, Every Time</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
 <style>
 /* ─── Reset & Design Tokens ─── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:           #f4f5f7;
+  --bg:           #f0f2f5;
   --surface:      #ffffff;
   --surface2:     #f8f9fb;
-  --surface3:     #f0f2f5;
-  --border:       #e4e7ec;
-  --border-mid:   #d0d5dd;
+  --surface3:     #eef0f4;
+  --border:       #e2e6ed;
+  --border-mid:   #cdd3dc;
   --border-focus: #2563eb;
 
-  --text:           #111827;
-  --text-secondary: #374151;
-  --text-muted:     #9ca3af;
-  --text-dim:       #d1d5db;
+  --text:           #0d1117;
+  --text-secondary: #3b4554;
+  --text-muted:     #8896a7;
+  --text-dim:       #c8d0db;
 
-  --green:        #16a34a;
+  --green:        #15993a;
   --green-mid:    #22c55e;
-  --green-light:  #f0fdf4;
-  --green-border: #bbf7d0;
+  --green-light:  #edfaf3;
+  --green-border: #a7f0c4;
 
-  --blue:         #2563eb;
+  --blue:         #1e56d9;
   --blue-mid:     #3b82f6;
-  --blue-light:   #eff6ff;
-  --blue-border:  #bfdbfe;
+  --blue-light:   #eef3fd;
+  --blue-border:  #b8d0fc;
 
-  --amber:        #d97706;
-  --amber-light:  #fffbeb;
-  --amber-border: #fde68a;
+  --amber:        #c9620a;
+  --amber-light:  #fff7ed;
+  --amber-border: #fed7aa;
 
-  --red:          #dc2626;
+  --red:          #c72626;
   --red-light:    #fef2f2;
   --red-border:   #fecaca;
 
-  --violet:       #7c3aed;
-  --violet-light: #f5f3ff;
+  --violet:       #6d28d9;
+  --violet-light: #f4f1fd;
   --violet-border:#ddd6fe;
 
-  --radius:    16px;
-  --radius-sm: 10px;
-  --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.04);
-  --shadow-lg: 0 10px 28px rgba(0,0,0,0.09), 0 4px 10px rgba(0,0,0,0.04);
+  --teal:         #0891b2;
+  --teal-light:   #ecfeff;
+  --teal-border:  #a5f3fc;
+
+  --radius:    18px;
+  --radius-sm: 11px;
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-sm: 0 2px 6px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 6px 18px rgba(0,0,0,0.08), 0 2px 5px rgba(0,0,0,0.04);
+  --shadow-lg: 0 14px 36px rgba(0,0,0,0.11), 0 4px 10px rgba(0,0,0,0.05);
   --t: 0.18s cubic-bezier(0.4,0,0.2,1);
 }
 
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'DM Sans', -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  background-image: radial-gradient(ellipse at 20% 0%, rgba(30,86,217,0.04) 0%, transparent 60%),
+                    radial-gradient(ellipse at 80% 100%, rgba(21,153,58,0.04) 0%, transparent 60%);
 }
 
 /* ─── Header ─── */
 header {
   position: sticky; top: 0; z-index: 100;
-  height: 62px;
-  background: rgba(255,255,255,0.94);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  height: 64px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   padding: 0 40px;
   display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0,0,0,0.04);
 }
 
 .logo {
-  display: flex; align-items: center; gap: 10px;
-  font-size: 1.15rem; font-weight: 800;
-  letter-spacing: -0.03em; color: var(--text);
+  display: flex; align-items: center; gap: 11px;
+  font-family: 'Syne', sans-serif;
+  font-size: 1.22rem; font-weight: 800;
+  letter-spacing: -0.04em; color: var(--text);
+  text-decoration: none;
 }
 .logo-mark {
-  width: 32px; height: 32px; border-radius: 9px;
-  background: linear-gradient(135deg, #2563eb 0%, #16a34a 100%);
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(145deg, #1e56d9 0%, #15993a 100%);
   display: flex; align-items: center; justify-content: center;
-  font-size: 15px; box-shadow: 0 2px 8px rgba(37,99,235,0.22);
+  font-size: 16px;
+  box-shadow: 0 3px 10px rgba(30,86,217,0.28);
+  position: relative; overflow: hidden;
+}
+.logo-mark::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%);
 }
 .logo em { font-style: normal; color: var(--blue); }
 
-.header-badge {
-  font-size: 0.67rem; font-weight: 700;
-  letter-spacing: 0.09em; text-transform: uppercase;
-  color: var(--text-muted);
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  padding: 4px 11px; border-radius: 20px;
+.header-center { display: flex; align-items: center; gap: 16px; }
+
+.live-indicator {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--green);
+  background: var(--green-light); border: 1px solid var(--green-border);
+  padding: 4px 10px; border-radius: 20px;
+}
+.live-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--green-mid); flex-shrink: 0;
+  animation: pulse-live 2s ease infinite;
+}
+@keyframes pulse-live {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.8); }
 }
 
 /* ─── Tab Switcher ─── */
@@ -106,9 +132,9 @@ header {
   border-radius: 50px; padding: 4px;
 }
 .tab-btn {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.79rem; font-weight: 600;
-  padding: 7px 17px; border-radius: 50px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem; font-weight: 600;
+  padding: 7px 18px; border-radius: 50px;
   border: none; cursor: pointer;
   transition: all var(--t);
   color: var(--text-muted); background: transparent;
@@ -116,8 +142,7 @@ header {
   letter-spacing: -0.01em;
 }
 .tab-btn:hover:not(.active-passenger):not(.active-driver) {
-  color: var(--text-secondary);
-  background: rgba(0,0,0,0.04);
+  color: var(--text-secondary); background: rgba(0,0,0,0.04);
 }
 .tab-btn.active-passenger {
   background: var(--surface); color: var(--blue);
@@ -127,47 +152,34 @@ header {
   background: var(--surface); color: var(--green);
   box-shadow: var(--shadow-sm);
 }
-.tab-pip {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: currentColor; opacity: 0.7;
-}
+.tab-pip { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.7; }
 
 /* ─── Main ─── */
-.main {
-  max-width: 1140px;
-  margin: 0 auto;
-  padding: 36px 24px 80px;
-}
-
-.view { display: none; animation: rise 0.28s ease; }
+.main { max-width: 1160px; margin: 0 auto; padding: 36px 24px 80px; }
+.view { display: none; animation: rise 0.3s ease; }
 .view.active { display: block; }
 @keyframes rise {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ─── Typography Helpers ─── */
+/* ─── Typography ─── */
 .label-eyebrow {
-  font-size: 0.67rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.1em;
-  color: var(--text-muted); margin-bottom: 5px;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 5px;
 }
 .section-heading {
-  font-size: 1.05rem; font-weight: 700;
-  color: var(--text); letter-spacing: -0.02em;
-  margin-bottom: 3px;
+  font-family: 'Syne', sans-serif;
+  font-size: 1.08rem; font-weight: 700; color: var(--text);
+  letter-spacing: -0.03em; margin-bottom: 3px;
 }
-.section-caption {
-  font-size: 0.81rem; color: var(--text-muted);
-  line-height: 1.55; margin-bottom: 20px;
-}
+.section-caption { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px; }
 
 /* ─── Cards ─── */
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px;
   box-shadow: var(--shadow-sm);
   transition: box-shadow var(--t), border-color var(--t);
 }
@@ -175,322 +187,277 @@ header {
 
 /* ─── Forms ─── */
 .form-grid { display: grid; gap: 16px; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
 label {
-  display: block;
-  font-size: 0.71rem; font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 0.01em; margin-bottom: 6px;
+  display: block; font-size: 0.72rem; font-weight: 600;
+  color: var(--text-secondary); letter-spacing: 0.01em; margin-bottom: 6px;
 }
 
 input, select {
-  width: 100%;
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 10px 13px;
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
-  font-size: 0.875rem; font-weight: 400;
-  outline: none;
-  transition: all var(--t);
-  -webkit-appearance: none;
+  width: 100%; background: var(--surface2);
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  padding: 11px 14px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 400;
+  outline: none; transition: all var(--t); -webkit-appearance: none;
 }
 input:focus, select:focus {
-  border-color: var(--border-focus);
-  background: var(--surface);
-  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  border-color: var(--border-focus); background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(30,86,217,0.1);
 }
 input::placeholder { color: var(--text-dim); }
 select { cursor: pointer; }
 
 .phone-row { display: flex; gap: 8px; }
-.phone-row select { width: 118px; flex-shrink: 0; }
+.phone-row select { width: 126px; flex-shrink: 0; }
+
+/* ─── Input with icon ─── */
+.input-group { position: relative; }
+.input-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 14px; pointer-events: none; z-index: 1;
+}
+.input-group input { padding-left: 36px; }
+
+/* ─── Fare hint strip ─── */
+.fare-hint {
+  margin-top: 8px; padding: 10px 14px;
+  background: linear-gradient(135deg, var(--teal-light), var(--blue-light));
+  border: 1px solid var(--teal-border); border-radius: var(--radius-sm);
+  font-size: 0.74rem; color: #0e7490; line-height: 1.5;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.fare-hint-icon { flex-shrink: 0; font-size: 1rem; }
 
 /* ─── Buttons ─── */
 .btn {
-  font-family: 'Inter', sans-serif;
-  font-weight: 600; font-size: 0.82rem;
-  padding: 10px 18px;
-  border-radius: var(--radius-sm);
-  border: 1.5px solid transparent;
-  cursor: pointer;
-  transition: all var(--t);
+  font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.83rem;
+  padding: 10px 18px; border-radius: var(--radius-sm);
+  border: 1.5px solid transparent; cursor: pointer; transition: all var(--t);
   display: inline-flex; align-items: center; gap: 6px;
   white-space: nowrap; letter-spacing: -0.01em;
 }
 .btn:active { transform: scale(0.97); }
 
 .btn-primary {
-  background: var(--green); color: #fff;
-  border-color: var(--green);
-  box-shadow: 0 2px 8px rgba(22,163,74,0.22);
+  background: var(--green); color: #fff; border-color: var(--green);
+  box-shadow: 0 2px 8px rgba(21,153,58,0.25);
 }
 .btn-primary:hover {
-  background: #15803d; border-color: #15803d;
-  box-shadow: 0 4px 14px rgba(22,163,74,0.3);
-  transform: translateY(-1px);
+  background: #127d30; border-color: #127d30;
+  box-shadow: 0 4px 16px rgba(21,153,58,0.32); transform: translateY(-1px);
 }
 
 .btn-blue {
-  background: var(--blue); color: #fff;
-  border-color: var(--blue);
-  box-shadow: 0 2px 8px rgba(37,99,235,0.2);
+  background: var(--blue); color: #fff; border-color: var(--blue);
+  box-shadow: 0 2px 8px rgba(30,86,217,0.22);
 }
 .btn-blue:hover {
-  background: #1d4ed8; border-color: #1d4ed8;
-  box-shadow: 0 4px 14px rgba(37,99,235,0.28);
-  transform: translateY(-1px);
+  background: #1646b8; border-color: #1646b8;
+  box-shadow: 0 4px 16px rgba(30,86,217,0.3); transform: translateY(-1px);
 }
 
 .btn-ghost {
   background: var(--surface); color: var(--text-secondary);
-  border-color: var(--border);
-  box-shadow: var(--shadow-xs);
+  border-color: var(--border); box-shadow: var(--shadow-xs);
 }
 .btn-ghost:hover { border-color: var(--border-mid); color: var(--text); background: var(--surface2); }
 
-.btn-danger {
-  background: var(--red-light); color: var(--red);
-  border-color: var(--red-border);
-}
+.btn-danger { background: var(--red-light); color: var(--red); border-color: var(--red-border); }
 .btn-danger:hover { background: #fee2e2; border-color: #fca5a5; }
 
-.btn-amber {
-  background: var(--amber-light); color: var(--amber);
-  border-color: var(--amber-border);
-}
-.btn-amber:hover { background: #fef3c7; border-color: #fcd34d; }
+.btn-amber { background: var(--amber-light); color: var(--amber); border-color: var(--amber-border); }
+.btn-amber:hover { background: #ffedd5; border-color: #fdba74; }
 
-.btn-sm  { padding: 7px 13px; font-size: 0.77rem; }
+.btn-sm   { padding: 7px 14px; font-size: 0.78rem; }
 .btn-full { width: 100%; justify-content: center; }
 
 /* ─── Badges ─── */
 .badge {
   display: inline-flex; align-items: center; gap: 5px;
-  font-size: 0.66rem; font-weight: 700;
-  padding: 3px 9px; border-radius: 20px;
-  text-transform: uppercase; letter-spacing: 0.07em;
+  font-size: 0.66rem; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+  text-transform: uppercase; letter-spacing: 0.07em; border: 1px solid transparent;
+}
+.badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.badge-pending   { color: var(--amber);       background: var(--amber-light);  border-color: var(--amber-border);  }
+.badge-countered { color: var(--violet);      background: var(--violet-light); border-color: var(--violet-border); }
+.badge-confirmed { color: var(--green);       background: var(--green-light);  border-color: var(--green-border);  }
+.badge-completed { color: var(--blue);        background: var(--blue-light);   border-color: var(--blue-border);   }
+.badge-rejected  { color: var(--text-muted);  background: var(--surface3);     border-color: var(--border);        }
+
+/* ─── Urgency badge ─── */
+.urgency-badge {
+  font-size: 0.63rem; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 20px;
   border: 1px solid transparent;
 }
-.badge::before {
-  content: ''; width: 5px; height: 5px;
-  border-radius: 50%; background: currentColor; flex-shrink: 0;
-}
-.badge-pending   { color: var(--amber);  background: var(--amber-light);  border-color: var(--amber-border);  }
-.badge-countered { color: var(--violet); background: var(--violet-light); border-color: var(--violet-border); }
-.badge-confirmed { color: var(--green);  background: var(--green-light);  border-color: var(--green-border);  }
-.badge-completed { color: var(--blue);  background: var(--blue-light);   border-color: var(--blue-border);   }
-.badge-rejected  { color: var(--text-muted); background: var(--surface3); border-color: var(--border);       }
+.urgency-hot  { background: #fef2f2; color: #c72626; border-color: #fecaca; }
+.urgency-warm { background: #fff7ed; color: #c9620a; border-color: #fed7aa; }
+.urgency-cool { background: var(--surface3); color: var(--text-muted); border-color: var(--border); }
 
 /* ─── Toast ─── */
 #toast-container {
-  position: fixed; bottom: 26px; right: 26px;
-  z-index: 9999;
-  display: flex; flex-direction: column; gap: 10px;
-  pointer-events: none;
+  position: fixed; bottom: 26px; right: 26px; z-index: 9999;
+  display: flex; flex-direction: column; gap: 10px; pointer-events: none;
 }
 .toast {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left-width: 3px;
-  border-radius: var(--radius);
-  padding: 13px 15px;
+  background: var(--surface); border: 1px solid var(--border); border-left-width: 4px;
+  border-radius: var(--radius); padding: 14px 16px;
   display: flex; align-items: flex-start; gap: 11px;
-  box-shadow: var(--shadow-lg);
-  animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
-  max-width: 316px; pointer-events: auto;
+  box-shadow: var(--shadow-lg); animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  max-width: 320px; pointer-events: auto;
 }
 .toast.removing { animation: toastOut 0.22s ease forwards; }
-@keyframes toastIn  { from { opacity:0; transform:translateY(14px) scale(0.96); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes toastIn  { from { opacity:0; transform:translateY(14px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
 @keyframes toastOut { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(8px); } }
-.toast-icon  { font-size: 1.1rem; margin-top: 1px; }
-.toast-title { font-size: 0.81rem; font-weight: 700; margin-bottom: 2px; }
-.toast-msg   { font-size: 0.76rem; color: var(--text-secondary); line-height: 1.45; }
+.toast-icon  { font-size: 1.15rem; margin-top: 1px; }
+.toast-title { font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 700; margin-bottom: 2px; }
+.toast-msg   { font-size: 0.76rem; color: var(--text-secondary); line-height: 1.5; }
 
 /* ─── Hero ─── */
 .hero {
-  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 48px 40px 44px;
-  text-align: center;
-  margin-bottom: 36px;
-  position: relative; overflow: hidden;
+  background: linear-gradient(140deg, #eef3fd 0%, #edfaf3 50%, #f4f1fd 100%);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 52px 44px 48px; text-align: center;
+  margin-bottom: 36px; position: relative; overflow: hidden;
   box-shadow: var(--shadow-sm);
 }
 .hero::before {
-  content: '';
-  position: absolute; inset: 0; pointer-events: none;
+  content: ''; position: absolute; inset: 0; pointer-events: none;
   background:
-    radial-gradient(ellipse at 15% 50%, rgba(37,99,235,0.06) 0%, transparent 55%),
-    radial-gradient(ellipse at 85% 50%, rgba(22,163,74,0.06) 0%, transparent 55%);
+    radial-gradient(ellipse at 10% 50%, rgba(30,86,217,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 50%, rgba(21,153,58,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgba(109,40,217,0.04) 0%, transparent 50%);
 }
+/* Decorative circles */
+.hero::after {
+  content: '';
+  position: absolute; top: -80px; right: -80px;
+  width: 280px; height: 280px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(30,86,217,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
 .hero-eyebrow {
   display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Syne', sans-serif;
   font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
   text-transform: uppercase; color: var(--blue);
-  background: var(--blue-light); border: 1px solid var(--blue-border);
-  padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+  background: rgba(30,86,217,0.08); border: 1px solid var(--blue-border);
+  padding: 5px 13px; border-radius: 20px; margin-bottom: 20px;
 }
 .hero-title {
-  font-size: 2.15rem; font-weight: 800;
-  letter-spacing: -0.045em; line-height: 1.13;
-  color: var(--text); margin-bottom: 14px;
+  font-family: 'Syne', sans-serif;
+  font-size: 2.6rem; font-weight: 800;
+  letter-spacing: -0.05em; line-height: 1.1; color: var(--text); margin-bottom: 16px;
 }
 .hero-title .accent-blue  { color: var(--blue); }
 .hero-title .accent-green { color: var(--green); }
+
 .hero-sub {
-  font-size: 0.93rem; color: var(--text-secondary);
-  max-width: 430px; margin: 0 auto 28px;
-  line-height: 1.65; font-weight: 400;
+  font-size: 0.96rem; color: var(--text-secondary);
+  max-width: 460px; margin: 0 auto 32px; line-height: 1.7; font-weight: 400;
 }
+
+/* Stats bar */
+.hero-stats {
+  display: flex; justify-content: center; gap: 0; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); overflow: hidden;
+  box-shadow: var(--shadow-xs); margin: 0 auto 24px; max-width: 500px;
+}
+.hero-stat {
+  flex: 1; min-width: 100px;
+  padding: 14px 18px; text-align: center;
+  border-right: 1px solid var(--border);
+}
+.hero-stat:last-child { border-right: none; }
+.hero-stat-num {
+  font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800;
+  letter-spacing: -0.04em; color: var(--text); line-height: 1;
+  margin-bottom: 3px;
+}
+.hero-stat-label { font-size: 0.66rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
 .hero-pills { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .hero-pill {
   display: inline-flex; align-items: center; gap: 5px;
-  font-size: 0.74rem; font-weight: 500;
-  padding: 6px 13px;
+  font-size: 0.75rem; font-weight: 500; padding: 7px 14px;
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 20px; color: var(--text-secondary);
-  box-shadow: var(--shadow-xs);
+  border-radius: 20px; color: var(--text-secondary); box-shadow: var(--shadow-xs);
 }
 
 /* ─── Auth ─── */
-.auth-wrap { max-width: 418px; margin: 0 auto; }
+.auth-wrap { max-width: 428px; margin: 0 auto; }
 .auth-heading {
-  font-size: 1.3rem; font-weight: 800;
-  letter-spacing: -0.035em; text-align: center;
-  margin-bottom: 4px;
+  font-family: 'Syne', sans-serif;
+  font-size: 1.4rem; font-weight: 800; letter-spacing: -0.04em;
+  text-align: center; margin-bottom: 4px;
 }
-.auth-sub {
-  font-size: 0.81rem; color: var(--text-muted);
-  text-align: center; margin-bottom: 24px; line-height: 1.55;
-}
+.auth-sub { font-size: 0.82rem; color: var(--text-muted); text-align: center; margin-bottom: 24px; line-height: 1.6; }
 
 /* ─── Account Bar ─── */
 .account-bar {
   display: flex; align-items: center; gap: 12px;
-  background: var(--blue-light);
-  border: 1px solid var(--blue-border);
-  border-radius: var(--radius-sm);
-  padding: 12px 16px; margin-bottom: 20px;
+  background: var(--blue-light); border: 1px solid var(--blue-border);
+  border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 20px;
 }
 .account-avatar {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--blue), #6366f1);
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), #5b21b6);
   display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 0.88rem; color: #fff;
-  flex-shrink: 0; box-shadow: 0 2px 6px rgba(37,99,235,0.22);
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.92rem; color: #fff;
+  flex-shrink: 0; box-shadow: 0 2px 8px rgba(30,86,217,0.25);
 }
-.account-name  { font-size: 0.85rem; font-weight: 700; }
+.account-name  { font-size: 0.86rem; font-weight: 700; font-family: 'Syne', sans-serif; }
 .account-phone { font-size: 0.72rem; color: var(--text-secondary); margin-top: 1px; }
 
 /* ─── Layout ─── */
 .two-col {
-  display: grid;
-  grid-template-columns: 356px 1fr;
-  gap: 24px; align-items: start;
+  display: grid; grid-template-columns: 370px 1fr; gap: 24px; align-items: start;
 }
-@media(max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
-
-@media(max-width: 600px) {
-  header { padding: 0 16px; height: 56px; }
-  .logo { font-size: 1rem; }
-  .logo-mark { width: 28px; height: 28px; font-size: 13px; }
-  .header-badge { display: none; }
-  .tab-bar { gap: 2px; padding: 3px; }
-  .tab-btn { font-size: 0.7rem; padding: 6px 12px; }
-  .main { padding: 20px 16px 60px; }
-  .hero { padding: 32px 20px 28px; }
-  .hero-title { font-size: 1.6rem; }
-  .hero-sub { font-size: 0.85rem; }
-  .hero-pills { gap: 6px; }
-  .hero-pill { font-size: 0.65rem; padding: 5px 10px; }
-  .auth-wrap { max-width: 100%; }
-  .card { padding: 16px; border-radius: 12px; }
-  .form-grid { gap: 12px; }
-  input, select { padding: 10px 12px; font-size: 0.85rem; }
-  .btn { padding: 10px 14px; font-size: 0.78rem; }
-  .account-bar { padding: 10px 12px; }
-  .account-avatar { width: 32px; height: 32px; font-size: 0.8rem; }
-  .section-heading { font-size: 0.95rem; }
-  .label-eyebrow { font-size: 0.6rem; }
-  .section-caption { font-size: 0.75rem; }
-  .inner-tabs { width: 100%; overflow-x: auto; }
-  .inner-tab { font-size: 0.7rem; padding: 6px 12px; white-space: nowrap; }
-  .driver-header { flex-direction: column; gap: 12px; padding: 14px; }
-  .driver-online { flex-direction: column; align-items: flex-start; gap: 6px; }
-  .count-chip { font-size: 0.65rem; }
-  .ride-card { padding: 14px; }
-  .ride-card-top { flex-direction: column; gap: 10px; }
-  .price-block { text-align: left; flex-direction: row; align-items: baseline; gap: 8px; }
-  .price-big { font-size: 1.3rem; }
-  .price-label-sm { font-size: 0.6rem; }
-  .route { padding: 10px 12px; }
-  .route-row { font-size: 0.78rem; }
-  .action-row { flex-direction: column; }
-  .action-row .btn { width: 100%; justify-content: center; }
-  .counter-form { flex-direction: column; }
-  .counter-form .btn { width: 100%; }
-  .counter-banner { padding: 12px; }
-  .price-compare { flex-direction: column; gap: 4px; }
-  .price-now { font-size: 1.2rem; }
-  .status-note { padding: 10px 12px; font-size: 0.72rem; }
-  .toast-container { bottom: 12px; right: 12px; left: 12px; }
-  .toast { max-width: 100%; }
-  .badge { font-size: 0.6rem; padding: 3px 7px; }
-  .scroll-list { max-height: 50vh; }
-  .tip { padding: 10px 12px; font-size: 0.72rem; }
-  .address-callout { padding: 11px 12px; font-size: 0.72rem; }
-}
+@media(max-width: 940px) { .two-col { grid-template-columns: 1fr; } }
 
 /* ─── Ride Card ─── */
 .ride-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-  box-shadow: var(--shadow-xs);
-  transition: all var(--t);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  box-shadow: var(--shadow-xs); transition: all var(--t);
   position: relative; overflow: hidden;
 }
-.ride-card:hover { box-shadow: var(--shadow-md); border-color: #cdd2da; }
+.ride-card:hover { box-shadow: var(--shadow-md); border-color: #c4cdd8; transform: translateY(-1px); }
 .ride-card + .ride-card { margin-top: 12px; }
 .ride-card::before {
-  content: ''; position: absolute;
-  left: 0; top: 0; bottom: 0; width: 3px;
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  border-radius: 2px 0 0 2px;
 }
-.ride-card.pending::before   { background: var(--amber); }
-.ride-card.countered::before { background: var(--violet); }
-.ride-card.confirmed::before { background: var(--green-mid); }
-.ride-card.completed::before { background: var(--blue-mid); }
+.ride-card.pending::before   { background: linear-gradient(to bottom, #f59e0b, #c9620a); }
+.ride-card.countered::before { background: linear-gradient(to bottom, #7c3aed, #5b21b6); }
+.ride-card.confirmed::before { background: linear-gradient(to bottom, #22c55e, #15993a); }
+.ride-card.completed::before { background: linear-gradient(to bottom, #3b82f6, #1e56d9); }
 .ride-card.rejected::before  { background: var(--text-dim); }
 
 .ride-card-top {
-  display: flex; align-items: flex-start;
-  justify-content: space-between; gap: 12px;
-  margin-bottom: 14px;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px; margin-bottom: 14px;
 }
-.passenger-name  { font-size: 0.94rem; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.passenger-name  { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 2px; }
 .passenger-phone { font-size: 0.74rem; color: var(--text-muted); }
-
-.price-block { text-align: right; flex-shrink: 0; }
-.price-label-sm { font-size: 0.63rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
-.price-big  { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1.1; color: var(--green); }
+.price-block     { text-align: right; flex-shrink: 0; }
+.price-label-sm  { font-size: 0.63rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+.price-big       { font-family: 'Syne', sans-serif; font-size: 1.65rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1.1; color: var(--green); }
 .price-big.counter-col { color: var(--amber); }
 
 /* ─── Route ─── */
 .route {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 12px 14px; margin-bottom: 14px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px;
   display: flex; flex-direction: column; gap: 8px;
 }
 .route-row { display: flex; align-items: center; gap: 10px; font-size: 0.84rem; color: var(--text-secondary); }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dot.from { background: var(--blue-mid); box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
-.dot.to   { background: var(--red);     box-shadow: 0 0 0 2px rgba(220,38,38,0.2); }
+.dot.from { background: var(--blue-mid); box-shadow: 0 0 0 2px rgba(59,130,246,0.22); }
+.dot.to   { background: var(--red);     box-shadow: 0 0 0 2px rgba(199,38,38,0.18); }
 .route-line { width: 1px; height: 12px; background: var(--border); margin-left: 3.5px; }
 
 /* ─── Action Row ─── */
@@ -499,37 +466,32 @@ select { cursor: pointer; }
 /* ─── Counter Form ─── */
 .counter-form {
   display: flex; gap: 8px; align-items: flex-end;
-  margin-top: 12px; padding-top: 14px;
-  border-top: 1px solid var(--border);
+  margin-top: 12px; padding-top: 14px; border-top: 1px solid var(--border);
 }
 .counter-form .field { flex: 1; }
 .counter-form input { padding: 9px 12px; }
 
-/* ─── Counter Banner (passenger) ─── */
+/* ─── Counter Banner ─── */
 .counter-banner {
-  margin-top: 12px;
-  background: var(--violet-light);
-  border: 1px solid var(--violet-border);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
-  animation: rise 0.3s ease;
+  margin-top: 12px; background: var(--violet-light);
+  border: 1px solid var(--violet-border); border-radius: var(--radius-sm);
+  padding: 14px 16px; animation: rise 0.3s ease;
 }
 .counter-banner-head {
-  font-size: 0.79rem; font-weight: 700; color: var(--violet);
+  font-family: 'Syne', sans-serif;
+  font-size: 0.8rem; font-weight: 700; color: var(--violet);
   margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
 }
-.price-compare { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
-.price-was { font-size: 0.81rem; color: var(--text-muted); text-decoration: line-through; }
-.price-now { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; color: var(--amber); }
-.counter-banner p { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: 12px; }
+.price-compare { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.price-was  { font-size: 0.82rem; color: var(--text-muted); text-decoration: line-through; }
+.price-now  { font-family: 'Syne', sans-serif; font-size: 1.45rem; font-weight: 800; letter-spacing: -0.03em; color: var(--amber); }
+.counter-banner p { font-size: 0.79rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px; }
 
 /* ─── Status Banners ─── */
 .status-note {
-  display: flex; align-items: flex-start; gap: 8px;
-  margin-top: 12px; padding: 11px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 0.79rem; line-height: 1.5; font-weight: 500;
-  border: 1px solid transparent;
+  display: flex; align-items: flex-start; gap: 8px; margin-top: 12px;
+  padding: 11px 14px; border-radius: var(--radius-sm);
+  font-size: 0.8rem; line-height: 1.5; font-weight: 500; border: 1px solid transparent;
 }
 .status-note.ok     { background: var(--green-light);  color: var(--green); border-color: var(--green-border); }
 .status-note.closed { background: var(--surface3);     color: var(--text-muted); border-color: var(--border); }
@@ -538,125 +500,135 @@ select { cursor: pointer; }
 /* ─── Contact Link ─── */
 a.phone-link {
   color: inherit; text-decoration: none;
-  display: inline-flex; align-items: center; gap: 4px;
-  transition: color var(--t);
+  display: inline-flex; align-items: center; gap: 4px; transition: color var(--t);
   border-radius: 4px; padding: 1px 3px; margin: -1px -3px;
 }
 a.phone-link:hover { color: var(--blue); background: var(--blue-light); text-decoration: underline; }
 a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
-/* ─── Contact Info Block (driver confirmed view) ─── */
+/* ─── Contact Info Blocks ─── */
 .contact-info-block {
-  margin-top: 12px;
-  background: var(--blue-light);
-  border: 1px solid var(--blue-border);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
+  margin-top: 12px; background: var(--blue-light);
+  border: 1px solid var(--blue-border); border-radius: var(--radius-sm); padding: 14px 16px;
 }
 .contact-info-block-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .contact-avatar-sm {
   width: 32px; height: 32px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--blue), #6366f1);
+  background: linear-gradient(135deg, var(--blue), #5b21b6);
   display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 0.82rem; color: #fff; flex-shrink: 0;
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.82rem; color: #fff; flex-shrink: 0;
 }
 .contact-info-name { font-size: 0.86rem; font-weight: 700; color: var(--text); }
 .contact-info-role { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--blue); margin-top: 1px; }
 .contact-info-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 0; border-top: 1px solid var(--blue-border);
-  font-size: 0.79rem; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 8px; padding: 8px 0;
+  border-top: 1px solid var(--blue-border); font-size: 0.79rem; color: var(--text-secondary);
 }
 .contact-info-icon { font-size: 0.9rem; flex-shrink: 0; opacity: 0.75; }
 
-/* ─── Driver Contact Block (passenger confirmed/completed view) ─── */
 .driver-contact-block {
-  margin-top: 12px;
-  background: var(--green-light);
-  border: 1px solid var(--green-border);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
+  margin-top: 12px; background: var(--green-light);
+  border: 1px solid var(--green-border); border-radius: var(--radius-sm); padding: 14px 16px;
 }
 .driver-contact-block-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .contact-avatar-sm.green-avatar { background: linear-gradient(135deg, var(--green), #059669); }
 .driver-contact-name { font-size: 0.86rem; font-weight: 700; color: var(--text); }
 .driver-contact-role { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--green); margin-top: 1px; }
 .driver-contact-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 0; border-top: 1px solid var(--green-border);
-  font-size: 0.79rem; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 8px; padding: 8px 0;
+  border-top: 1px solid var(--green-border); font-size: 0.79rem; color: var(--text-secondary);
 }
+
+/* ─── Share button ─── */
+.share-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.72rem; font-weight: 600; padding: 4px 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; color: var(--text-muted); cursor: pointer;
+  transition: all var(--t); margin-left: auto;
+}
+.share-btn:hover { color: var(--blue); border-color: var(--blue-border); background: var(--blue-light); }
 
 /* ─── Driver Header ─── */
 .driver-header {
   display: flex; align-items: center; justify-content: space-between;
-  background: var(--green-light);
-  border: 1px solid var(--green-border);
-  border-radius: var(--radius);
-  padding: 16px 20px; margin-bottom: 20px;
-  box-shadow: var(--shadow-xs);
+  background: linear-gradient(135deg, var(--green-light), #f0fdf4);
+  border: 1px solid var(--green-border); border-radius: var(--radius);
+  padding: 18px 22px; margin-bottom: 20px; box-shadow: var(--shadow-xs);
 }
-.driver-online { display: flex; align-items: center; gap: 10px; }
+.driver-online { display: flex; align-items: center; gap: 12px; }
 .live-pip {
-  width: 9px; height: 9px; border-radius: 50%;
-  background: var(--green-mid);
-  box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
-  animation: breathe 2.2s ease-in-out infinite;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--green-mid); box-shadow: 0 0 0 3px rgba(34,197,94,0.22);
+  animation: breathe 2.2s ease-in-out infinite; flex-shrink: 0;
 }
 @keyframes breathe {
-  0%,100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.2); }
-  50%      { box-shadow: 0 0 0 7px rgba(34,197,94,0.05); }
+  0%,100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.22); }
+  50%      { box-shadow: 0 0 0 8px rgba(34,197,94,0.05); }
 }
-.driver-label { font-size: 0.84rem; font-weight: 700; color: var(--green); }
-.driver-sub   { font-size: 0.71rem; color: #15803d; margin-top: 1px; }
+.driver-label { font-family: 'Syne', sans-serif; font-size: 0.88rem; font-weight: 700; color: var(--green); }
+.driver-sub   { font-size: 0.72rem; color: #166534; margin-top: 1px; }
 .count-chip {
-  font-size: 0.73rem; font-weight: 600;
-  color: var(--text-secondary);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px; padding: 5px 13px;
-  box-shadow: var(--shadow-xs);
+  font-size: 0.74rem; font-weight: 600; color: var(--text-secondary);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 5px 14px; box-shadow: var(--shadow-xs);
 }
 .count-chip strong { color: var(--text); }
 
+/* ─── Earnings Summary Strip ─── */
+.earnings-strip {
+  display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.earnings-card {
+  flex: 1; min-width: 120px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px 16px;
+  box-shadow: var(--shadow-xs);
+}
+.earnings-num {
+  font-family: 'Syne', sans-serif; font-size: 1.25rem; font-weight: 800;
+  letter-spacing: -0.04em; color: var(--text); line-height: 1; margin-bottom: 3px;
+}
+.earnings-num.green { color: var(--green); }
+.earnings-label { font-size: 0.67rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+
 /* ─── Inner Tabs ─── */
 .inner-tabs {
-  display: flex; gap: 2px;
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  border-radius: 10px; padding: 3px;
+  display: flex; gap: 2px; background: var(--surface3);
+  border: 1px solid var(--border); border-radius: 10px; padding: 3px;
   width: fit-content; margin-bottom: 20px;
 }
 .inner-tab {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.75rem; font-weight: 600;
-  padding: 6px 15px; border-radius: 8px;
-  border: none; cursor: pointer;
-  background: transparent; color: var(--text-muted);
-  transition: all var(--t); letter-spacing: -0.01em;
+  font-family: 'DM Sans', sans-serif; font-size: 0.76rem; font-weight: 600;
+  padding: 7px 16px; border-radius: 8px; border: none; cursor: pointer;
+  background: transparent; color: var(--text-muted); transition: all var(--t);
+  letter-spacing: -0.01em;
 }
 .inner-tab.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-xs); }
+.inner-tab .tab-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--amber-light); color: var(--amber);
+  font-size: 0.62rem; font-weight: 800; margin-left: 4px;
+}
 
 /* ─── Empty States ─── */
 .empty {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 60px 20px; text-align: center;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 64px 20px; text-align: center;
   box-shadow: var(--shadow-xs);
 }
-.empty-icon  { font-size: 2.4rem; margin-bottom: 14px; display: block; }
-.empty-head  { font-size: 0.9rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; }
-.empty-body  { font-size: 0.79rem; color: var(--text-muted); line-height: 1.65; }
+.empty-icon { font-size: 2.6rem; margin-bottom: 14px; display: block; }
+.empty-head { font-family: 'Syne', sans-serif; font-size: 0.92rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; }
+.empty-body { font-size: 0.8rem; color: var(--text-muted); line-height: 1.7; }
 
 /* ─── Tips ─── */
 .tip-list { display: flex; flex-direction: column; gap: 8px; }
 .tip {
   display: flex; align-items: flex-start; gap: 10px;
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 11px 14px;
-  box-shadow: var(--shadow-xs);
-  font-size: 0.78rem; color: var(--text-secondary); line-height: 1.55;
+  border-radius: var(--radius-sm); padding: 11px 14px; box-shadow: var(--shadow-xs);
+  font-size: 0.79rem; color: var(--text-secondary); line-height: 1.6;
 }
 .tip-i { flex-shrink: 0; font-size: 1rem; }
 
@@ -666,35 +638,126 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 .scroll-list::-webkit-scrollbar-track { background: transparent; }
 .scroll-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
+/* ─── Address Callout ─── */
 .address-callout {
   display: flex; align-items: flex-start; gap: 10px;
-  background: #fffbeb;
-  border: 1.5px solid #fbbf24;
-  border-radius: var(--radius-sm);
-  padding: 13px 15px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 4px rgba(217,119,6,0.08);
+  background: #fffbeb; border: 1.5px solid #fbbf24;
+  border-radius: var(--radius-sm); padding: 13px 15px; margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(217,119,6,0.07);
 }
 .address-callout-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
-.address-callout-title {
-  font-size: 0.76rem; font-weight: 700;
-  color: #92400e; letter-spacing: 0.01em; margin-bottom: 3px;
-}
-.address-callout-desc {
-  font-size: 0.72rem; color: #78350f; line-height: 1.6;
-}
+.address-callout-title { font-size: 0.76rem; font-weight: 700; color: #92400e; letter-spacing: 0.01em; margin-bottom: 3px; }
+.address-callout-desc { font-size: 0.72rem; color: #78350f; line-height: 1.65; }
 .address-callout-desc strong { font-weight: 700; color: #92400e; }
 
 .driver-loading {
   display: flex; align-items: center; gap: 6px;
-  font-size: 0.72rem; color: var(--text-muted);
-  padding: 8px 0; font-style: italic;
+  font-size: 0.72rem; color: var(--text-muted); padding: 8px 0; font-style: italic;
 }
 
+/* ─── Ride meta row ─── */
+.ride-meta { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.time-posted { font-size: 0.68rem; color: var(--text-muted); }
+
+/* ─── Market intel strip (driver) ─── */
+.market-strip {
+  background: linear-gradient(135deg, var(--teal-light), var(--blue-light));
+  border: 1px solid var(--teal-border); border-radius: var(--radius-sm);
+  padding: 10px 14px; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px; font-size: 0.76rem; color: #0e7490;
+}
+.market-strip strong { font-weight: 700; color: #164e63; }
+
+/* ─── Copy phone button ─── */
+.copy-btn {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 0.68rem; font-weight: 600; padding: 2px 7px;
+  background: var(--surface3); border: 1px solid var(--border);
+  border-radius: 6px; cursor: pointer; color: var(--text-muted);
+  transition: all var(--t); margin-left: 4px;
+}
+.copy-btn:hover { background: var(--blue-light); border-color: var(--blue-border); color: var(--blue); }
+
+/* ─── Progress steps ─── */
+.negotiate-steps {
+  display: flex; align-items: center; gap: 0;
+  margin-bottom: 14px; padding: 10px 12px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); overflow: hidden;
+}
+.step { display: flex; align-items: center; gap: 5px; flex: 1; min-width: 0; }
+.step-circle {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 800; border: 2px solid transparent;
+}
+.step-circle.done  { background: var(--green); border-color: var(--green); color: #fff; }
+.step-circle.active{ background: var(--blue-light); border-color: var(--blue); color: var(--blue); }
+.step-circle.next  { background: var(--surface3); border-color: var(--border); color: var(--text-muted); }
+.step-label { font-size: 0.63rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.step-label.done   { color: var(--green); }
+.step-label.active { color: var(--blue); }
+.step-connector { width: 20px; height: 1px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
+.step-connector.done { background: var(--green); }
+
 /* ─── Utils ─── */
-.divider { height: 1px; background: var(--border); margin: 24px 0; }
+.divider { height: 1px; background: var(--border); margin: 28px 0; }
 .hidden  { display: none !important; }
 .mt-3    { margin-top: 12px; }
+
+/* ─── Mobile ─── */
+@media(max-width: 600px) {
+  header { padding: 0 16px; height: 56px; }
+  .logo  { font-size: 1.05rem; }
+  .logo-mark { width: 30px; height: 30px; font-size: 13px; }
+  .live-indicator { display: none; }
+  .tab-bar { gap: 2px; padding: 3px; }
+  .tab-btn { font-size: 0.71rem; padding: 6px 12px; }
+  .main { padding: 20px 16px 60px; }
+  .hero { padding: 32px 20px 28px; }
+  .hero-title { font-size: 1.75rem; }
+  .hero-sub { font-size: 0.85rem; }
+  .hero-stats { gap: 8px; }
+  .hero-stat { min-width: 80px; padding: 10px 12px; }
+  .hero-stat-num { font-size: 1.1rem; }
+  .auth-wrap { max-width: 100%; }
+  .card { padding: 16px; border-radius: 14px; }
+  .form-grid { gap: 12px; }
+  .form-row-2 { grid-template-columns: 1fr; }
+  input, select { padding: 10px 12px; font-size: 0.85rem; }
+  .btn { padding: 10px 14px; font-size: 0.79rem; }
+  .account-bar { padding: 10px 12px; }
+  .account-avatar { width: 34px; height: 34px; font-size: 0.82rem; }
+  .section-heading { font-size: 0.96rem; }
+  .inner-tabs { width: 100%; overflow-x: auto; }
+  .inner-tab { font-size: 0.7rem; padding: 6px 12px; white-space: nowrap; }
+  .driver-header { flex-direction: column; gap: 12px; padding: 14px; }
+  .driver-online { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .ride-card { padding: 14px; }
+  .ride-card-top { flex-direction: column; gap: 10px; }
+  .price-block { text-align: left; flex-direction: row; align-items: baseline; gap: 8px; }
+  .price-big  { font-size: 1.35rem; }
+  .route      { padding: 10px 12px; }
+  .route-row  { font-size: 0.79rem; }
+  .action-row { flex-direction: column; }
+  .action-row .btn { width: 100%; justify-content: center; }
+  .counter-form { flex-direction: column; }
+  .counter-form .btn { width: 100%; }
+  .counter-banner { padding: 12px; }
+  .price-compare { flex-direction: column; gap: 4px; }
+  .price-now  { font-size: 1.25rem; }
+  .status-note { padding: 10px 12px; font-size: 0.73rem; }
+  .toast { max-width: 100%; }
+  .badge { font-size: 0.6rem; padding: 3px 7px; }
+  .scroll-list { max-height: 50vh; }
+  .tip  { padding: 10px 12px; font-size: 0.73rem; }
+  .address-callout { padding: 11px 12px; font-size: 0.72rem; }
+  .earnings-strip { gap: 8px; }
+  .earnings-card  { padding: 10px 12px; }
+  .earnings-num   { font-size: 1rem; }
+  .negotiate-steps { display: none; }
+  #toast-container { bottom: 12px; right: 12px; left: 12px; }
+}
 </style>
 </head>
 <body>
@@ -706,7 +769,12 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     <div class="logo-mark">🚗</div>
     Ride<em>Bid</em>
   </div>
-  <div class="header-badge">Fair Fares · No Surge</div>
+  <div class="header-center">
+    <div class="live-indicator">
+      <div class="live-dot"></div>
+      Live Negotiation
+    </div>
+  </div>
   <div class="tab-bar">
     <button class="tab-btn" id="tab-passenger" onclick="switchTab('passenger')">
       <div class="tab-pip"></div>I'm a Rider
@@ -722,7 +790,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   <!-- PASSENGER VIEW -->
   <div class="view" id="view-passenger">
 
-    <div class="hero">
+    <div class="hero" id="passenger-hero">
       <div class="hero-eyebrow">✦ The smarter way to get around</div>
       <h1 class="hero-title">
         Your price.<br>
@@ -733,6 +801,20 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         Name what you think is fair. Drivers respond — accept your offer,
         suggest a counter, or move on. Transparent pricing, every time.
       </p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-num">0%</div>
+          <div class="hero-stat-label">Surge Pricing</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">You</div>
+          <div class="hero-stat-label">Set the Price</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">Live</div>
+          <div class="hero-stat-label">Driver Bids</div>
+        </div>
+      </div>
       <div class="hero-pills">
         <span class="hero-pill">⚡ Real-time offers</span>
         <span class="hero-pill">🤝 You set the opening bid</span>
@@ -749,19 +831,37 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div class="form-grid">
             <div>
               <label>What should drivers call you?</label>
-              <input id="p-name" type="text" placeholder="e.g. Sarah Johnson" autocomplete="name" />
+              <div class="input-group">
+                <span class="input-icon">👤</span>
+                <input id="p-name" type="text" placeholder="e.g. Sarah Johnson" autocomplete="name" />
+              </div>
             </div>
             <div>
               <label>Your mobile — strictly for ride coordination</label>
               <div class="phone-row">
                 <select id="p-code">
-                  <option value="+1" selected>🇨🇦 +1</option>
                   <option value="+91">🇮🇳 +91</option>
+                  <option value="+1">🇨🇦 +1</option>
                   <option value="+44">🇬🇧 +44</option>
                   <option value="+65">🇸🇬 +65</option>
                   <option value="+971">🇦🇪 +971</option>
+                  <option value="+60">🇲🇾 +60</option>
+                  <option value="+62">🇮🇩 +62</option>
+                  <option value="+63">🇵🇭 +63</option>
+                  <option value="+66">🇹🇭 +66</option>
+                  <option value="+84">🇻🇳 +84</option>
+                  <option value="+92">🇵🇰 +92</option>
+                  <option value="+880">🇧🇩 +880</option>
+                  <option value="+94">🇱🇰 +94</option>
+                  <option value="+977">🇳🇵 +977</option>
+                  <option value="+61">🇦🇺 +61</option>
+                  <option value="+49">🇩🇪 +49</option>
+                  <option value="+33">🇫🇷 +33</option>
+                  <option value="+55">🇧🇷 +55</option>
+                  <option value="+234">🇳🇬 +234</option>
+                  <option value="+254">🇰🇪 +254</option>
                 </select>
-                <input id="p-phone" type="tel" placeholder="(555) 123-4567" autocomplete="tel" />
+                <input id="p-phone" type="tel" placeholder="98765 43210" autocomplete="tel" />
               </div>
             </div>
             <button class="btn btn-blue btn-full mt-3" onclick="createPassengerAccount()">
@@ -795,11 +895,10 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
             <div class="address-callout">
               <div class="address-callout-icon">📍</div>
               <div>
-                <div class="address-callout-title">Use your full address — it gets you picked up faster</div>
+                <div class="address-callout-title">Full address = faster pickup</div>
                 <div class="address-callout-desc">
                   Include the <strong>door number, street name, and a nearby landmark</strong> for both
-                  pickup and drop-off. "Near the mall" won't cut it — drivers need enough detail
-                  to commit without back-and-forth.
+                  pickup and drop-off so drivers can commit without back-and-forth.
                 </div>
               </div>
             </div>
@@ -807,19 +906,34 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
             <div class="form-grid">
               <div>
                 <label>Pickup — the more specific, the better</label>
-                <input id="p-pickup" type="text" placeholder="e.g. 123 Yonge Street, near Eaton Centre, Toronto" />
+                <div class="input-group">
+                  <span class="input-icon">🟢</span>
+                  <input id="p-pickup" type="text" placeholder="e.g. 12 Anna Salai, near Spencer Plaza, Chennai" />
+                </div>
               </div>
               <div>
                 <label>Drop-off — where the journey ends</label>
-                <input id="p-drop" type="text" placeholder="e.g. 100 Queen Street West, near Nathan Phillips Square, Toronto" />
+                <div class="input-group">
+                  <span class="input-icon">🔴</span>
+                  <input id="p-drop" type="text" placeholder="e.g. Chennai Airport, Terminal 1" />
+                </div>
               </div>
-              <div>
-                <label>Pick-up Time — when do you want to ride?</label>
-                <input id="p-pickup-time" type="datetime-local" />
+              <div class="form-row-2">
+                <div>
+                  <label>Pick-up Date & Time</label>
+                  <input id="p-pickup-time" type="datetime-local" />
+                </div>
+                <div>
+                  <label>Your offer — make it fair ($)</label>
+                  <div class="input-group">
+                    <span class="input-icon">💰</span>
+                    <input id="p-price" type="number" placeholder="e.g. 140" min="1" oninput="showFareHint(this.value)" />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label>Your offer — make it worth their ride ($)</label>
-                <input id="p-price" type="number" placeholder="e.g. 140" min="1" />
+              <div id="fare-hint-block" class="hidden fare-hint">
+                <span class="fare-hint-icon">💡</span>
+                <span id="fare-hint-text"></span>
               </div>
               <button class="btn btn-blue btn-full" onclick="submitRideRequest()">
                 Send Offer to Drivers →
@@ -834,6 +948,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
             <div class="tip"><span class="tip-i">📍</span><span>Precise locations help drivers commit faster — vague gets you vague.</span></div>
             <div class="tip"><span class="tip-i">💡</span><span>Think of your opening offer as a handshake, not a lowball — a fair price invites faster replies.</span></div>
             <div class="tip"><span class="tip-i">🤝</span><span>A counter offer is good news — it means a driver wants your ride. A small nudge often seals the deal.</span></div>
+            <div class="tip"><span class="tip-i">⏰</span><span>Book early for airport or late-night rides — drivers plan ahead and reward it with better rates.</span></div>
           </div>
         </div>
 
@@ -915,29 +1030,22 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 <script>
   /* ═══════════ STATE ═══════════ */
   const API_URL = (window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin) + '/api';
-  
+
   let supabaseClient = null;
   let realtimeSubscription = null;
   let passenger = null;
-  
+
   async function initializeSupabase() {
     try {
       const response = await fetch(`${API_URL}/config`);
       const config = await response.json();
-      
       if (config.supabaseUrl && config.supabaseAnonKey) {
         const { createClient } = window.supabase;
         supabaseClient = createClient(config.supabaseUrl, config.supabaseAnonKey);
-        console.log('✅ Supabase client initialized');
         return true;
-      } else {
-        console.error('❌ Supabase configuration not found');
-        return false;
       }
-    } catch (error) {
-      console.error('❌ Failed to fetch Supabase config:', error);
       return false;
-    }
+    } catch (error) { return false; }
   }
 
   let allRides = [];
@@ -955,9 +1063,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         renderPassengerRequests();
         renderAllRides();
       }
-    } catch (e) {
-      console.warn('Could not fetch driver profile for', driverId, e);
-    }
+    } catch (e) {}
   }
 
   function resolveDriver(r) {
@@ -977,97 +1083,112 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
   /* ═══════════ PHONE LINK HELPER ═══════════ */
   function phoneLink(phoneStr, labelClass) {
-    if (!phoneStr || phoneStr === 'N/A') {
-      return `<span class="${labelClass || ''}">N/A</span>`;
-    }
+    if (!phoneStr || phoneStr === 'N/A') return `<span class="${labelClass||''}">N/A</span>`;
     const dialable = phoneStr.replace(/\s+/g, '');
-    return `<a href="tel:${dialable}" class="phone-link ${labelClass || ''}"><span class="phone-icon">📞</span>${phoneStr}</a>`;
+    return `<a href="tel:${dialable}" class="phone-link ${labelClass||''}"><span class="phone-icon">📞</span>${phoneStr}</a>
+            <button class="copy-btn" onclick="copyPhone('${dialable}',event)" title="Copy number">📋</button>`;
+  }
+
+  function copyPhone(phone, e) {
+    e.preventDefault();
+    navigator.clipboard.writeText(phone).then(() => {
+      toast('📋', 'Copied!', phone + ' is in your clipboard.', 'blue');
+    }).catch(() => {});
+  }
+
+  /* ═══════════ FARE HINT ═══════════ */
+  function showFareHint(val) {
+    const block = document.getElementById('fare-hint-block');
+    const text  = document.getElementById('fare-hint-text');
+    const v = parseFloat(val);
+    if (!v || v <= 0) { block.classList.add('hidden'); return; }
+    let msg = '';
+    if (v < 50)       msg = 'That\'s a very low bid — drivers may skip it. Consider going a bit higher for faster responses.';
+    else if (v < 100) msg = 'Decent range for a short ride. Drivers in this zone respond quickly.';
+    else if (v < 200) msg = 'Solid offer — this range tends to attract multiple driver responses. Good negotiating position!';
+    else if (v < 400) msg = 'Strong offer! You\'re likely to get quick accepts or very close counters. Great for longer rides.';
+    else              msg = 'Premium offer — you\'ll almost certainly get an immediate accept. Great for urgent or long-distance rides.';
+    text.textContent = msg;
+    block.classList.remove('hidden');
+  }
+
+  /* ═══════════ SHARE RIDE ═══════════ */
+  function shareRide(rideId) {
+    const ride = getRide(rideId);
+    if (!ride) return;
+    const text = `🚗 RideBid Request: ${ride.pickup_location} → ${ride.dropoff_location}. Offer: $${ride.offered_fare}. Join RideBid to respond!`;
+    if (navigator.share) {
+      navigator.share({ title: 'RideBid — Ride Request', text });
+    } else {
+      navigator.clipboard.writeText(text).then(() => toast('📤', 'Copied to clipboard!', 'Share this with a driver you know.', 'blue'));
+    }
+  }
+
+  /* ═══════════ TIME AGO ═══════════ */
+  function timeAgoStr(dateStr) {
+    if (!dateStr) return '';
+    const s = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+    if (s < 60)        return 'Just now';
+    if (s < 3600)      return Math.floor(s/60) + 'm ago';
+    if (s < 86400)     return Math.floor(s/3600) + 'h ago';
+    return Math.floor(s/86400) + 'd ago';
+  }
+
+  function urgencyFromTime(dateStr) {
+    if (!dateStr) return { cls: 'urgency-cool', label: '' };
+    const s = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+    if (s < 600)  return { cls: 'urgency-hot',  label: '🔥 Just posted' };
+    if (s < 3600) return { cls: 'urgency-warm', label: '⏱ ' + Math.floor(s/60) + 'm ago' };
+    return { cls: 'urgency-cool', label: Math.floor(s/3600) + 'h ago' };
   }
 
   /* ═══════════ SUPABASE REALTIME ═══════════ */
   function connectRealtime() {
-    console.log('Connecting to Supabase Realtime...');
     realtimeSubscription = supabaseClient
       .channel('ride_requests')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'ride_requests' }, 
-        (payload) => {
-          console.log('Realtime update received:', payload);
-          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-            handleRideUpdate(payload.new);
-          }
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ride_requests' }, (payload) => {
+        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') handleRideUpdate(payload.new);
+      })
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ Supabase Realtime connected');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ Supabase Realtime connection error');
-          setTimeout(connectRealtime, 3000);
-        }
+        if (status === 'CHANNEL_ERROR') setTimeout(connectRealtime, 3000);
       });
   }
 
   function disconnectRealtime() {
-    if (realtimeSubscription) {
-      supabaseClient.removeChannel(realtimeSubscription);
-      realtimeSubscription = null;
-    }
+    if (realtimeSubscription) { supabaseClient.removeChannel(realtimeSubscription); realtimeSubscription = null; }
   }
 
-  /*
-   * ─────────────────────────────────────────────────────────────────────
-   * handleRideUpdate  —  called when Supabase Realtime pushes a change.
-   *
-   * KEY FIX: Supabase only sends DB columns. `previous_counter_fare` is a
-   * frontend-only field we attach in memory so the UI can show correct
-   * "previous price" labels during multi-round negotiations.
-   *
-   * Strategy: if the incoming ride has a changed counter_fare, we derive
-   * previous_counter_fare from the existing local record's counter_fare
-   * (which was the "current" value before this update arrived).
-   * If we have no existing record, we fall back to offered_fare.
-   * ─────────────────────────────────────────────────────────────────────
-   */
   function handleRideUpdate(incomingRide) {
-    // Look up existing local copy so we can preserve / compute previous_counter_fare
     const existingAll = allRides.find(r => r.id === incomingRide.id);
     const existingMy  = myRides.find(r => r.id === incomingRide.id);
     const existing    = existingAll || existingMy;
 
-    // Compute previous_counter_fare:
-    // If counter_fare just changed (a new counter was submitted), the old
-    // counter_fare becomes the "previous" value.  If this is the very first
-    // counter (no prior counter_fare), fall back to offered_fare.
     let previousCounterFare = existing ? existing.previous_counter_fare : undefined;
 
     if (incomingRide.counter_fare !== undefined) {
       const oldCounterFare = existing ? existing.counter_fare : undefined;
       if (oldCounterFare !== undefined && oldCounterFare !== incomingRide.counter_fare) {
-        // counter_fare changed → old value becomes "previous"
         previousCounterFare = oldCounterFare;
       } else if (previousCounterFare === undefined) {
-        // No prior counter at all — the "previous" was the passenger's original offer
         previousCounterFare = incomingRide.offered_fare;
       }
     }
 
     const mergedRide = {
       ...incomingRide,
-      previous_counter_fare: previousCounterFare,
-      // Preserve UI-only toggle state from existing record
+      previous_counter_fare:        previousCounterFare,
       counterInputVisible:          existing ? existing.counterInputVisible          : false,
       passengerCounterInputVisible: existing ? existing.passengerCounterInputVisible : false,
     };
 
     const allIdx = allRides.findIndex(r => r.id === incomingRide.id);
-    if (allIdx >= 0) { allRides[allIdx] = mergedRide; }
-    else             { allRides.unshift(mergedRide); }
+    if (allIdx >= 0) allRides[allIdx] = mergedRide;
+    else             allRides.unshift(mergedRide);
 
     if (passenger && incomingRide.passenger_phone === passenger.phone) {
       const myIdx = myRides.findIndex(r => r.id === incomingRide.id);
-      if (myIdx >= 0) { myRides[myIdx] = mergedRide; }
-      else            { myRides.unshift(mergedRide); }
+      if (myIdx >= 0) myRides[myIdx] = mergedRide;
+      else            myRides.unshift(mergedRide);
     }
 
     renderPassengerRequests();
@@ -1075,14 +1196,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     renderDriverView();
   }
 
-  /*
-   * sendRideUpdate  —  called after a local action (accept/counter/reject).
-   * The server response already has the freshly updated ride; we merge it
-   * the same way as handleRideUpdate so previous_counter_fare is always set.
-   */
-  function sendRideUpdate(ride) {
-    handleRideUpdate(ride);
-  }
+  function sendRideUpdate(ride) { handleRideUpdate(ride); }
 
   /* ═══════════ TABS ═══════════ */
   function switchTab(tab) {
@@ -1125,6 +1239,10 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       passenger = { id: data.passenger.id, name: canonicalName, phone: fullPhone };
       localStorage.setItem('passenger', JSON.stringify(passenger));
 
+      // Hide hero after login
+      const hero = document.getElementById('passenger-hero');
+      if (hero) hero.style.display = 'none';
+
       showPassengerDashboard();
 
       if (canonicalName !== nameInput) {
@@ -1137,9 +1255,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
       loadAllRides();
       loadMyRides();
-    } catch (err) {
-      toast('❌', 'Error', err.message, 'red');
-    }
+    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
   function showPassengerDashboard() {
@@ -1148,16 +1264,20 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     document.getElementById('p-display-name').textContent  = passenger.name;
     document.getElementById('p-display-phone').textContent = passenger.phone;
     document.getElementById('p-avatar').textContent        = passenger.name[0].toUpperCase();
+    // Also hide hero when already logged in
+    const hero = document.getElementById('passenger-hero');
+    if (hero) hero.style.display = 'none';
   }
 
   function logoutPassenger() {
-    passenger = null;
-    myRides   = [];
+    passenger = null; myRides = [];
     localStorage.removeItem('passenger');
     document.getElementById('passenger-auth').classList.remove('hidden');
     document.getElementById('passenger-dashboard').classList.add('hidden');
     document.getElementById('p-name').value  = '';
     document.getElementById('p-phone').value = '';
+    const hero = document.getElementById('passenger-hero');
+    if (hero) hero.style.display = '';
   }
 
   function checkSavedPassenger() {
@@ -1176,13 +1296,13 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     const loginHtml = `
       <div class="auth-wrap" style="max-width:380px; margin:40px auto;">
         <h2 class="auth-heading">Driver Login</h2>
-        <p class="auth-sub">Enter your credentials to access ride requests</p>
+        <p class="auth-sub">Enter your credentials to access live ride requests</p>
         <div class="card">
           <div class="form-grid">
             <div><label>Username</label><input id="d-username" type="text" placeholder="username" /></div>
-            <div><label>Password</label><input id="d-password" type="password" placeholder="password" /></div>
-            <button class="btn btn-primary btn-full" onclick="loginDriver()">Login</button>
-            <button class="btn btn-ghost btn-full" onclick="switchTab('passenger')">Back to Rider</button>
+            <div><label>Password</label><input id="d-password" type="password" placeholder="password" onkeydown="if(event.key==='Enter')loginDriver()" /></div>
+            <button class="btn btn-primary btn-full" onclick="loginDriver()">Go Online →</button>
+            <button class="btn btn-ghost btn-full" onclick="switchTab('passenger')">← Back to Rider</button>
           </div>
         </div>
       </div>`;
@@ -1193,10 +1313,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     const username = document.getElementById('d-username').value.trim();
     const password = document.getElementById('d-password').value;
 
-    if (!username || !password) {
-      toast('⚠️', 'Credentials required', 'Please enter username and password.', 'amber');
-      return;
-    }
+    if (!username || !password) { toast('⚠️', 'Credentials required', 'Please enter username and password.', 'amber'); return; }
 
     try {
       const res = await fetch(`${API_URL}/drivers`, {
@@ -1212,16 +1329,13 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       toast('✅', 'Welcome, ' + driver.name + '!', 'You are now online.', 'green');
       renderDriverDashboard();
       loadAllRides();
-    } catch (err) {
-      toast('❌', 'Login failed', err.message, 'red');
-    }
+    } catch (err) { toast('❌', 'Login failed', err.message, 'red'); }
   }
 
   function logoutDriver() {
     if (driver) {
       fetch(`${API_URL}/drivers/logout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ driverId: driver.id })
       });
     }
@@ -1237,85 +1351,75 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         driver = JSON.parse(saved);
         renderDriverDashboard();
         loadAllRides();
-      } catch (e) {
-        localStorage.removeItem('driver');
-        showDriverLogin();
-      }
-    } else {
-      showDriverLogin();
-    }
+      } catch (e) { localStorage.removeItem('driver'); showDriverLogin(); }
+    } else { showDriverLogin(); }
   }
 
   function showDriverProfileEdit() {
     if (!driver) return;
-    const modalHtml = `
-      <div class="auth-wrap" style="max-width:480px; margin:40px auto;">
+    const modal = document.createElement('div');
+    modal.id = 'driver-profile-modal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;';
+    modal.innerHTML = `
+      <div class="auth-wrap" style="max-width:480px;width:100%;">
         <h2 class="auth-heading">Edit Driver Profile</h2>
         <p class="auth-sub">Update your information that passengers see</p>
         <div class="card">
           <div class="form-grid">
-            <div><label>Username</label><input id="edit-username" type="text" value="${driver.username || ''}" placeholder="username" /></div>
-            <div><label>Full Name</label><input id="edit-name" type="text" value="${driver.name || ''}" placeholder="e.g. Raj Sharma" /></div>
-            <div><label>Contact Number</label><input id="edit-contact" type="tel" value="${driver.contact_no || ''}" placeholder="+91 98765 43210" /></div>
-            <div><label>Vehicle Information</label><input id="edit-vehicle" type="text" value="${driver.vehicle_info || ''}" placeholder="e.g. Swift Dzire, White, KA01AB1234" /></div>
-            <div><label>Current Password</label><input id="edit-current-password" type="password" placeholder="Enter current password to confirm changes" /></div>
-            <div><label>New Password (optional)</label><input id="edit-new-password" type="password" placeholder="Leave blank to keep current password" /></div>
-            <div style="display:flex; gap:8px; margin-top:8px;">
+            <div><label>Username</label><input id="edit-username" type="text" value="${driver.username||''}" /></div>
+            <div><label>Full Name</label><input id="edit-name" type="text" value="${driver.name||''}" /></div>
+            <div><label>Contact Number</label><input id="edit-contact" type="tel" value="${driver.contact_no||''}" placeholder="+91 98765 43210" /></div>
+            <div><label>Vehicle Info</label><input id="edit-vehicle" type="text" value="${driver.vehicle_info||''}" placeholder="Swift Dzire, White, KA01AB1234" /></div>
+            <div><label>Current Password</label><input id="edit-current-password" type="password" placeholder="Confirm changes" /></div>
+            <div><label>New Password (optional)</label><input id="edit-new-password" type="password" placeholder="Leave blank to keep" /></div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
               <button class="btn btn-primary" onclick="updateDriverProfile()">Save Changes</button>
               <button class="btn btn-ghost" onclick="closeDriverProfileEdit()">Cancel</button>
             </div>
           </div>
         </div>
       </div>`;
-    const modal = document.createElement('div');
-    modal.id = 'driver-profile-modal';
-    modal.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;`;
-    modal.innerHTML = modalHtml;
     document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeDriverProfileEdit(); });
   }
 
   async function updateDriverProfile() {
     if (!driver) return;
     const username = document.getElementById('edit-username').value.trim();
-    const name = document.getElementById('edit-name').value.trim();
-    const contact = document.getElementById('edit-contact').value.trim();
-    const vehicle = document.getElementById('edit-vehicle').value.trim();
-    const currentPassword = document.getElementById('edit-current-password').value;
-    const newPassword = document.getElementById('edit-new-password').value;
-    
-    if (!username) { toast('⚠️', 'Username required', 'Username is required for login.', 'amber'); return; }
-    if (!name)     { toast('⚠️', 'Name required', 'Your name is required for identification.', 'amber'); return; }
-    if (!contact)  { toast('⚠️', 'Contact required', 'Passengers need to reach you.', 'amber'); return; }
-    if (!currentPassword) { toast('⚠️', 'Password required', 'Enter current password to confirm changes.', 'amber'); return; }
-    
+    const name     = document.getElementById('edit-name').value.trim();
+    const contact  = document.getElementById('edit-contact').value.trim();
+    const vehicle  = document.getElementById('edit-vehicle').value.trim();
+    const curPwd   = document.getElementById('edit-current-password').value;
+    const newPwd   = document.getElementById('edit-new-password').value;
+
+    if (!username) { toast('⚠️','Username required','',                 'amber'); return; }
+    if (!name)     { toast('⚠️','Name required','',                     'amber'); return; }
+    if (!contact)  { toast('⚠️','Contact required','Passengers need to reach you.','amber'); return; }
+    if (!curPwd)   { toast('⚠️','Password required','Enter current password to confirm.','amber'); return; }
+
     try {
       const loginRes = await fetch(`${API_URL}/drivers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: driver.username, password: currentPassword })
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: driver.username, password: curPwd })
       });
-      const loginData = await loginRes.json();
       if (!loginRes.ok) throw new Error('Current password is incorrect');
-      
+
       const updateData = { username, name, contact_no: contact, vehicle_info: vehicle };
-      if (newPassword.trim()) updateData.password = newPassword;
-      
+      if (newPwd.trim()) updateData.password = newPwd;
+
       const updateRes = await fetch(`${API_URL}/drivers/${driver.id}/profile`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)
       });
       const updateResult = await updateRes.json();
       if (!updateRes.ok) throw new Error(updateResult.error || 'Update failed');
-      
+
       driver = { ...driver, ...updateData };
       localStorage.setItem('driver', JSON.stringify(driver));
       closeDriverProfileEdit();
       renderDriverDashboard();
-      toast('✅', 'Profile Updated', 'Your driver information has been updated successfully.', 'green');
-    } catch (err) {
-      toast('❌', 'Update Failed', err.message, 'red');
-    }
+      toast('✅', 'Profile Updated', 'Your driver information has been updated.', 'green');
+    } catch (err) { toast('❌', 'Update Failed', err.message, 'red'); }
   }
 
   function closeDriverProfileEdit() {
@@ -1323,22 +1427,56 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (modal) modal.remove();
   }
 
+  /* ─── Compute earnings from closed rides ─── */
+  function computeEarnings() {
+    if (!driver) return { today: 0, total: 0, completed: 0 };
+    const closed = allRides.filter(r =>
+      r.status === 'completed' &&
+      (r.accepted_by === driver.id || r.countered_by === driver.id)
+    );
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    let today = 0, total = 0;
+    closed.forEach(r => {
+      const fare = getFinalFare(r);
+      total += fare;
+      if (r.created_at && new Date(r.created_at) >= todayStart) today += fare;
+    });
+    return { today, total, completed: closed.length };
+  }
+
   function renderDriverDashboard() {
+    const earnings = computeEarnings();
     const html = `
       <div class="driver-header">
         <div class="driver-online">
           <div class="live-pip"></div>
           <div>
-            <div class="driver-label">Online & Ready</div>
+            <div class="driver-label">Online &amp; Ready — ${driver.name||'Driver'}</div>
             <div class="driver-sub">New rider offers appear below the moment they're submitted</div>
           </div>
         </div>
-        <div style="display:flex; gap:12px; align-items:center;">
-          <div class="count-chip"><strong id="driver-count">0</strong> awaiting your call</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <div class="count-chip"><strong id="driver-count">0</strong> awaiting</div>
           <button class="btn btn-blue btn-sm" onclick="showDriverProfileEdit()">Edit Profile</button>
           <button class="btn btn-ghost btn-sm" onclick="logoutDriver()">Logout</button>
         </div>
       </div>
+
+      <div class="earnings-strip">
+        <div class="earnings-card">
+          <div class="earnings-num green">$${earnings.today}</div>
+          <div class="earnings-label">Today's Earnings</div>
+        </div>
+        <div class="earnings-card">
+          <div class="earnings-num">$${earnings.total}</div>
+          <div class="earnings-label">Total Earned</div>
+        </div>
+        <div class="earnings-card">
+          <div class="earnings-num">${earnings.completed}</div>
+          <div class="earnings-label">Completed Rides</div>
+        </div>
+      </div>
+
       <div class="inner-tabs">
         <button class="inner-tab active" id="dtab-all"       onclick="filterDriver('all')">All</button>
         <button class="inner-tab"        id="dtab-pending"   onclick="filterDriver('pending')">Pending</button>
@@ -1359,16 +1497,14 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     try {
       const res  = await fetch(`${API_URL}/rides`);
       const data = await res.json();
-      // Hydrate previous_counter_fare for loaded rides.
-      // For rides already in allRides (with previous_counter_fare set), preserve it.
       const incoming = data.rides || [];
       allRides = incoming.map(r => {
         const existing = allRides.find(e => e.id === r.id);
         return {
           ...r,
-          previous_counter_fare: existing ? existing.previous_counter_fare : r.offered_fare,
-          counterInputVisible:          existing ? existing.counterInputVisible          : false,
-          passengerCounterInputVisible: existing ? existing.passengerCounterInputVisible : false,
+          previous_counter_fare:        existing ? existing.previous_counter_fare        : r.offered_fare,
+          counterInputVisible:          existing ? existing.counterInputVisible           : false,
+          passengerCounterInputVisible: existing ? existing.passengerCounterInputVisible  : false,
         };
       });
       renderAllRides();
@@ -1382,14 +1518,13 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       const res  = await fetch(`${API_URL}/rides/history/${encodeURIComponent(passenger.phone)}`);
       const data = await res.json();
       const incoming = data.rides || [];
-      // Preserve previous_counter_fare from allRides if available
       myRides = incoming.map(r => {
         const fromAll = allRides.find(e => e.id === r.id);
         return {
           ...r,
-          previous_counter_fare: fromAll ? fromAll.previous_counter_fare : r.offered_fare,
-          counterInputVisible:          fromAll ? fromAll.counterInputVisible          : false,
-          passengerCounterInputVisible: fromAll ? fromAll.passengerCounterInputVisible : false,
+          previous_counter_fare:        fromAll ? fromAll.previous_counter_fare        : r.offered_fare,
+          counterInputVisible:          fromAll ? fromAll.counterInputVisible           : false,
+          passengerCounterInputVisible: fromAll ? fromAll.passengerCounterInputVisible  : false,
         };
       });
       renderPassengerRequests();
@@ -1399,40 +1534,35 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   async function submitRideRequest() {
     if (!passenger) { toast('🔒', 'Hold on', "You'll need an account before sending offers.", 'amber'); return; }
 
-    const pickup = document.getElementById('p-pickup').value.trim();
-    const drop   = document.getElementById('p-drop').value.trim();
+    const pickup     = document.getElementById('p-pickup').value.trim();
+    const drop       = document.getElementById('p-drop').value.trim();
     const pickupTime = document.getElementById('p-pickup-time').value;
-    const price  = parseFloat(document.getElementById('p-price').value);
+    const price      = parseFloat(document.getElementById('p-price').value);
 
-    if (!pickup)     { toast('📍', 'Pickup missing',       "Let drivers know where to find you.", 'amber'); return; }
-    if (!drop)       { toast('📍', 'Drop-off missing',     "Where are you headed? Add your destination.", 'amber'); return; }
-    if (!pickupTime) { toast('⏰', 'Pickup time missing',  "When do you want to ride? Select a pickup time.", 'amber'); return; }
+    if (!pickup)     { toast('📍', 'Pickup missing',      "Let drivers know where to find you.", 'amber'); return; }
+    if (!drop)       { toast('📍', 'Drop-off missing',    "Where are you headed? Add your destination.", 'amber'); return; }
+    if (!pickupTime) { toast('⏰', 'Pickup time missing', "When do you want to ride? Select a pickup time.", 'amber'); return; }
     if (!price || price <= 0) { toast('💰', 'Set a price', "Enter what you'd like to pay — keep it fair.", 'amber'); return; }
 
     try {
       const res = await fetch(`${API_URL}/rides`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          passengerId:     passenger.id,
-          passengerPhone:  passenger.phone,
-          pickupLocation:  pickup,
-          dropoffLocation: drop,
-          pickupTime,
-          offeredFare:     price
+          passengerId: passenger.id, passengerPhone: passenger.phone,
+          pickupLocation: pickup, dropoffLocation: drop, pickupTime, offeredFare: price
         })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      document.getElementById('p-pickup').value = '';
-      document.getElementById('p-drop').value   = '';
+      document.getElementById('p-pickup').value      = '';
+      document.getElementById('p-drop').value        = '';
       document.getElementById('p-pickup-time').value = '';
-      document.getElementById('p-price').value  = '';
+      document.getElementById('p-price').value       = '';
+      document.getElementById('fare-hint-block').classList.add('hidden');
 
       toast('📤', 'Offer sent!', 'Drivers can see your $' + price + ' bid for ' + new Date(pickupTime).toLocaleString() + '. Sit tight.', 'green');
 
-      // New ride: previous_counter_fare starts as offered_fare (no counter yet)
       const newRide = { ...data.ride, previous_counter_fare: data.ride.offered_fare };
       myRides.unshift(newRide);
       allRides.unshift(newRide);
@@ -1447,8 +1577,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (!driver) return;
     try {
       const res = await fetch(`${API_URL}/rides/${rideId}/accept`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ driverId: driver.id })
       });
       const data = await res.json();
@@ -1462,14 +1591,13 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (!driver) return;
     try {
       const res = await fetch(`${API_URL}/rides/${rideId}/reject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ driverId: driver.id })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       sendRideUpdate(data.ride);
-      toast('👋', 'Passed on this one', "You declined the offer. Plenty more coming.", 'amber');
+      toast('👋', 'Passed on this one', "You declined the offer.", 'amber');
     } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
@@ -1477,28 +1605,18 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (!driver) return;
     try {
       const res = await fetch(`${API_URL}/rides/${rideId}/complete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ driverId: driver.id })
       });
-      if (!res.ok) {
-        if (res.status === 404) { toast('❌', 'Error', 'Ride not found or already completed', 'red'); return; }
-        throw new Error(await res.text());
-      }
+      if (!res.ok) { toast('❌', 'Error', 'Ride not found or already completed', 'red'); return; }
       const data = await res.json();
       sendRideUpdate(data.ride);
       toast('🏁', 'Ride completed!', 'Great job! Ride marked as completed.', 'green');
+      // Refresh earnings strip
+      if (driver) renderDriverDashboard();
     } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
-  /*
-   * driverCounter
-   * ─────────────
-   * Before sending the counter, we read the current ride's counter_fare
-   * (or offered_fare if no prior counter) and tag it as previous_counter_fare
-   * on the response ride. This lets the passenger card correctly show
-   * "Driver asked: $120" even after the passenger counters back with $110.
-   */
   async function driverCounter(rideId) {
     if (!driver) return;
     const input = document.getElementById('counter-input-' + rideId);
@@ -1512,29 +1630,14 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
     try {
       const res = await fetch(`${API_URL}/rides/${rideId}/counter`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ counterFare: val, driverId: driver.id })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-
-      /*
-       * Tag previous_counter_fare on the returned ride BEFORE calling sendRideUpdate.
-       * At this moment, ride.counter_fare is whatever the passenger last proposed
-       * (or undefined/null on first round). That value becomes "previous" now
-       * that the driver is setting a new counter.
-       *
-       * For the passenger card "Driver asked: $X → Your offer: $Y":
-       *   previous_counter_fare = the passenger's last value (ride.counter_fare || ride.offered_fare)
-       * But actually we want the DRIVER's new counter to be counter_fare,
-       * and the thing the driver is countering against (passenger's offer) to be previous.
-       * So: previous = ride.counter_fare (passenger's last counter) OR ride.offered_fare (first round).
-       */
       data.ride.previous_counter_fare = ride.counter_fare || ride.offered_fare;
-
       sendRideUpdate(data.ride);
-      toast('💬', 'Counter sent', '$' + val + " is now with the passenger. Ball's in their court.", 'blue');
+      toast('💬', 'Counter sent', '$' + val + " is with the passenger.", 'blue');
     } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
@@ -1542,8 +1645,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   async function passengerAcceptCounter(rideId) {
     try {
       const res = await fetch(`${API_URL}/rides/${rideId}/accept-counter`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({})
       });
       const data = await res.json();
@@ -1556,8 +1658,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   async function passengerRejectCounter(rideId) {
     try {
       const res = await fetch(`${API_URL}/rides/${rideId}/decline-counter`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        method: 'POST', headers: { 'Content-Type': 'application/json' }
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -1566,14 +1667,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
-  /*
-   * passengerCounter
-   * ────────────────
-   * Tag previous_counter_fare = ride.counter_fare (the driver's ask that the
-   * passenger is now countering against). After this, counter_fare will become
-   * the passenger's new value, and the driver card should show:
-   * "Your ask: $previous_counter_fare → Passenger countered: $counter_fare"
-   */
   async function passengerCounter(rideId) {
     const input = document.getElementById('passenger-counter-input-' + rideId);
     const val   = parseFloat(input ? input.value : 0);
@@ -1586,38 +1679,47 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
     try {
       const res = await fetch(`${API_URL}/rides/${rideId}/counter`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ counterFare: val, driverId: null, isPassenger: true })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-
-      /*
-       * Tag previous_counter_fare = the driver's counter that the passenger just
-       * responded to. This will be shown on the driver card as "Your ask: $X".
-       */
       data.ride.previous_counter_fare = ride.counter_fare;
-
       sendRideUpdate(data.ride);
-      toast('💬', 'Counter sent', '$' + val + " is now with the driver. Ball's in their court.", 'blue');
+      toast('💬', 'Counter sent', '$' + val + " is with the driver.", 'blue');
     } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
   function togglePassengerCounterForm(rideId) {
-    const ride = getRide(rideId); 
-    if (!ride) return;
-    if (ride.passengerCounterInputVisible === undefined) {
-      ride.passengerCounterInputVisible = false;
-    }
+    const ride = getRide(rideId); if (!ride) return;
     ride.passengerCounterInputVisible = !ride.passengerCounterInputVisible;
-
-    const allRidesIndex = allRides.findIndex(r => r.id === rideId);
-    const myRidesIndex  = myRides.findIndex(r => r.id === rideId);
-    if (allRidesIndex >= 0) allRides[allRidesIndex].passengerCounterInputVisible = ride.passengerCounterInputVisible;
-    if (myRidesIndex  >= 0) myRides[myRidesIndex].passengerCounterInputVisible  = ride.passengerCounterInputVisible;
-
+    const ai = allRides.findIndex(r => r.id === rideId);
+    const mi = myRides.findIndex(r => r.id === rideId);
+    if (ai >= 0) allRides[ai].passengerCounterInputVisible = ride.passengerCounterInputVisible;
+    if (mi >= 0) myRides[mi].passengerCounterInputVisible  = ride.passengerCounterInputVisible;
     renderPassengerRequests();
+  }
+
+  /* ═══════════ NEGOTIATE STEPS HELPER ═══════════ */
+  function negotiateSteps(r) {
+    // For countered / confirmed / completed — show the 3-step progress
+    const steps = [
+      { label: 'You offered', done: true },
+      { label: 'Negotiating', done: r.status !== 'pending', active: r.status === 'countered' },
+      { label: 'Confirmed',   done: r.status === 'confirmed' || r.status === 'completed', active: false },
+    ];
+    return `
+      <div class="negotiate-steps">
+        ${steps.map((s, i) => `
+          ${i > 0 ? `<div class="step-connector ${s.done || steps[i-1].done ? 'done' : ''}"></div>` : ''}
+          <div class="step">
+            <div class="step-circle ${s.done ? 'done' : s.active ? 'active' : 'next'}">
+              ${s.done ? '✓' : i+1}
+            </div>
+            <span class="step-label ${s.done ? 'done' : s.active ? 'active' : ''}">${s.label}</span>
+          </div>
+        `).join('')}
+      </div>`;
   }
 
   /* ═══════════ RENDER: PASSENGER ═══════════ */
@@ -1626,49 +1728,22 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     const listEl  = document.getElementById('passenger-requests-list');
     const emptyEl = document.getElementById('passenger-requests-empty');
     if (!listEl) return;
-
-    if (myRides.length === 0) {
-      emptyEl.style.display = '';
-      listEl.innerHTML = '';
-    } else {
-      emptyEl.style.display = 'none';
-      listEl.innerHTML = myRides.map(renderPassengerCard).join('');
-    }
+    if (myRides.length === 0) { emptyEl.style.display = ''; listEl.innerHTML = ''; }
+    else { emptyEl.style.display = 'none'; listEl.innerHTML = myRides.map(renderPassengerCard).join(''); }
   }
 
-  /*
-   * renderPassengerCard
-   * ───────────────────
-   * Price label logic (the core of the fix):
-   *
-   * Scenario: Passenger $100 → Driver counters $120 → Passenger counters $110
-   *
-   * After driver counters ($120):
-   *   status = 'countered', passenger_countered = false
-   *   counter_fare = 120, previous_counter_fare = 100 (passenger's original)
-   *   Display: "Your offer: $100 → Driver asks: $120"  ✓
-   *
-   * After passenger counters back ($110):
-   *   status = 'countered', passenger_countered = true
-   *   counter_fare = 110, previous_counter_fare = 120 (driver's ask)
-   *   Display: "Driver asked: $120 → Your counter: $110"  ✓
-   *   (Waiting banner shows "Your counter of $110 is with the driver")  ✓
-   */
   function renderPassengerCard(r) {
     let extra = '';
-    const offeredFare        = r.offered_fare;        // always passenger's ORIGINAL bid
-    const counterFare        = r.counter_fare;        // the LATEST counter (either side)
-    const previousCounterFare = r.previous_counter_fare != null
-      ? r.previous_counter_fare
-      : offeredFare;                                  // fallback for first counter round
+    const offeredFare         = r.offered_fare;
+    const counterFare         = r.counter_fare;
+    const previousCounterFare = r.previous_counter_fare != null ? r.previous_counter_fare : offeredFare;
+    const urgency             = urgencyFromTime(r.created_at);
 
     if (r.status === 'countered') {
       const driverObj = resolveDriver(r);
       const driverDetail = driverObj
         ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--violet-border);">
-             <div class="contact-avatar-sm" style="background:linear-gradient(135deg,var(--violet),#6d28d9);">
-               ${(driverObj.name||'D')[0].toUpperCase()}
-             </div>
+             <div class="contact-avatar-sm" style="background:linear-gradient(135deg,var(--violet),#5b21b6);">${(driverObj.name||'D')[0].toUpperCase()}</div>
              <div>
                <div style="font-size:0.84rem;font-weight:700;color:var(--text);">${driverObj.name||'Driver'}</div>
                <div style="font-size:0.69rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--violet);">Your Driver</div>
@@ -1679,24 +1754,13 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
            </div>
            ${driverObj.vehicle_info ? `<div style="font-size:0.74rem;color:var(--text-muted);margin-bottom:10px;">🚘 ${driverObj.vehicle_info}</div>` : ''}`
         : (r.accepted_by || r.countered_by)
-          ? `<div class="driver-loading">⏳ Loading driver details…</div>`
-          : '';
+          ? `<div class="driver-loading">⏳ Loading driver details…</div>` : '';
 
       const passengerCounteredLast = r.passenger_countered === true;
 
       if (!passengerCounteredLast) {
-        /*
-         * Driver countered last — passenger needs to respond.
-         *
-         * previousCounterFare = what passenger had offered before this counter.
-         * counterFare         = what driver is now asking.
-         *
-         * Example round 1: passenger offered $100, driver asks $120
-         *   → "Your offer: $100  →  Driver asks: $120"
-         * Example round 3: passenger countered $110, driver asks $115
-         *   → "Your offer: $110  →  Driver asks: $115"
-         */
         extra = `
+          ${negotiateSteps(r)}
           <div class="counter-banner">
             <div class="counter-banner-head">💬 Driver has a counter proposal</div>
             ${driverDetail}
@@ -1707,14 +1771,14 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
             </div>
             <p>They think $${counterFare} is a fair deal. Accept and you're on your way — counter back, or decline and try a new request.</p>
             <div class="action-row">
-              <button class="btn btn-primary btn-sm" onclick="passengerAcceptCounter('${r.id}')">Accept $${counterFare}</button>
-              <button class="btn btn-amber btn-sm" onclick="togglePassengerCounterForm('${r.id}')">Propose a Counter</button>
-              <button class="btn btn-ghost   btn-sm" onclick="passengerRejectCounter('${r.id}')">Decline &amp; Close</button>
+              <button class="btn btn-primary btn-sm" onclick="passengerAcceptCounter('${r.id}')">✓ Accept $${counterFare}</button>
+              <button class="btn btn-amber btn-sm" onclick="togglePassengerCounterForm('${r.id}')">↩ Counter Back</button>
+              <button class="btn btn-ghost btn-sm" onclick="passengerRejectCounter('${r.id}')">✕ Decline</button>
             </div>
             ${r.passengerCounterInputVisible ? `
               <div class="counter-form" style="margin-top:12px;">
                 <div class="field">
-                  <label>Your counter offer ($) — must be lower than $${counterFare}</label>
+                  <label>Your counter ($) — must be lower than $${counterFare}</label>
                   <input type="number" id="passenger-counter-input-${r.id}" placeholder="${Math.round(counterFare*0.9)}" max="${counterFare-1}" />
                 </div>
                 <button class="btn btn-amber btn-sm" onclick="passengerCounter('${r.id}')">Send Counter</button>
@@ -1723,16 +1787,8 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
             ` : ''}
           </div>`;
       } else {
-        /*
-         * Passenger countered last — waiting for driver to respond.
-         *
-         * previousCounterFare = the driver's ask that triggered this response.
-         * counterFare         = the passenger's new counter.
-         *
-         * Example: driver asked $120, passenger countered $110
-         *   → "Driver asked: $120  →  Your counter: $110"
-         */
         extra = `
+          ${negotiateSteps(r)}
           <div class="counter-banner">
             <div class="counter-banner-head">⏳ Your counter is with the driver</div>
             <div class="price-compare">
@@ -1740,7 +1796,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
               <span style="color:var(--text-dim);margin:0 2px;">→</span>
               <span class="price-now">Your counter: $${counterFare}</span>
             </div>
-            <p>Your counter of $${counterFare} has been sent to the driver. Waiting for their response — they can accept, decline, or counter again.</p>
+            <p>Your counter of $${counterFare} has been sent. Waiting for their response.</p>
             <div class="status-note wait" style="margin-top:12px;">
               ⏳ <span>Waiting for driver to respond to your $${counterFare} counter.</span>
             </div>
@@ -1749,14 +1805,9 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     }
 
     if (r.status === 'confirmed' || r.status === 'completed') {
-      const driverObj = resolveDriver(r);
+      const driverObj  = resolveDriver(r);
       const isComplete = r.status === 'completed';
-      // ── FIX: use counter_fare as the final agreed price if negotiation happened ──
       const finalFare  = getFinalFare(r);
-      const statusIcon = isComplete ? '🏁' : '🎉';
-      const statusMsg  = isComplete
-        ? `Ride completed at <strong>$${finalFare}</strong>. Thanks for riding!`
-        : `Confirmed at <strong>$${finalFare}</strong> — your driver is on the way. Safe travels!`;
       const driverRole = isComplete ? 'Your Driver · Ride Complete' : 'Your Driver · En Route';
 
       const driverBlock = driverObj
@@ -1768,25 +1819,23 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
                  <div class="driver-contact-role">${driverRole}</div>
                </div>
              </div>
-             <div class="driver-contact-row">
-               <span class="contact-info-icon">📞</span>
-               ${phoneLink(driverObj.contact_no)}
-             </div>
-             ${driverObj.vehicle_info
-               ? `<div class="driver-contact-row"><span class="contact-info-icon">🚘</span><span>${driverObj.vehicle_info}</span></div>`
-               : ''}
+             <div class="driver-contact-row"><span class="contact-info-icon">📞</span>${phoneLink(driverObj.contact_no)}</div>
+             ${driverObj.vehicle_info ? `<div class="driver-contact-row"><span class="contact-info-icon">🚘</span><span>${driverObj.vehicle_info}</span></div>` : ''}
            </div>`
-        : (r.accepted_by || r.countered_by)
-          ? `<div class="driver-loading">⏳ Loading driver details…</div>`
-          : '';
+        : (r.accepted_by||r.countered_by) ? `<div class="driver-loading">⏳ Loading driver details…</div>` : '';
 
       extra = `
-        <div class="status-note ok">${statusIcon} <span>${statusMsg}</span></div>
+        ${negotiateSteps(r)}
+        <div class="status-note ok">${isComplete?'🏁':'🎉'} <span>${isComplete?'Ride completed':'Confirmed'} at <strong>$${finalFare}</strong>. ${isComplete?'Thanks for riding!':'Your driver is on the way.'}</span></div>
         ${driverBlock}`;
     }
 
     if (r.status === 'rejected') {
-      extra = `<div class="status-note closed">— <span>This one didn't land. Feel free to submit a fresh offer — sometimes a small bump makes all the difference.</span></div>`;
+      extra = `
+        <div class="status-note closed">— <span>This one didn't land. Try a fresh offer — sometimes a small bump makes the difference.</span></div>
+        <div class="action-row" style="margin-top:10px;">
+          <button class="btn btn-blue btn-sm" onclick="prefillNewRide('${encodeURIComponent(r.pickup_location)}','${encodeURIComponent(r.dropoff_location)}')">↩ Retry this route</button>
+        </div>`;
     }
 
     return `
@@ -1794,27 +1843,39 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         <div class="ride-card-top">
           <div>
             ${badgeHTML(r.status)}
+            <div class="ride-meta">
+              ${r.created_at ? `<span class="time-posted">Posted ${timeAgoStr(r.created_at)}</span>` : ''}
+              <button class="share-btn" onclick="shareRide('${r.id}')">📤 Share</button>
+            </div>
           </div>
           <div class="price-block">
-            <div class="price-label-sm">${
-              (r.status === 'confirmed' || r.status === 'completed') ? 'Final fare' : 'Your offer'
+            <div class="price-label-sm">${(r.status==='confirmed'||r.status==='completed') ? 'Final fare' : 'Your offer'}</div>
+            <div class="price-big ${r.status==='countered'?'counter-col':''}">$${
+              (r.status==='confirmed'||r.status==='completed') ? getFinalFare(r) : offeredFare
             }</div>
-            <div class="price-big ${r.status==='countered' ? 'counter-col' : ''}">$${
-              (r.status === 'confirmed' || r.status === 'completed') ? getFinalFare(r) : offeredFare
-            }</div>
-            ${(r.status === 'confirmed' || r.status === 'completed') && getFinalFare(r) !== offeredFare
-              ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">bid $${offeredFare}</div>`
-              : ''}
+            ${(r.status==='confirmed'||r.status==='completed') && getFinalFare(r)!==offeredFare
+              ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">bid $${offeredFare}</div>` : ''}
           </div>
         </div>
         <div class="route">
           <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
           <div class="route-line"></div>
           <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
-          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>Pick-up time: ${new Date(r.pickup_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}, ${new Date(r.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'UTC' })}</span></div>` : ''}
+          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(30,86,217,0.2);"></div><span>Pick-up: ${new Date(r.pickup_time).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'})}, ${new Date(r.pickup_time).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'UTC'})}</span></div>` : ''}
         </div>
         ${extra}
       </div>`;
+  }
+
+  /* ─── Prefill form for retrying a rejected ride ─── */
+  function prefillNewRide(pickup, drop) {
+    const pu = decodeURIComponent(pickup);
+    const dr = decodeURIComponent(drop);
+    document.getElementById('p-pickup').value = pu;
+    document.getElementById('p-drop').value   = dr;
+    document.getElementById('p-pickup').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('p-price').focus();
+    toast('↩', 'Route prefilled', 'Adjust your price and submit again.', 'blue');
   }
 
   /* ═══════════ RENDER: DRIVER ═══════════ */
@@ -1853,22 +1914,15 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (!listEl) return;
 
     let filtered = allRides;
-    if (passenger) {
-      filtered = allRides.filter(r => r.passenger_phone === passenger.phone);
-    } else if (driver) {
-      filtered = allRides.filter(r => r.status === 'pending' || r.status === 'countered');
-    }
-    
+    if (passenger)     filtered = allRides.filter(r => r.passenger_phone === passenger.phone);
+    else if (driver)   filtered = allRides.filter(r => r.status === 'pending' || r.status === 'countered');
+
     if (passenger) {
       if (passengerRideFilter === 'pending')   filtered = filtered.filter(r => r.status === 'pending' || r.status === 'countered');
       if (passengerRideFilter === 'confirmed') filtered = filtered.filter(r => r.status === 'confirmed' || r.status === 'completed');
     }
 
-    if (filtered.length === 0) {
-      emptyEl.style.display = '';
-      listEl.innerHTML = '';
-      return;
-    }
+    if (filtered.length === 0) { emptyEl.style.display = ''; listEl.innerHTML = ''; return; }
     emptyEl.style.display = 'none';
     listEl.innerHTML = filtered.map(renderAllRidesCard).join('');
   }
@@ -1876,14 +1930,9 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   function renderAllRidesCard(r) {
     let extra = '';
     if (r.status === 'confirmed' || r.status === 'completed') {
-      const driverObj = resolveDriver(r);
+      const driverObj  = resolveDriver(r);
       const isComplete = r.status === 'completed';
-      // ── FIX: use counter_fare as the final agreed price if negotiation happened ──
       const finalFare  = getFinalFare(r);
-      const statusIcon = isComplete ? '🏁' : '🎉';
-      const statusMsg  = isComplete
-        ? `Ride completed at <strong>$${finalFare}</strong>. Thanks for riding!`
-        : `Confirmed at <strong>$${finalFare}</strong> — driver is on the way.`;
       const driverRole = isComplete ? 'Driver · Ride Complete' : 'Driver · En Route';
 
       const driverBlock = driverObj
@@ -1895,20 +1944,13 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
                  <div class="driver-contact-role">${driverRole}</div>
                </div>
              </div>
-             <div class="driver-contact-row">
-               <span class="contact-info-icon">📞</span>
-               ${phoneLink(driverObj.contact_no)}
-             </div>
-             ${driverObj.vehicle_info
-               ? `<div class="driver-contact-row"><span class="contact-info-icon">🚘</span><span>${driverObj.vehicle_info}</span></div>`
-               : ''}
+             <div class="driver-contact-row"><span class="contact-info-icon">📞</span>${phoneLink(driverObj.contact_no)}</div>
+             ${driverObj.vehicle_info ? `<div class="driver-contact-row"><span class="contact-info-icon">🚘</span><span>${driverObj.vehicle_info}</span></div>` : ''}
            </div>`
-        : (r.accepted_by || r.countered_by)
-          ? `<div class="driver-loading">⏳ Loading driver details…</div>`
-          : '';
+        : (r.accepted_by||r.countered_by) ? `<div class="driver-loading">⏳ Loading driver details…</div>` : '';
 
       extra = `
-        <div class="status-note ok">${statusIcon} <span>${statusMsg}</span></div>
+        <div class="status-note ok">${isComplete?'🏁':'🎉'} <span>${isComplete?'Completed':'Confirmed'} at <strong>$${finalFare}</strong>.</span></div>
         ${driverBlock}`;
     }
 
@@ -1917,7 +1959,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         <div class="ride-card-top">
           <div>
             ${badgeHTML(r.status)}
-            <div style="margin-top:8px;">${r.passenger_name}</div>
+            <div style="margin-top:8px;font-size:0.88rem;font-weight:600;">${r.passenger_name}</div>
           </div>
           <div class="price-block">
             <div class="price-label-sm">Offer</div>
@@ -1928,29 +1970,12 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
           <div class="route-line"></div>
           <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
-          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>Pick-up time: ${new Date(r.pickup_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}, ${new Date(r.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'UTC' })}</span></div>` : ''}
+          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(30,86,217,0.2);"></div><span>Pick-up: ${new Date(r.pickup_time).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'})}, ${new Date(r.pickup_time).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'UTC'})}</span></div>` : ''}
         </div>
         ${extra}
       </div>`;
   }
 
-  /*
-   * renderDriverCard
-   * ────────────────
-   * Price label logic (driver's perspective):
-   *
-   * Scenario: Passenger $100 → Driver counters $120 → Passenger counters $110
-   *
-   * After driver counters ($120):
-   *   status = 'countered', passenger_countered = false
-   *   counter_fare = 120, previous_counter_fare = 100 (passenger's offer)
-   *   Display: waiting banner → "Your counter $120 is with the passenger"  ✓
-   *
-   * After passenger counters back ($110):
-   *   status = 'countered', passenger_countered = true
-   *   counter_fare = 110, previous_counter_fare = 120 (driver's ask)
-   *   Display: "Your ask: $120  →  Passenger countered: $110"  ✓
-   */
   function renderDriverView() {
     const listEl  = document.getElementById('driver-requests-list');
     const emptyEl = document.getElementById('driver-requests-empty');
@@ -1958,58 +1983,45 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (!listEl) return;
 
     const availableRides = allRides.filter(r => r.status === 'pending' || r.status === 'countered');
-    countEl.textContent = availableRides.length;
+    if (countEl) countEl.textContent = availableRides.length;
 
     let filtered = allRides;
-    if (driverFilter === 'all') {
-      filtered = availableRides;
-    } else if (driverFilter === 'pending') {
-      filtered = allRides.filter(r => r.status === 'pending');
-    } else if (driverFilter === 'countered') {
-      filtered = allRides.filter(r => r.status === 'countered');
-    } else if (driverFilter === 'closed') {
-      filtered = allRides.filter(r => 
-        (r.status === 'confirmed' || r.status === 'rejected' || r.status === 'completed') &&
-        (r.accepted_by === driver.id || r.countered_by === driver.id)
-      );
-    }
+    if      (driverFilter === 'all')       filtered = availableRides;
+    else if (driverFilter === 'pending')   filtered = allRides.filter(r => r.status === 'pending');
+    else if (driverFilter === 'countered') filtered = allRides.filter(r => r.status === 'countered');
+    else if (driverFilter === 'closed')    filtered = allRides.filter(r =>
+      (r.status === 'confirmed' || r.status === 'rejected' || r.status === 'completed') &&
+      (r.accepted_by === driver?.id || r.countered_by === driver?.id)
+    );
 
-    if (filtered.length === 0) {
-      emptyEl.style.display = '';
-      listEl.innerHTML = '';
-      return;
-    }
+    if (filtered.length === 0) { emptyEl.style.display = ''; listEl.innerHTML = ''; return; }
     emptyEl.style.display = 'none';
     listEl.innerHTML = filtered.map(renderDriverCard).join('');
   }
 
   function renderDriverCard(r) {
-    const isClosed        = r.status === 'confirmed' || r.status === 'rejected';
-    const offeredFare     = r.offered_fare;
-    const counterFare     = r.counter_fare;
-    const previousCounterFare = r.previous_counter_fare != null
-      ? r.previous_counter_fare
-      : offeredFare;
+    const isClosed            = r.status === 'confirmed' || r.status === 'rejected';
+    const offeredFare         = r.offered_fare;
+    const counterFare         = r.counter_fare;
+    const previousCounterFare = r.previous_counter_fare != null ? r.previous_counter_fare : offeredFare;
+    const finalFare           = getFinalFare(r);
+    const urgency             = urgencyFromTime(r.created_at);
 
-    // ── FIX: compute the true final agreed fare for confirmed/completed cards ──
-    const finalFare = getFinalFare(r);
-
-    let actions    = '';
-    let closedNote = '';
+    let actions = '', closedNote = '';
 
     if (!isClosed) {
       if (r.status === 'pending') {
         actions = `
           <div class="action-row">
-            <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept $${offeredFare}</button>
-            <button class="btn btn-amber   btn-sm" onclick="toggleCounterForm('${r.id}')">Propose a Counter</button>
-            <button class="btn btn-danger  btn-sm" onclick="driverReject('${r.id}')">Pass</button>
+            <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">✓ Accept $${offeredFare}</button>
+            <button class="btn btn-amber   btn-sm" onclick="toggleCounterForm('${r.id}')">↕ Counter</button>
+            <button class="btn btn-danger  btn-sm" onclick="driverReject('${r.id}')">✕ Pass</button>
           </div>`;
         if (r.counterInputVisible) {
           actions += `
             <div class="counter-form">
               <div class="field">
-                <label>Your counter offer ($) — must exceed $${offeredFare}</label>
+                <label>Your counter ($) — must exceed $${offeredFare}</label>
                 <input type="number" id="counter-input-${r.id}" placeholder="${Math.round(offeredFare*1.2)}" min="${offeredFare+1}" />
               </div>
               <button class="btn btn-amber btn-sm" onclick="driverCounter('${r.id}')">Send Counter</button>
@@ -2020,17 +2032,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
       if (r.status === 'countered') {
         const passengerCounteredLast = r.passenger_countered === true;
-
         if (passengerCounteredLast) {
-          /*
-           * Passenger countered last — driver needs to respond.
-           *
-           * previousCounterFare = driver's last ask (what passenger is responding to)
-           * counterFare         = passenger's new counter
-           *
-           * Example: driver asked $120, passenger countered $110
-           *   → "Your ask: $120  →  Passenger countered: $110"
-           */
           actions = `
             <div class="counter-banner" style="margin-top:12px;">
               <div class="counter-banner-head">💬 Passenger has a counter proposal</div>
@@ -2039,16 +2041,16 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
                 <span style="color:var(--text-dim);margin:0 2px;">→</span>
                 <span class="price-now">Passenger countered: $${counterFare}</span>
               </div>
-              <p>They think $${counterFare} is a fair deal. Accept and lock it in — counter again, or pass on this one.</p>
+              <p>They think $${counterFare} is a fair deal. Accept, counter again, or pass.</p>
               <div class="action-row">
-                <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept $${counterFare}</button>
-                <button class="btn btn-amber btn-sm" onclick="toggleCounterForm('${r.id}')">Propose a Counter</button>
-                <button class="btn btn-danger  btn-sm" onclick="driverReject('${r.id}')">Pass</button>
+                <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">✓ Accept $${counterFare}</button>
+                <button class="btn btn-amber btn-sm" onclick="toggleCounterForm('${r.id}')">↕ Counter Again</button>
+                <button class="btn btn-danger btn-sm" onclick="driverReject('${r.id}')">✕ Pass</button>
               </div>
               ${r.counterInputVisible ? `
                 <div class="counter-form" style="margin-top:12px;">
                   <div class="field">
-                    <label>Your counter offer ($) — must exceed $${counterFare}</label>
+                    <label>Your counter ($) — must exceed $${counterFare}</label>
                     <input type="number" id="counter-input-${r.id}" placeholder="${Math.round(counterFare*1.2)}" min="${counterFare+1}" />
                   </div>
                   <button class="btn btn-amber btn-sm" onclick="driverCounter('${r.id}')">Send Counter</button>
@@ -2057,16 +2059,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
               ` : ''}
             </div>`;
         } else {
-          /*
-           * Driver countered last — waiting for passenger.
-           *
-           * previousCounterFare = what passenger offered before driver countered
-           * counterFare         = driver's ask (currently with the passenger)
-           *
-           * Example: passenger offered $100, driver asked $120
-           *   → "Your counter of $120 is with the passenger"
-           *   (No need to show the comparison here — passenger sees that)
-           */
           actions = `<div class="status-note wait" style="margin-top:12px;">⏳ <span>Your counter of <strong>$${counterFare}</strong> is with the rider — waiting on their move.</span></div>`;
         }
       }
@@ -2082,30 +2074,25 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
               <div class="contact-info-role">Confirmed Passenger</div>
             </div>
           </div>
-          <div class="contact-info-row">
-            <span class="contact-info-icon">📞</span>
-            ${phoneLink(r.passenger_phone)}
-          </div>
+          <div class="contact-info-row"><span class="contact-info-icon">📞</span>${phoneLink(r.passenger_phone)}</div>
         </div>
         <div style="margin-top:10px;">
-          <button class="btn btn-primary btn-sm" onclick="driverComplete('${r.id}')">Mark Completed</button>
+          <button class="btn btn-primary btn-sm" onclick="driverComplete('${r.id}')">🏁 Mark Completed</button>
         </div>`;
     }
     if (r.status === 'rejected') {
       closedNote = `<div class="status-note closed" style="margin-top:12px;">— <span>You passed on this one. Plenty more offers on the way.</span></div>`;
     }
     if (r.status === 'completed') {
-      // ── FIX: show the negotiated finalFare, not the original offeredFare ──
-      closedNote = `<div class="status-note ok" style="margin-top:12px;">🏁 <span>Ride completed at <strong>$${finalFare}</strong>.</span></div>`;
+      closedNote = `<div class="status-note ok" style="margin-top:12px;">🏁 <span>Ride completed at <strong>$${finalFare}</strong>. Well done!</span></div>`;
     }
 
-    // ── FIX: header price shows finalFare for confirmed/completed; counter/offer for others ──
-    const showingPrice = (r.status === 'confirmed' || r.status === 'completed')
+    const showingPrice = (r.status==='confirmed'||r.status==='completed')
       ? finalFare
-      : (r.status === 'countered' && counterFare) ? counterFare : offeredFare;
-    const priceLabel   = (r.status === 'confirmed' || r.status === 'completed')
+      : (r.status==='countered' && counterFare) ? counterFare : offeredFare;
+    const priceLabel = (r.status==='confirmed'||r.status==='completed')
       ? 'Final fare'
-      : r.status === 'countered'
+      : r.status==='countered'
         ? (r.passenger_countered ? 'Passenger\'s counter' : 'Your counter')
         : 'Rider\'s offer';
 
@@ -2115,21 +2102,23 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div>
             <div class="passenger-name">${r.passenger_name}</div>
             <div class="passenger-phone">${phoneLink(r.passenger_phone)}</div>
-            <div style="margin-top:8px;">${badgeHTML(r.status)}</div>
+            <div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+              ${badgeHTML(r.status)}
+              ${urgency.label ? `<span class="urgency-badge ${urgency.cls}">${urgency.label}</span>` : ''}
+            </div>
           </div>
           <div class="price-block">
             <div class="price-label-sm">${priceLabel}</div>
             <div class="price-big ${r.status==='countered'?'counter-col':''}">$${showingPrice}</div>
             ${r.status==='countered' && counterFare && !r.passenger_countered
-              ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">was $${previousCounterFare}</div>`
-              : ''}
+              ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">was $${previousCounterFare}</div>` : ''}
           </div>
         </div>
         <div class="route">
           <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
           <div class="route-line"></div>
           <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
-          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>Pick-up time: ${new Date(r.pickup_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}, ${new Date(r.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'UTC' })}</span></div>` : ''}
+          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(30,86,217,0.2);"></div><span>Pick-up: ${new Date(r.pickup_time).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'})}, ${new Date(r.pickup_time).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'UTC'})}</span></div>` : ''}
         </div>
         ${actions}
         ${closedNote}
@@ -2137,35 +2126,10 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   }
 
   /* ═══════════ HELPERS ═══════════ */
-  function getRide(id) { 
-    return allRides.find(r => r.id === id) || myRides.find(r => r.id === id);
-  }
+  function getRide(id) { return allRides.find(r => r.id === id) || myRides.find(r => r.id === id); }
 
-  /*
-   * getFinalFare
-   * ─────────────
-   * Returns the actual agreed/final fare for a ride.
-   *
-   * The key insight: `offered_fare` is ALWAYS the passenger's original opening bid
-   * and is never mutated in the DB. When a ride goes through negotiation and gets
-   * confirmed/completed, the true agreed price is `counter_fare` (the last value
-   * both parties settled on). So we read counter_fare for confirmed/completed rides.
-   *
-   * Example: passenger bids $200 → driver counters $220 → passenger counters $210
-   *          → driver accepts.
-   *   offered_fare  = 200  (never changes)
-   *   counter_fare  = 210  (the negotiated final price)
-   *   getFinalFare  → 210  ✓
-   *
-   * If no counter happened (driver accepted the opening bid directly):
-   *   offered_fare  = 200
-   *   counter_fare  = null / undefined
-   *   getFinalFare  → 200  ✓
-   */
   function getFinalFare(r) {
-    if ((r.status === 'confirmed' || r.status === 'completed') && r.counter_fare) {
-      return r.counter_fare;
-    }
+    if ((r.status==='confirmed'||r.status==='completed') && r.counter_fare) return r.counter_fare;
     return r.offered_fare;
   }
 
@@ -2174,22 +2138,9 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     return `<span class="badge badge-${status}">${labels[status]||status}</span>`;
   }
 
-  function timeAgo(date, pickupTime) {
-    const targetDate = pickupTime || date;
-    const s = Math.floor((new Date() - new Date(targetDate)) / 1000);
-    const actualTime = new Date(targetDate).toLocaleString('en-US', { 
-      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
-    });
-    let relativeTime;
-    if (s < 60)        relativeTime = 'Just now';
-    else if (s < 3600) relativeTime = Math.floor(s/60) + 'm ago';
-    else               relativeTime = Math.floor(s/3600) + 'h ago';
-    return `${actualTime} · ${relativeTime}`;
-  }
-
   /* ═══════════ TOASTS ═══════════ */
   function toast(icon, title, msg, type) {
-    const palette = { green:'#16a34a', amber:'#d97706', red:'#dc2626', blue:'#2563eb' };
+    const palette = { green:'#15993a', amber:'#c9620a', red:'#c72626', blue:'#1e56d9' };
     const el = document.createElement('div');
     el.className = 'toast';
     el.style.borderLeftColor = palette[type] || palette.green;
@@ -2208,16 +2159,14 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
   /* ═══════════ INIT ═══════════ */
   async function initializeApp() {
-    const supabaseInitialized = await initializeSupabase();
-    if (supabaseInitialized) {
-      connectRealtime();
-    }
+    const supabaseOk = await initializeSupabase();
+    if (supabaseOk) connectRealtime();
     checkSavedPassenger();
     checkSavedDriver();
     loadAllRides();
     switchTab('passenger');
   }
-  
+
   initializeApp();
 </script>
 
@@ -2243,9 +2192,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       res.status(500).json({ error: err.message });
     }
   });
-
-  This endpoint is read-only (no sensitive fields like password_hash)
-  and mirrors the same driver shape already returned by /accept and /counter.
   ════════════════════════════════════════════════════════════════
 -->
 </body>
