@@ -763,7 +763,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div class="form-grid">
             <div>
               <label>What should drivers call you?</label>
-              <input id="p-name" type="text" placeholder="e.g. Priya Sharma" autocomplete="name" />
+              <input id="p-name" type="text" placeholder="e.g. Sarah Johnson" autocomplete="name" />
             </div>
             <div>
               <label>Your mobile — strictly for ride coordination</label>
@@ -830,11 +830,11 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
             <div class="form-grid">
               <div>
                 <label>Pickup — the more specific, the better</label>
-                <input id="p-pickup" type="text" placeholder="e.g. 14, 5th Cross, Koramangala 5th Block, near Café Coffee Day" />
+                <input id="p-pickup" type="text" placeholder="e.g. 123 Yonge Street, near Eaton Centre, Toronto" />
               </div>
               <div>
                 <label>Drop-off — where the journey ends</label>
-                <input id="p-drop" type="text" placeholder="e.g. 100 Feet Rd, Indiranagar 12th Main, opp. CMH Road signal" />
+                <input id="p-drop" type="text" placeholder="e.g. 100 Queen Street West, near Nathan Phillips Square, Toronto" />
               </div>
               <div>
                 <label>Pick-up Time — when do you want to ride?</label>
@@ -1599,6 +1599,35 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
+  async function passengerCounter(rideId) {
+    const input = document.getElementById('passenger-counter-input-' + rideId);
+    const val   = parseFloat(input ? input.value : 0);
+    const ride  = getRide(rideId);
+
+    if (!val || val >= ride.counter_fare) {
+      toast('⚠️', 'Counter must be lower', 'Your counter needs to be lower than their $' + ride.counter_fare + ' offer.', 'amber');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/rides/${rideId}/counter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ counterFare: val, driverId: null, isPassenger: true })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      sendRideUpdate(data.ride);
+      toast('💬', 'Counter sent', '$' + val + " is now with the driver. Ball's in their court.", 'blue');
+    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
+  }
+
+  function togglePassengerCounterForm(rideId) {
+    const ride = getRide(rideId); if (!ride) return;
+    ride.passengerCounterInputVisible = !ride.passengerCounterInputVisible;
+    renderPassengerRequests();
+  }
+
   /* ═══════════ RENDER: PASSENGER ═══════════ */
   function renderPassengerRequests() {
     if (!passenger) return;
@@ -1650,11 +1679,22 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
             <span style="color:var(--text-dim);margin:0 2px;">→</span>
             <span class="price-now">$${counteredPrice}</span>
           </div>
-          <p>They think $${counteredPrice} is a fair deal. Accept and you're on your way — or decline and try a new request.</p>
+          <p>They think $${counteredPrice} is a fair deal. Accept and you're on your way — counter back, or decline and try a new request.</p>
           <div class="action-row">
             <button class="btn btn-primary btn-sm" onclick="passengerAcceptCounter('${r.id}')">Accept $${counteredPrice}</button>
+            <button class="btn btn-amber btn-sm" onclick="togglePassengerCounterForm('${r.id}')">Propose a Counter</button>
             <button class="btn btn-ghost   btn-sm" onclick="passengerRejectCounter('${r.id}')">Decline &amp; Close</button>
           </div>
+          ${r.passengerCounterInputVisible ? `
+            <div class="counter-form" style="margin-top:12px;">
+              <div class="field">
+                <label>Your counter offer ($) — must be lower than $${counteredPrice}</label>
+                <input type="number" id="passenger-counter-input-${r.id}" placeholder="${Math.round(counteredPrice*0.9)}" max="${counteredPrice-1}" />
+              </div>
+              <button class="btn btn-amber btn-sm" onclick="passengerCounter('${r.id}')">Send Counter</button>
+              <button class="btn btn-ghost btn-sm" onclick="togglePassengerCounterForm('${r.id}')">Cancel</button>
+            </div>
+          ` : ''}
         </div>`;
     }
 
