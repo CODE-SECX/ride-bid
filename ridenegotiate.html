@@ -2013,7 +2013,10 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   }
 
   /* ═══════════ HELPERS ═══════════ */
-  function getRide(id) { return allRides.find(r => r.id === id); }
+  function getRide(id) { 
+    // First check allRides, then check myRides for passenger-specific rides
+    return allRides.find(r => r.id === id) || myRides.find(r => r.id === id);
+  }
 
   function badgeHTML(status) {
     const labels = { pending:'Awaiting response', countered:'Counter proposed', confirmed:'Confirmed', completed:'Completed', rejected:'Closed' };
