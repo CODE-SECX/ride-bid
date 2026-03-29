@@ -66,6 +66,7 @@ function broadcastRideUpdate(ride) {
 async function checkAndExpireRides() {
   try {
     await supabase.rpc('expire_pending_rides');
+    // Only broadcast updates for active (non-expired) pending/countered rides
     const { data } = await supabase.from('ride_requests').select('*').in('status', ['pending', 'countered']).gt('expires_at', new Date().toISOString());
     if (data) data.forEach(ride => broadcastRideUpdate(ride));
   } catch (err) {
