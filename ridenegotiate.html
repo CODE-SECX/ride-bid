@@ -45,8 +45,8 @@
   --violet-light: #f5f3ff;
   --violet-border:#ddd6fe;
 
-  --radius:    16px;
-  --radius-sm: 10px;
+  --radius:    12px;
+  --radius-sm: 8px;
   --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.04);
@@ -67,35 +67,36 @@ body {
 /* ─── Header ─── */
 header {
   position: sticky; top: 0; z-index: 100;
-  height: 62px;
-  background: rgba(255,255,255,0.94);
+  height: 48px;
+  background: rgba(255,255,255,0.98);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
-  padding: 0 40px;
+  padding: 0 24px;
   display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .logo {
-  display: flex; align-items: center; gap: 10px;
-  font-size: 1.15rem; font-weight: 800;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 1.1rem; font-weight: 800;
   letter-spacing: -0.03em; color: var(--text);
 }
 .logo-mark {
-  width: 32px; height: 32px; border-radius: 9px;
+  width: 28px; height: 28px; border-radius: 8px;
   background: linear-gradient(135deg, #2563eb 0%, #16a34a 100%);
   display: flex; align-items: center; justify-content: center;
-  font-size: 15px; box-shadow: 0 2px 8px rgba(37,99,235,0.22);
+  font-size: 13px; box-shadow: 0 2px 6px rgba(37,99,235,0.18);
 }
 .logo em { font-style: normal; color: var(--blue); }
 
 .header-badge {
-  font-size: 0.67rem; font-weight: 700;
-  letter-spacing: 0.09em; text-transform: uppercase;
-  color: var(--text-muted);
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  padding: 4px 11px; border-radius: 20px;
+  font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--green);
+  background: var(--green-light);
+  border: 1px solid var(--green-border);
+  padding: 3px 8px; border-radius: 12px;
 }
 
 /* ─── Tab Switcher ─── */
@@ -167,7 +168,7 @@ header {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 24px;
+  padding: 18px;
   box-shadow: var(--shadow-sm);
   transition: box-shadow var(--t), border-color var(--t);
 }
@@ -210,8 +211,8 @@ select { cursor: pointer; }
 /* ─── Buttons ─── */
 .btn {
   font-family: 'Inter', sans-serif;
-  font-weight: 600; font-size: 0.82rem;
-  padding: 10px 18px;
+  font-weight: 600; font-size: 0.9rem;
+  padding: 12px 16px;
   border-radius: var(--radius-sm);
   border: 1.5px solid transparent;
   cursor: pointer;
@@ -224,22 +225,22 @@ select { cursor: pointer; }
 .btn-primary {
   background: var(--green); color: #fff;
   border-color: var(--green);
-  box-shadow: 0 2px 8px rgba(22,163,74,0.22);
+  box-shadow: 0 2px 6px rgba(22,163,74,0.18);
 }
 .btn-primary:hover {
   background: #15803d; border-color: #15803d;
-  box-shadow: 0 4px 14px rgba(22,163,74,0.3);
+  box-shadow: 0 4px 10px rgba(22,163,74,0.25);
   transform: translateY(-1px);
 }
 
 .btn-blue {
   background: var(--blue); color: #fff;
   border-color: var(--blue);
-  box-shadow: 0 2px 8px rgba(37,99,235,0.2);
+  box-shadow: 0 2px 6px rgba(37,99,235,0.18);
 }
 .btn-blue:hover {
   background: #1d4ed8; border-color: #1d4ed8;
-  box-shadow: 0 4px 14px rgba(37,99,235,0.28);
+  box-shadow: 0 4px 10px rgba(37,99,235,0.25);
   transform: translateY(-1px);
 }
 
@@ -313,9 +314,9 @@ select { cursor: pointer; }
   background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 48px 40px 44px;
+  padding: 28px 32px 24px;
   text-align: center;
-  margin-bottom: 36px;
+  margin-bottom: 24px;
   position: relative; overflow: hidden;
   box-shadow: var(--shadow-sm);
 }
@@ -334,24 +335,24 @@ select { cursor: pointer; }
   padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
 }
 .hero-title {
-  font-size: 2.15rem; font-weight: 800;
-  letter-spacing: -0.045em; line-height: 1.13;
-  color: var(--text); margin-bottom: 14px;
+  font-size: 1.8rem; font-weight: 800;
+  letter-spacing: -0.04em; line-height: 1.15;
+  color: var(--text); margin-bottom: 12px;
 }
 .hero-title .accent-blue  { color: var(--blue); }
 .hero-title .accent-green { color: var(--green); }
 .hero-sub {
-  font-size: 0.93rem; color: var(--text-secondary);
-  max-width: 430px; margin: 0 auto 28px;
-  line-height: 1.65; font-weight: 400;
+  font-size: 0.88rem; color: var(--text-secondary);
+  max-width: 400px; margin: 0 auto 20px;
+  line-height: 1.6; font-weight: 500;
 }
-.hero-pills { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.hero-pills { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
 .hero-pill {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 0.74rem; font-weight: 500;
-  padding: 6px 13px;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.7rem; font-weight: 600;
+  padding: 5px 10px;
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 20px; color: var(--text-secondary);
+  border-radius: 16px; color: var(--text-secondary);
   box-shadow: var(--shadow-xs);
 }
 
@@ -449,7 +450,7 @@ select { cursor: pointer; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 14px;
   box-shadow: var(--shadow-xs);
   transition: all var(--t);
   position: relative; overflow: hidden;
@@ -723,21 +724,20 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   <div class="view" id="view-passenger">
 
     <div class="hero">
-      <div class="hero-eyebrow">✦ The smarter way to get around</div>
+      <div class="hero-eyebrow">🔥 Join 10,000+ riders saving money</div>
       <h1 class="hero-title">
         Your price.<br>
         <span class="accent-blue">Your terms.</span>
         <span class="accent-green"> Your ride.</span>
       </h1>
       <p class="hero-sub">
-        Name what you think is fair. Drivers respond — accept your offer,
-        suggest a counter, or move on. Transparent pricing, every time.
+        Save up to 30% on every ride. Name your price, get matched instantly with verified drivers. No surge, no hidden fees.
       </p>
       <div class="hero-pills">
-        <span class="hero-pill">⚡ Real-time offers</span>
-        <span class="hero-pill">🤝 You set the opening bid</span>
+        <span class="hero-pill">💰 Save 30% vs Uber</span>
+        <span class="hero-pill">⚡ 2-min avg match</span>
         <span class="hero-pill">🔒 Zero surge pricing</span>
-        <span class="hero-pill">💬 Direct driver dialogue</span>
+        <span class="hero-pill">⭐ 4.8/5 driver rating</span>
       </div>
     </div>
 
@@ -765,8 +765,11 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
               </div>
             </div>
             <button class="btn btn-blue btn-full mt-3" onclick="createPassengerAccount()">
-              Start Negotiating →
+              🚀 Start Saving Money →
             </button>
+            <div style="text-align: center; margin-top: 12px; font-size: 0.75rem; color: var(--text-muted);">
+              🔒 Secure & Private · No Spam Ever
+            </div>
           </div>
         </div>
       </div>
@@ -822,8 +825,11 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
                 <input id="p-price" type="number" placeholder="e.g. 140" min="1" />
               </div>
               <button class="btn btn-blue btn-full" onclick="submitRideRequest()">
-                Send Offer to Drivers →
+                🚀 Send Offer & Save Money →
               </button>
+              <div style="text-align: center; margin-top: 8px; font-size: 0.72rem; color: var(--text-muted);">
+                ⚡ Average match time: 2 minutes
+              </div>
             </div>
           </div>
 
