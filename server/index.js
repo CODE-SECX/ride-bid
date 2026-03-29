@@ -361,21 +361,40 @@ app.post('/api/rides/:id/counter', async (req, res) => {
       return res.status(400).json({ error: 'Counter fare required' });
     }
 
+    // ✅ FETCH the current ride first
+    const { data: currentRide, error: fetchError } = await supabase
+      .from('ride_requests')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !currentRide) {
+      return res.status(404).json({ error: 'Ride not found' });
+    }
+
+    // ✅ Calculate previous_counter_fare BEFORE updating
+    // The current counter_fare becomes the "previous"
+    // OR fall back to offered_fare if no prior counter
+    const previousCounterFare = currentRide.counter_fare != null 
+      ? currentRide.counter_fare 
+      : currentRide.offered_fare;
+
     // Set expiry to 2 hours from now
     const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
     
     const updateData = {
       status: 'countered',
-      counter_fare: counterFare,
+      counter_fare: counterFare,        // ✅ New counter
+      previous_counter_fare: previousCounterFare,  // ✅ ADD THIS LINE
       expires_at: expiresAt
     };
 
     // Set the appropriate countered_by field based on who is countering
     if (isPassenger) {
-      updateData.countered_by = null; // Passenger countering back
+      updateData.countered_by = null;
       updateData.passenger_countered = true;
     } else {
-      updateData.countered_by = driverId; // Driver countering
+      updateData.countered_by = driverId;
       updateData.passenger_countered = false;
     }
 
