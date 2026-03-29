@@ -1796,8 +1796,15 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
             ${badgeHTML(r.status)}
           </div>
           <div class="price-block">
-            <div class="price-label-sm">Your offer</div>
-            <div class="price-big ${r.status==='countered'?'counter-col':''}">$${offeredFare}</div>
+            <div class="price-label-sm">${
+              (r.status === 'confirmed' || r.status === 'completed') ? 'Final fare' : 'Your offer'
+            }</div>
+            <div class="price-big ${r.status==='countered' ? 'counter-col' : ''}">$${
+              (r.status === 'confirmed' || r.status === 'completed') ? getFinalFare(r) : offeredFare
+            }</div>
+            ${(r.status === 'confirmed' || r.status === 'completed') && getFinalFare(r) !== offeredFare
+              ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">bid $${offeredFare}</div>`
+              : ''}
           </div>
         </div>
         <div class="route">
