@@ -1751,10 +1751,12 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (r.status === 'confirmed' || r.status === 'completed') {
       const driverObj = resolveDriver(r);
       const isComplete = r.status === 'completed';
+      // ── FIX: use counter_fare as the final agreed price if negotiation happened ──
+      const finalFare  = getFinalFare(r);
       const statusIcon = isComplete ? '🏁' : '🎉';
       const statusMsg  = isComplete
-        ? `Ride completed at <strong>$${offeredFare}</strong>. Thanks for riding!`
-        : `Confirmed at <strong>$${offeredFare}</strong> — your driver is on the way. Safe travels!`;
+        ? `Ride completed at <strong>$${finalFare}</strong>. Thanks for riding!`
+        : `Confirmed at <strong>$${finalFare}</strong> — your driver is on the way. Safe travels!`;
       const driverRole = isComplete ? 'Your Driver · Ride Complete' : 'Your Driver · En Route';
 
       const driverBlock = driverObj
@@ -1869,10 +1871,12 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (r.status === 'confirmed' || r.status === 'completed') {
       const driverObj = resolveDriver(r);
       const isComplete = r.status === 'completed';
+      // ── FIX: use counter_fare as the final agreed price if negotiation happened ──
+      const finalFare  = getFinalFare(r);
       const statusIcon = isComplete ? '🏁' : '🎉';
       const statusMsg  = isComplete
-        ? `Ride completed at <strong>$${r.offered_fare}</strong>. Thanks for riding!`
-        : `Confirmed at <strong>$${r.offered_fare}</strong> — driver is on the way.`;
+        ? `Ride completed at <strong>$${finalFare}</strong>. Thanks for riding!`
+        : `Confirmed at <strong>$${finalFare}</strong> — driver is on the way.`;
       const driverRole = isComplete ? 'Driver · Ride Complete' : 'Driver · En Route';
 
       const driverBlock = driverObj
@@ -1980,6 +1984,9 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       ? r.previous_counter_fare
       : offeredFare;
 
+    // ── FIX: compute the true final agreed fare for confirmed/completed cards ──
+    const finalFare = getFinalFare(r);
+
     let actions    = '';
     let closedNote = '';
 
@@ -2081,15 +2088,19 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       closedNote = `<div class="status-note closed" style="margin-top:12px;">— <span>You passed on this one. Plenty more offers on the way.</span></div>`;
     }
     if (r.status === 'completed') {
-      closedNote = `<div class="status-note ok" style="margin-top:12px;">🏁 <span>Ride completed at <strong>$${offeredFare}</strong>.</span></div>`;
+      // ── FIX: show the negotiated finalFare, not the original offeredFare ──
+      closedNote = `<div class="status-note ok" style="margin-top:12px;">🏁 <span>Ride completed at <strong>$${finalFare}</strong>.</span></div>`;
     }
 
-    // Header price: show counterFare when passenger just countered (they need to respond),
-    // else show the latest counter/offer value
-    const showingPrice = (r.status === 'countered' && counterFare) ? counterFare : offeredFare;
-    const priceLabel   = r.status === 'countered'
-      ? (r.passenger_countered ? 'Passenger\'s counter' : 'Your counter')
-      : 'Rider\'s offer';
+    // ── FIX: header price shows finalFare for confirmed/completed; counter/offer for others ──
+    const showingPrice = (r.status === 'confirmed' || r.status === 'completed')
+      ? finalFare
+      : (r.status === 'countered' && counterFare) ? counterFare : offeredFare;
+    const priceLabel   = (r.status === 'confirmed' || r.status === 'completed')
+      ? 'Final fare'
+      : r.status === 'countered'
+        ? (r.passenger_countered ? 'Passenger\'s counter' : 'Your counter')
+        : 'Rider\'s offer';
 
     return `
       <div class="ride-card ${r.status}">
@@ -2121,6 +2132,34 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   /* ═══════════ HELPERS ═══════════ */
   function getRide(id) { 
     return allRides.find(r => r.id === id) || myRides.find(r => r.id === id);
+  }
+
+  /*
+   * getFinalFare
+   * ─────────────
+   * Returns the actual agreed/final fare for a ride.
+   *
+   * The key insight: `offered_fare` is ALWAYS the passenger's original opening bid
+   * and is never mutated in the DB. When a ride goes through negotiation and gets
+   * confirmed/completed, the true agreed price is `counter_fare` (the last value
+   * both parties settled on). So we read counter_fare for confirmed/completed rides.
+   *
+   * Example: passenger bids $200 → driver counters $220 → passenger counters $210
+   *          → driver accepts.
+   *   offered_fare  = 200  (never changes)
+   *   counter_fare  = 210  (the negotiated final price)
+   *   getFinalFare  → 210  ✓
+   *
+   * If no counter happened (driver accepted the opening bid directly):
+   *   offered_fare  = 200
+   *   counter_fare  = null / undefined
+   *   getFinalFare  → 200  ✓
+   */
+  function getFinalFare(r) {
+    if ((r.status === 'confirmed' || r.status === 'completed') && r.counter_fare) {
+      return r.counter_fare;
+    }
+    return r.offered_fare;
   }
 
   function badgeHTML(status) {
