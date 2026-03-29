@@ -974,6 +974,10 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
   let driver = null;
   let driverFilter = 'all';
+  let driverSearchText = '';
+  let driverFareMin = '';
+  let driverFareMax = '';
+  let driverLocationFilter = '';
 
   /* ═══════════ PHONE LINK HELPER ═══════════ */
   function phoneLink(phoneStr, labelClass) {
@@ -1345,6 +1349,32 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         <button class="inner-tab"        id="dtab-countered" onclick="filterDriver('countered')">Countered</button>
         <button class="inner-tab"        id="dtab-closed"    onclick="filterDriver('closed')">Closed</button>
       </div>
+      <div class="card" style="margin-bottom:20px;">
+        <div style="font-size:0.81rem;font-weight:600;color:var(--text);margin-bottom:12px;">🔍 Search & Filter Rides</div>
+        <div class="form-grid">
+          <div>
+            <label>Search passenger name or phone</label>
+            <input id="driver-search" type="text" placeholder="e.g. John or +1 555-1234" onkeyup="applyDriverFilters()" />
+          </div>
+          <div>
+            <label>Pickup location contains</label>
+            <input id="driver-location" type="text" placeholder="e.g. Downtown" onkeyup="applyDriverFilters()" />
+          </div>
+          <div style="display:flex; gap:8px;">
+            <div style="flex:1;">
+              <label>Min fare ($)</label>
+              <input id="driver-fare-min" type="number" placeholder="50" onkeyup="applyDriverFilters()" />
+            </div>
+            <div style="flex:1;">
+              <label>Max fare ($)</label>
+              <input id="driver-fare-max" type="number" placeholder="200" onkeyup="applyDriverFilters()" />
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="btn btn-ghost btn-sm" onclick="clearDriverFilters()">Clear Filters</button>
+          </div>
+        </div>
+      </div>
       <div id="driver-requests-empty" class="empty">
         <span class="empty-icon">⏳</span>
         <div class="empty-head">Quiet for now</div>
@@ -1475,10 +1505,19 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         body: JSON.stringify({ driverId: driver.id })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) {
+        if (res.status === 404) {
+          toast('⚠️', 'Ride already processed', 'This ride has been updated by another driver. Refreshing...', 'amber');
+          loadAllRides(); // Refresh to get current state
+          return;
+        }
+        throw new Error(data.error);
+      }
       sendRideUpdate(data.ride);
       toast('👋', 'Passed on this one', "You declined the offer. Plenty more coming.", 'amber');
-    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
+    } catch (err) { 
+      toast('❌', 'Error', err.message, 'red'); 
+    }
   }
 
   async function driverComplete(rideId) {
@@ -1840,6 +1879,26 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       const el = document.getElementById('dtab-' + id);
       if (el) el.classList.toggle('active', id === f);
     });
+    applyDriverFilters();
+  }
+
+  function applyDriverFilters() {
+    driverSearchText = document.getElementById('driver-search')?.value.toLowerCase() || '';
+    driverFareMin = document.getElementById('driver-fare-min')?.value || '';
+    driverFareMax = document.getElementById('driver-fare-max')?.value || '';
+    driverLocationFilter = document.getElementById('driver-location')?.value.toLowerCase() || '';
+    renderDriverView();
+  }
+
+  function clearDriverFilters() {
+    document.getElementById('driver-search').value = '';
+    document.getElementById('driver-fare-min').value = '';
+    document.getElementById('driver-fare-max').value = '';
+    document.getElementById('driver-location').value = '';
+    driverSearchText = '';
+    driverFareMin = '';
+    driverFareMax = '';
+    driverLocationFilter = '';
     renderDriverView();
   }
 
@@ -1970,7 +2029,13 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
     let filtered = allRides;
     if (driverFilter === 'all') {
-      filtered = availableRides;
+      filtered = allRides.filter(r => 
+        r.status === 'pending' || 
+        r.status === 'countered' || 
+        r.status === 'confirmed' || 
+        r.status === 'completed' || 
+        r.status === 'rejected'
+      );
     } else if (driverFilter === 'pending') {
       filtered = allRides.filter(r => r.status === 'pending');
     } else if (driverFilter === 'countered') {
@@ -1980,6 +2045,36 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         (r.status === 'confirmed' || r.status === 'rejected' || r.status === 'completed') &&
         (r.accepted_by === driver.id || r.countered_by === driver.id)
       );
+    }
+
+    if (driverSearchText) {
+      filtered = filtered.filter(r => 
+        (r.passenger_name && r.passenger_name.toLowerCase().includes(driverSearchText)) ||
+        (r.passenger_phone && r.passenger_phone.toLowerCase().includes(driverSearchText))
+      );
+    }
+    
+    if (driverLocationFilter) {
+      filtered = filtered.filter(r => 
+        (r.pickup_location && r.pickup_location.toLowerCase().includes(driverLocationFilter)) ||
+        (r.dropoff_location && r.dropoff_location.toLowerCase().includes(driverLocationFilter))
+      );
+    }
+    
+    if (driverFareMin) {
+      const minFare = parseFloat(driverFareMin);
+      filtered = filtered.filter(r => {
+        const fare = r.counter_fare || r.offered_fare;
+        return fare >= minFare;
+      });
+    }
+    
+    if (driverFareMax) {
+      const maxFare = parseFloat(driverFareMax);
+      filtered = filtered.filter(r => {
+        const fare = r.counter_fare || r.offered_fare;
+        return fare <= maxFare;
+      });
     }
 
     if (filtered.length === 0) {
