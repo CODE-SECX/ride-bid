@@ -245,7 +245,7 @@ app.post('/api/rides', async (req, res) => {
     const resolvedPassengerId = passenger.id;
     const resolvedPassengerName = passenger.name;
 
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(); // 2 hours expiry
 
     const { data, error } = await supabase
       .from('ride_requests')
@@ -354,19 +354,33 @@ app.patch('/api/rides/:id', async (req, res) => {
 app.post('/api/rides/:id/counter', async (req, res) => {
   try {
     const { id } = req.params;
-    const { counterFare, driverId } = req.body;
+    const { counterFare, driverId, isPassenger } = req.body;
 
-    if (!counterFare || !driverId) {
-      return res.status(400).json({ error: 'Counter fare and driver ID required' });
+    if (!counterFare) {
+      return res.status(400).json({ error: 'Counter fare required' });
+    }
+
+    // Set expiry to 2 hours from now
+    const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+    
+    const updateData = {
+      status: 'countered',
+      counter_fare: counterFare,
+      expires_at: expiresAt
+    };
+
+    // Set the appropriate countered_by field based on who is countering
+    if (isPassenger) {
+      updateData.countered_by = null; // Passenger countering back
+      updateData.passenger_countered = true;
+    } else {
+      updateData.countered_by = driverId; // Driver countering
+      updateData.passenger_countered = false;
     }
 
     const { data, error } = await supabase
       .from('ride_requests')
-      .update({
-        status: 'countered',
-        counter_fare: counterFare,
-        countered_by: driverId
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();
@@ -378,13 +392,17 @@ app.post('/api/rides/:id/counter', async (req, res) => {
       throw error;
     }
 
-    const { data: driver } = await supabase
-      .from('drivers')
-      .select('name, contact_no, vehicle_info')
-      .eq('id', driverId)
-      .single();
+    // Attach driver info only for driver counters
+    if (!isPassenger && driverId) {
+      const { data: driver } = await supabase
+        .from('drivers')
+        .select('name, contact_no, vehicle_info')
+        .eq('id', driverId)
+        .single();
 
-    data.driver = driver;
+      data.driver = driver;
+    }
+
     broadcastRideUpdate(data);
     res.json({ ride: data });
   } catch (err) {
