@@ -2030,26 +2030,25 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           actions = `<div class="status-note wait" style="margin-top:12px;">⏳ <span>Your counter of <strong>$${counteredPrice}</strong> is with the rider — waiting on their move.</span></div>`;
         }
       }
-    }
 
-    if (r.status === 'confirmed') {
-      closedNote = `
-        <div class="contact-info-block" style="margin-top:12px;">
-          <div class="contact-info-block-header">
-            <div class="contact-avatar-sm">${(r.passenger_name||'P')[0].toUpperCase()}</div>
-            <div>
-              <div class="contact-info-name">${r.passenger_name||'Passenger'}</div>
-              <div class="contact-info-role">Confirmed Passenger</div>
+      if (r.status === 'confirmed') {
+        closedNote = `
+          <div class="contact-info-block" style="margin-top:12px;">
+            <div class="contact-info-block-header">
+              <div class="contact-avatar-sm">${(r.passenger_name||'P')[0].toUpperCase()}</div>
+              <div>
+                <div class="contact-info-name">${r.passenger_name||'Passenger'}</div>
+                <div class="contact-info-role">Confirmed Passenger</div>
+              </div>
+            </div>
+            <div class="contact-info-row">
+              <span class="contact-info-icon">📞</span>
+              ${phoneLink(r.passenger_phone)}
             </div>
           </div>
-          <div class="contact-info-row">
-            <span class="contact-info-icon">📞</span>
-            ${phoneLink(r.passenger_phone)}
-          </div>
-        </div>
-        <div style="margin-top:10px;">
-          <button class="btn btn-primary btn-sm" onclick="driverComplete('${r.id}')">Mark Completed</button>
-        </div>`;
+          <div style="margin-top:10px;">
+            <button class="btn btn-primary btn-sm" onclick="driverComplete('${r.id}')">Mark Completed</button>
+          </div>`;
     }
     if (r.status === 'rejected') {
       closedNote = `<div class="status-note closed" style="margin-top:12px;">— <span>You passed on this one. Plenty more offers on the way.</span></div>`;
