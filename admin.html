@@ -843,7 +843,7 @@ function subscribeRealtime(){
         });
       }
       refreshAll(TABLE_HISTORY, 'INSERT', hist);
-      toast(`🏁 Ride completed — ₹${hist.final_fare}`,'success');
+      toast(`🏁 Ride completed — $${hist.final_fare}`,'success');
     })
     .subscribe(s => handleChannelStatus('ride_history', s));
 }
@@ -1257,8 +1257,8 @@ function openRideDetail(id){
         </div>
         <div style="text-align:right">
           <div style="font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.25rem">${r.status==='completed'?'Final Fare':'Current Fare'}</div>
-          <div class="fare" style="font-size:1.75rem">₹${r.status==='completed'&&r.final_fare ? r.final_fare : r.counter_fare || r.offered_fare}</div>
-          ${r.status!=='completed'&&r.offered_fare?`<div style="font-size:.75rem;color:var(--text-muted);margin-top:.2rem">Initial offer: ₹${r.offered_fare}</div>`:''}
+          <div class="fare" style="font-size:1.75rem">$${r.status==='completed'&&r.final_fare ? r.final_fare : r.counter_fare || r.offered_fare}</div>
+          ${r.status!=='completed'&&r.offered_fare?`<div style="font-size:.75rem;color:var(--text-muted);margin-top:.2rem">Initial offer: $${r.offered_fare}</div>`:''}
         </div>
       </div>
       <div class="route-vis">
@@ -1321,7 +1321,7 @@ function openRideDetail(id){
   
 function buildFareTimeline(r) {
   const steps = [];
-  const fmt = v => v != null && v !== '' ? `₹${v}` : null;
+  const fmt = v => v != null && v !== '' ? `$${v}` : null;
 
   // Step 1 — Passenger's initial offer (always available)
   if (r.offered_fare != null) {
@@ -1476,7 +1476,18 @@ function renderPagination(containerId,current,total,onPage){
 // UTILS
 // ═══════════════════════════════════════════════════════════════
 function fmtDate(iso){if(!iso) return '—';return new Date(iso).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
-function fmtDateTime(iso){if(!iso) return '—';return new Date(iso).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
+function fmtDateTime(iso){
+  if(!iso) return '—';
+  const d = new Date(iso);
+  const day = d.getUTCDate().toString().padStart(2,'0');
+  const month = d.toLocaleString('en',{month:'short',timeZone:'UTC'});
+  const year = d.getUTCFullYear();
+  const hr = d.getUTCHours();
+  const min = d.getUTCMinutes().toString().padStart(2,'0');
+  const ampm = hr >= 12 ? 'PM' : 'AM';
+  const hr12 = (hr % 12 || 12).toString().padStart(2,'0');
+  return `${day} ${month} ${year}, ${hr12}:${min} ${ampm}`;
+}
 function toast(msg,type='info'){
   const t=document.createElement('div');
   t.className=`toast toast-${type}`;t.textContent=msg;
