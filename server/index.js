@@ -20,6 +20,11 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'ridenegotiate.html'));
 });
 
+// Super Admin Portal Route
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'admin.html'));
+});
+
 // Expose Supabase config to frontend
 app.get('/api/config', (req, res) => {
   res.json({
