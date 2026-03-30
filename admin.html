@@ -790,8 +790,30 @@ function subscribeRealtime(){
           rec.final_fare   = hist.final_fare;
           rec.completed_at = hist.completed_at;
           rec.accepted_by  = rec.accepted_by || hist.driver_id;
+          rec.status       = 'completed';
           rec._has_history = true;
         }
+
+        // Preserve fields already enriched on the existing ride row
+        // that the incoming ride_requests record won't carry
+        // (final_fare, completed_at, pickup_time, passenger_countered, etc.)
+        const existing = state.rides.find(x => String(x.id) === String(rec.id));
+        if(existing){
+          rec = {
+            ...existing,   // keep all previously known fields
+            ...rec,        // incoming update wins for fields it does carry
+            // but never let undefined overwrite a real value:
+            final_fare:   rec.final_fare   ?? existing.final_fare,
+            completed_at: rec.completed_at ?? existing.completed_at,
+            pickup_time:  rec.pickup_time  ?? existing.pickup_time,
+            passenger_countered:   rec.passenger_countered   ?? existing.passenger_countered,
+            previous_counter_fare: rec.previous_counter_fare ?? existing.previous_counter_fare,
+            status: rec.status === 'confirmed' && existing.status === 'completed'
+                      ? 'completed'   // don't regress status
+                      : rec.status,
+          };
+        }
+
         upsertInto(state.rides, rec);
       }
       refreshAll(TABLE_REQUESTS, eventType, rec||old);
