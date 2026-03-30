@@ -1223,22 +1223,51 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         passenger = JSON.parse(saved);
         showPassengerDashboard();
         loadMyRides();
-      } catch (e) { localStorage.removeItem('passenger'); }
+      } catch (e) {
+        localStorage.removeItem('passenger');
+      }
+    } else {
+      document.getElementById('passenger-dashboard').classList.add('hidden');
+      document.getElementById('p-name').value  = '';
+      document.getElementById('p-phone').value = '';
     }
   }
 
   /* ═══════════ ACCOUNT: DRIVER ═══════════ */
   function showDriverLogin() {
     const loginHtml = `
-      <div class="auth-wrap" style="max-width:380px; margin:40px auto;">
-        <h2 class="auth-heading">Driver Login</h2>
-        <p class="auth-sub">Enter your credentials to access ride requests</p>
-        <div class="card">
-          <div class="form-grid">
-            <div><label>Username</label><input id="d-username" type="text" placeholder="username" /></div>
-            <div><label>Password</label><input id="d-password" type="password" placeholder="password" /></div>
-            <button class="btn btn-primary btn-full" onclick="loginDriver()">Login</button>
-            <button class="btn btn-ghost btn-full" onclick="switchTab('passenger')">Back to Rider</button>
+      <div class="auth-wrap" style="max-width:420px; margin:40px auto;">
+        <div class="inner-tabs" style="margin: 0 auto 24px;">
+          <button class="inner-tab active" id="driver-login-tab" onclick="showDriverLoginForm()">Login</button>
+          <button class="inner-tab" id="driver-signup-tab" onclick="showDriverSignupForm()">Sign Up</button>
+        </div>
+        
+        <div id="driver-login-form">
+          <h2 class="auth-heading">Driver Login</h2>
+          <p class="auth-sub">Enter your credentials to access ride requests</p>
+          <div class="card">
+            <div class="form-grid">
+              <div><label>Username</label><input id="d-username" type="text" placeholder="username" /></div>
+              <div><label>Password</label><input id="d-password" type="password" placeholder="password" /></div>
+              <button class="btn btn-primary btn-full" onclick="loginDriver()">Login</button>
+              <button class="btn btn-ghost btn-full" onclick="switchTab('passenger')">Back to Rider</button>
+            </div>
+          </div>
+        </div>
+        
+        <div id="driver-signup-form" class="hidden">
+          <h2 class="auth-heading">Driver Sign Up</h2>
+          <p class="auth-sub">Join our driver community and start earning</p>
+          <div class="card">
+            <div class="form-grid">
+              <div><label>Full Name</label><input id="d-signup-name" type="text" placeholder="John Smith" /></div>
+              <div><label>Username</label><input id="d-signup-username" type="text" placeholder="username" /></div>
+              <div><label>Password</label><input id="d-signup-password" type="password" placeholder="min 6 characters" /></div>
+              <div><label>Contact Number</label><input id="d-signup-phone" type="tel" placeholder="(555) 123-4567" /></div>
+              <div><label>Vehicle Info (optional)</label><input id="d-signup-vehicle" type="text" placeholder="Toyota Camry 2020, Black" /></div>
+              <button class="btn btn-primary btn-full" onclick="signupDriver()">Create Account</button>
+              <button class="btn btn-ghost btn-full" onclick="showDriverLoginForm()">Back to Login</button>
+            </div>
           </div>
         </div>
       </div>`;
@@ -1270,6 +1299,53 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       loadAllRides();
     } catch (err) {
       toast('❌', 'Login failed', err.message, 'red');
+    }
+  }
+
+  function showDriverLoginForm() {
+    document.getElementById('driver-login-tab').classList.add('active');
+    document.getElementById('driver-signup-tab').classList.remove('active');
+    document.getElementById('driver-login-form').classList.remove('hidden');
+    document.getElementById('driver-signup-form').classList.add('hidden');
+  }
+
+  function showDriverSignupForm() {
+    document.getElementById('driver-login-tab').classList.remove('active');
+    document.getElementById('driver-signup-tab').classList.add('active');
+    document.getElementById('driver-login-form').classList.add('hidden');
+    document.getElementById('driver-signup-form').classList.remove('hidden');
+  }
+
+  async function signupDriver() {
+    const name = document.getElementById('d-signup-name').value.trim();
+    const username = document.getElementById('d-signup-username').value.trim();
+    const password = document.getElementById('d-signup-password').value;
+    const phone = document.getElementById('d-signup-phone').value.trim();
+    const vehicle = document.getElementById('d-signup-vehicle').value.trim();
+
+    // Validation
+    if (!name) { toast('⚠️', 'Name required', 'Please enter your full name.', 'amber'); return; }
+    if (!username) { toast('⚠️', 'Username required', 'Please choose a username.', 'amber'); return; }
+    if (!password) { toast('⚠️', 'Password required', 'Please enter a password.', 'amber'); return; }
+    if (password.length < 6) { toast('⚠️', 'Password too short', 'Password must be at least 6 characters.', 'amber'); return; }
+    if (!phone) { toast('⚠️', 'Phone required', 'Please enter your contact number.', 'amber'); return; }
+
+    try {
+      const res = await fetch(`${API_URL}/drivers/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, username, password, contact_no: phone, vehicle_info: vehicle })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      driver = data.driver;
+      localStorage.setItem('driver', JSON.stringify(driver));
+      toast('✅', 'Welcome, ' + driver.name + '!', 'Your driver account has been created.', 'green');
+      renderDriverDashboard();
+      loadAllRides();
+    } catch (err) {
+      toast('❌', 'Signup failed', err.message, 'red');
     }
   }
 
