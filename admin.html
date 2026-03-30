@@ -567,7 +567,7 @@ body {
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-let supabase;
+let supabaseClient;
 let currentAdmin = null;
 
 // Initialize
@@ -575,7 +575,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     const response = await fetch('/api/config');
     const config = await response.json();
-    supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+    supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
   } catch (error) {
     console.error('Failed to initialize Supabase:', error);
   }
@@ -660,10 +660,10 @@ async function loadDashboardData() {
 async function loadStats() {
   try {
     const [driversRes, ridesRes, activeRidesRes, onlineDriversRes] = await Promise.all([
-      supabase.from('drivers').select('id', { count: 'exact' }),
-      supabase.from('ride_requests').select('id', { count: 'exact' }),
-      supabase.from('ride_requests').select('id', { count: 'exact' }).in('status', ['pending', 'confirmed']),
-      supabase.from('drivers').select('id', { count: 'exact' }).eq('is_online', true)
+      supabaseClient.from('drivers').select('id', { count: 'exact' }),
+      supabaseClient.from('ride_requests').select('id', { count: 'exact' }),
+      supabaseClient.from('ride_requests').select('id', { count: 'exact' }).in('status', ['pending', 'confirmed']),
+      supabaseClient.from('drivers').select('id', { count: 'exact' }).eq('is_online', true)
     ]);
 
     document.getElementById('totalDrivers').textContent = driversRes.count || 0;
@@ -677,7 +677,7 @@ async function loadStats() {
 
 async function loadDrivers() {
   try {
-    const { data: drivers, error } = await supabase
+    const { data: drivers, error } = await supabaseClient
       .from('drivers')
       .select('*')
       .order('created_at', { ascending: false });
@@ -711,7 +711,7 @@ async function loadDrivers() {
 
 async function loadRides() {
   try {
-    const { data: rides, error } = await supabase
+    const { data: rides, error } = await supabaseClient
       .from('ride_requests')
       .select('*')
       .order('created_at', { ascending: false })
@@ -759,7 +759,7 @@ async function loadRides() {
 
 async function loadPassengers() {
   try {
-    const { data: passengers, error } = await supabase
+    const { data: passengers, error } = await supabaseClient
       .from('passengers')
       .select('*')
       .order('created_at', { ascending: false });
@@ -769,7 +769,7 @@ async function loadPassengers() {
     // Get ride counts for each passenger
     const passengersWithRideCounts = await Promise.all(
       passengers.map(async (passenger) => {
-        const { count } = await supabase
+        const { count } = await supabaseClient
           .from('ride_requests')
           .select('*', { count: 'exact', head: true })
           .eq('passenger_phone', passenger.phone);
