@@ -692,7 +692,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   padding: 8px 0; font-style: italic;
 }
 
-/* ─── Filter Dropdown (Change 1) ─── */
+/* ─── Filter Dropdown ─── */
 .filter-dropdown {
   margin-bottom: 20px;
   border-radius: var(--radius);
@@ -925,7 +925,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       <div>
         <div class="label-eyebrow">All Rides</div>
         <div class="section-heading">Available Ride Requests</div>
-        <div class="section-caption">See what other passengers are offering — find trends and plan your own.</div>
+        <div class="section-caption">All active and completed requests — track trends and see your own history.</div>
 
         <div class="inner-tabs">
           <button class="inner-tab active" id="ptab-all"       onclick="filterPassengerRides('all')">All</button>
@@ -983,25 +983,22 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 <script>
   /* ═══════════ STATE ═══════════ */
   const API_URL = (window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin) + '/api';
-  
+
   let supabaseClient = null;
   let realtimeSubscription = null;
   let passenger = null;
-  
+
   async function initializeSupabase() {
     try {
       const response = await fetch(`${API_URL}/config`);
       const config = await response.json();
-      
       if (config.supabaseUrl && config.supabaseAnonKey) {
         const { createClient } = window.supabase;
         supabaseClient = createClient(config.supabaseUrl, config.supabaseAnonKey);
         console.log('✅ Supabase client initialized');
         return true;
-      } else {
-        console.error('❌ Supabase configuration not found');
-        return false;
       }
+      return false;
     } catch (error) {
       console.error('❌ Failed to fetch Supabase config:', error);
       return false;
@@ -1011,16 +1008,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   let allRides = [];
   let myRides  = [];
   const driverCache = {};
-
-  /*
-   * ─────────────────────────────────────────────────────
-   * CHANGE 2: Per-driver "pass" tracking
-   * When a driver clicks Pass, we only hide the ride from
-   * THAT driver's view. The ride stays pending for all
-   * other drivers. We track this in a local Set.
-   * ─────────────────────────────────────────────────────
-   */
-  const driverPassedRides = new Set(); // rideIds the current driver has passed on
+  const driverPassedRides = new Set();
 
   async function fetchDriverById(driverId) {
     if (!driverId || driverCache[driverId] !== undefined) return;
@@ -1038,13 +1026,20 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     }
   }
 
+  /*
+   * FIX (BUG F): resolveDriver now uses accepted_by first, then countered_by.
+   * Also triggers fetchDriverById for completed rides so the cache fills in.
+   */
   function resolveDriver(r) {
     if (r.driver) return r.driver;
+    // accepted_by is set for direct-accept. For accept-counter flow,
+    // server.js now also sets accepted_by = countered_by (see server.js fix).
+    // We still fall back to countered_by for older rides in the DB.
     const driverId = r.accepted_by || r.countered_by;
     if (!driverId) return null;
     if (driverCache[driverId] !== undefined) return driverCache[driverId];
-    if ((passenger && (r.status === 'confirmed' || r.status === 'completed')) ||
-        (driver && (r.accepted_by === driver.id || r.countered_by === driver.id))) {
+    // Trigger async fetch for any confirmed/completed ride
+    if (r.status === 'confirmed' || r.status === 'completed') {
       fetchDriverById(driverId);
     }
     return null;
@@ -1056,7 +1051,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   let driverFareMin = '';
   let driverFareMax = '';
   let driverLocationFilter = '';
-  let driverFilterOpen = false; // CHANGE 1: dropdown state
+  let driverFilterOpen = false;
 
   /* ═══════════ PHONE LINK HELPER ═══════════ */
   function phoneLink(phoneStr, labelClass) {
@@ -1067,25 +1062,66 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     return `<a href="tel:${dialable}" class="phone-link ${labelClass || ''}"><span class="phone-icon">📞</span>${phoneStr}</a>`;
   }
 
+  /* ═══════════ HELPERS ═══════════ */
+  function getRide(id) {
+    return allRides.find(r => r.id === id) || myRides.find(r => r.id === id);
+  }
+
+  /*
+   * FIX (BUG E): getFinalFare now correctly resolves the true charged amount.
+   *
+   * Flow breakdown:
+   * - Direct accept:        offered_fare stays original, accepted_by set
+   * - Accept-counter:       server sets offered_fare = counter_fare, counter_fare remains
+   * - After complete_ride:  ride_history.final_fare is inserted (= offered_fare at that time)
+   *
+   * So the priority is:
+   *   final_fare (from ride_history, most authoritative)
+   *   > counter_fare (set by driver counter, reflects negotiated price before accept-counter mutates offered_fare)
+   *   > offered_fare (original offer OR mutated to counter_fare by accept-counter)
+   *
+   * The strikethrough "original bid" is only shown when final_fare != original offered_fare.
+   * We preserve original_offered_fare on each ride object when first seen to avoid confusion.
+   */
+  function getFinalFare(r) {
+    if (r.status === 'confirmed' || r.status === 'completed') {
+      // final_fare is set after complete_ride RPC (most authoritative)
+      if (r.final_fare != null) return r.final_fare;
+      // counter_fare is the agreed negotiated amount
+      if (r.counter_fare != null) return r.counter_fare;
+    }
+    return r.offered_fare;
+  }
+
+  /*
+   * Returns the original passenger bid — the very first offered_fare
+   * before any accept-counter mutation. Used for the strikethrough display.
+   */
+  function getOriginalFare(r) {
+    // original_offered_fare is preserved in handleRideUpdate when first seen
+    if (r.original_offered_fare != null) return r.original_offered_fare;
+    return r.offered_fare;
+  }
+
+  function badgeHTML(status) {
+    const labels = { pending:'Awaiting response', countered:'Counter proposed', confirmed:'Confirmed', completed:'Completed', rejected:'Closed' };
+    return `<span class="badge badge-${status}">${labels[status]||status}</span>`;
+  }
+
   /* ═══════════ SUPABASE REALTIME ═══════════ */
   function connectRealtime() {
-    console.log('Connecting to Supabase Realtime...');
     realtimeSubscription = supabaseClient
       .channel('ride_requests')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'ride_requests' }, 
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'ride_requests' },
         (payload) => {
-          console.log('Realtime update received:', payload);
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             handleRideUpdate(payload.new);
           }
         }
       )
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ Supabase Realtime connected');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ Supabase Realtime connection error');
+        if (status === 'CHANNEL_ERROR') {
           setTimeout(connectRealtime, 3000);
         }
       });
@@ -1098,13 +1134,21 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     }
   }
 
+  /*
+   * FIX: handleRideUpdate now preserves original_offered_fare so the strikethrough
+   * "bid $X" always shows what the passenger originally offered, not the mutated value.
+   */
   function handleRideUpdate(incomingRide) {
     const existingAll = allRides.find(r => r.id === incomingRide.id);
     const existingMy  = myRides.find(r => r.id === incomingRide.id);
     const existing    = existingAll || existingMy;
 
-    let previousCounterFare = existing ? existing.previous_counter_fare : undefined;
+    // Track the very first offered_fare before any server mutation
+    const originalOfferedFare = existing
+      ? (existing.original_offered_fare ?? existing.offered_fare)
+      : incomingRide.offered_fare;
 
+    let previousCounterFare = existing ? existing.previous_counter_fare : undefined;
     if (incomingRide.counter_fare !== undefined) {
       const oldCounterFare = existing ? existing.counter_fare : undefined;
       if (oldCounterFare !== undefined && oldCounterFare !== incomingRide.counter_fare) {
@@ -1116,7 +1160,8 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
     const mergedRide = {
       ...incomingRide,
-      previous_counter_fare: previousCounterFare,
+      original_offered_fare:        originalOfferedFare,
+      previous_counter_fare:        previousCounterFare,
       counterInputVisible:          existing ? existing.counterInputVisible          : false,
       passengerCounterInputVisible: existing ? existing.passengerCounterInputVisible : false,
     };
@@ -1226,10 +1271,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       } catch (e) {
         localStorage.removeItem('passenger');
       }
-    } else {
-      document.getElementById('passenger-dashboard').classList.add('hidden');
-      document.getElementById('p-name').value  = '';
-      document.getElementById('p-phone').value = '';
     }
   }
 
@@ -1241,7 +1282,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <button class="inner-tab active" id="driver-login-tab" onclick="showDriverLoginForm()">Login</button>
           <button class="inner-tab" id="driver-signup-tab" onclick="showDriverSignupForm()">Sign Up</button>
         </div>
-        
         <div id="driver-login-form">
           <h2 class="auth-heading">Driver Login</h2>
           <p class="auth-sub">Enter your credentials to access ride requests</p>
@@ -1254,7 +1294,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
             </div>
           </div>
         </div>
-        
         <div id="driver-signup-form" class="hidden">
           <h2 class="auth-heading">Driver Sign Up</h2>
           <p class="auth-sub">Join our driver community and start earning</p>
@@ -1277,29 +1316,20 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   async function loginDriver() {
     const username = document.getElementById('d-username').value.trim();
     const password = document.getElementById('d-password').value;
-
-    if (!username || !password) {
-      toast('⚠️', 'Credentials required', 'Please enter username and password.', 'amber');
-      return;
-    }
-
+    if (!username || !password) { toast('⚠️', 'Credentials required', 'Please enter username and password.', 'amber'); return; }
     try {
       const res = await fetch(`${API_URL}/drivers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-
       driver = data.driver;
       localStorage.setItem('driver', JSON.stringify(driver));
       toast('✅', 'Welcome, ' + driver.name + '!', 'You are now online.', 'green');
       renderDriverDashboard();
       loadAllRides();
-    } catch (err) {
-      toast('❌', 'Login failed', err.message, 'red');
-    }
+    } catch (err) { toast('❌', 'Login failed', err.message, 'red'); }
   }
 
   function showDriverLoginForm() {
@@ -1322,43 +1352,35 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     const password = document.getElementById('d-signup-password').value;
     const phone = document.getElementById('d-signup-phone').value.trim();
     const vehicle = document.getElementById('d-signup-vehicle').value.trim();
-
-    // Validation
-    if (!name) { toast('⚠️', 'Name required', 'Please enter your full name.', 'amber'); return; }
+    if (!name)     { toast('⚠️', 'Name required', 'Please enter your full name.', 'amber'); return; }
     if (!username) { toast('⚠️', 'Username required', 'Please choose a username.', 'amber'); return; }
     if (!password) { toast('⚠️', 'Password required', 'Please enter a password.', 'amber'); return; }
     if (password.length < 6) { toast('⚠️', 'Password too short', 'Password must be at least 6 characters.', 'amber'); return; }
-    if (!phone) { toast('⚠️', 'Phone required', 'Please enter your contact number.', 'amber'); return; }
-
+    if (!phone)    { toast('⚠️', 'Phone required', 'Please enter your contact number.', 'amber'); return; }
     try {
       const res = await fetch(`${API_URL}/drivers/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, username, password, contact_no: phone, vehicle_info: vehicle })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-
       driver = data.driver;
       localStorage.setItem('driver', JSON.stringify(driver));
       toast('✅', 'Welcome, ' + driver.name + '!', 'Your driver account has been created.', 'green');
       renderDriverDashboard();
       loadAllRides();
-    } catch (err) {
-      toast('❌', 'Signup failed', err.message, 'red');
-    }
+    } catch (err) { toast('❌', 'Signup failed', err.message, 'red'); }
   }
 
   function logoutDriver() {
     if (driver) {
       fetch(`${API_URL}/drivers/logout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ driverId: driver.id })
       });
     }
     driver = null;
-    driverPassedRides.clear(); // CHANGE 2: clear pass list on logout
+    driverPassedRides.clear();
     localStorage.removeItem('driver');
     showDriverLogin();
   }
@@ -1415,40 +1437,30 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     const vehicle = document.getElementById('edit-vehicle').value.trim();
     const currentPassword = document.getElementById('edit-current-password').value;
     const newPassword = document.getElementById('edit-new-password').value;
-    
     if (!username) { toast('⚠️', 'Username required', 'Username is required for login.', 'amber'); return; }
-    if (!name)     { toast('⚠️', 'Name required', 'Your name is required for identification.', 'amber'); return; }
+    if (!name)     { toast('⚠️', 'Name required', 'Your name is required.', 'amber'); return; }
     if (!contact)  { toast('⚠️', 'Contact required', 'Passengers need to reach you.', 'amber'); return; }
     if (!currentPassword) { toast('⚠️', 'Password required', 'Enter current password to confirm changes.', 'amber'); return; }
-    
     try {
       const loginRes = await fetch(`${API_URL}/drivers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: driver.username, password: currentPassword })
       });
-      const loginData = await loginRes.json();
       if (!loginRes.ok) throw new Error('Current password is incorrect');
-      
       const updateData = { username, name, contact_no: contact, vehicle_info: vehicle };
       if (newPassword.trim()) updateData.password = newPassword;
-      
       const updateRes = await fetch(`${API_URL}/drivers/${driver.id}/profile`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)
       });
       const updateResult = await updateRes.json();
       if (!updateRes.ok) throw new Error(updateResult.error || 'Update failed');
-      
       driver = { ...driver, ...updateData };
       localStorage.setItem('driver', JSON.stringify(driver));
       closeDriverProfileEdit();
       renderDriverDashboard();
-      toast('✅', 'Profile Updated', 'Your driver information has been updated successfully.', 'green');
-    } catch (err) {
-      toast('❌', 'Update Failed', err.message, 'red');
-    }
+      toast('✅', 'Profile Updated', 'Your driver information has been updated.', 'green');
+    } catch (err) { toast('❌', 'Update Failed', err.message, 'red'); }
   }
 
   function closeDriverProfileEdit() {
@@ -1456,9 +1468,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (modal) modal.remove();
   }
 
-  /* ═══════════════════════════════════════════════════════
-   * CHANGE 1: Filter dropdown helpers
-   * ═══════════════════════════════════════════════════════ */
+  /* ═══════════ FILTER DROPDOWN ═══════════ */
   function toggleFilterDropdown() {
     driverFilterOpen = !driverFilterOpen;
     const body    = document.getElementById('filter-dropdown-body');
@@ -1479,9 +1489,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     badge.classList.toggle('visible', count > 0);
   }
 
-  /* ═══════════════════════════════════════════════════════
-   * renderDriverDashboard — rebuilt with dropdown filter
-   * ═══════════════════════════════════════════════════════ */
+  /* ═══════════ DRIVER DASHBOARD ═══════════ */
   function renderDriverDashboard() {
     const html = `
       <div class="driver-header">
@@ -1506,7 +1514,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         <button class="inner-tab"        id="dtab-closed"    onclick="filterDriver('closed')">Closed</button>
       </div>
 
-      <!-- CHANGE 1: Collapsible filter dropdown -->
       <div class="filter-dropdown" id="filter-dropdown">
         <div class="filter-dropdown-toggle" onclick="toggleFilterDropdown()">
           <div class="filter-dropdown-toggle-left">
@@ -1562,7 +1569,9 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         const existing = existingAllRides.find(e => e.id === r.id);
         return {
           ...r,
-          previous_counter_fare: existing ? existing.previous_counter_fare : r.offered_fare,
+          // FIX: preserve original_offered_fare across reloads
+          original_offered_fare:        existing ? (existing.original_offered_fare ?? existing.offered_fare) : r.offered_fare,
+          previous_counter_fare:        existing ? existing.previous_counter_fare        : r.offered_fare,
           counterInputVisible:          existing ? existing.counterInputVisible          : false,
           passengerCounterInputVisible: existing ? existing.passengerCounterInputVisible : false,
         };
@@ -1581,12 +1590,18 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       const existingMyRides = [...myRides];
       myRides = incoming.map(r => {
         const fromAll = allRides.find(e => e.id === r.id);
-        const fromMy = existingMyRides.find(e => e.id === r.id);
-        const previousFare = fromMy ? fromMy.previous_counter_fare : 
-                           (fromAll ? fromAll.previous_counter_fare : r.offered_fare);
+        const fromMy  = existingMyRides.find(e => e.id === r.id);
+        const originalFare = fromMy
+          ? (fromMy.original_offered_fare ?? fromMy.offered_fare)
+          : fromAll
+            ? (fromAll.original_offered_fare ?? fromAll.offered_fare)
+            : r.offered_fare;
+        const previousFare = fromMy ? fromMy.previous_counter_fare
+                           : fromAll ? fromAll.previous_counter_fare : r.offered_fare;
         return {
           ...r,
-          previous_counter_fare: previousFare,
+          original_offered_fare:        originalFare,
+          previous_counter_fare:        previousFare,
           counterInputVisible:          fromMy ? fromMy.counterInputVisible          : false,
           passengerCounterInputVisible: fromMy ? fromMy.passengerCounterInputVisible : false,
         };
@@ -1597,41 +1612,27 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
   async function submitRideRequest() {
     if (!passenger) { toast('🔒', 'Hold on', "You'll need an account before sending offers.", 'amber'); return; }
-
     const pickup = document.getElementById('p-pickup').value.trim();
     const drop   = document.getElementById('p-drop').value.trim();
     const pickupTime = document.getElementById('p-pickup-time').value;
     const price  = parseFloat(document.getElementById('p-price').value);
-
-    if (!pickup)     { toast('📍', 'Pickup missing',       "Let drivers know where to find you.", 'amber'); return; }
-    if (!drop)       { toast('📍', 'Drop-off missing',     "Where are you headed? Add your destination.", 'amber'); return; }
-    if (!pickupTime) { toast('⏰', 'Pickup time missing',  "When do you want to ride? Select a pickup time.", 'amber'); return; }
-    if (!price || price <= 0) { toast('💰', 'Set a price', "Enter what you'd like to pay — keep it fair.", 'amber'); return; }
-
+    if (!pickup)     { toast('📍', 'Pickup missing',      "Let drivers know where to find you.", 'amber'); return; }
+    if (!drop)       { toast('📍', 'Drop-off missing',    "Where are you headed? Add your destination.", 'amber'); return; }
+    if (!pickupTime) { toast('⏰', 'Pickup time missing', "When do you want to ride? Select a pickup time.", 'amber'); return; }
+    if (!price || price <= 0) { toast('💰', 'Set a price', "Enter what you'd like to pay.", 'amber'); return; }
     try {
       const res = await fetch(`${API_URL}/rides`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          passengerId:     passenger.id,
-          passengerPhone:  passenger.phone,
-          pickupLocation:  pickup,
-          dropoffLocation: drop,
-          pickupTime,
-          offeredFare:     price
-        })
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passengerId: passenger.id, passengerPhone: passenger.phone, pickupLocation: pickup, dropoffLocation: drop, pickupTime, offeredFare: price })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-
       document.getElementById('p-pickup').value = '';
       document.getElementById('p-drop').value   = '';
       document.getElementById('p-pickup-time').value = '';
       document.getElementById('p-price').value  = '';
-
-      toast('📤', 'Offer sent!', 'Drivers can see your $' + price + ' bid for ' + new Date(pickupTime).toLocaleString() + '. Sit tight.', 'green');
-
-      const newRide = { ...data.ride, previous_counter_fare: data.ride.offered_fare };
+      toast('📤', 'Offer sent!', 'Drivers can see your $' + price + ' bid. Sit tight.', 'green');
+      const newRide = { ...data.ride, original_offered_fare: data.ride.offered_fare, previous_counter_fare: data.ride.offered_fare };
       myRides.unshift(newRide);
       allRides.unshift(newRide);
       renderPassengerRequests();
@@ -1645,35 +1646,16 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (!driver) return;
     try {
       const res = await fetch(`${API_URL}/rides/${rideId}/accept`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ driverId: driver.id })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       sendRideUpdate(data.ride);
-      toast('✅', 'Ride accepted!', 'Locked in at $' + data.ride.offered_fare + '.', 'green');
+      toast('✅', 'Ride accepted!', 'Locked in at $' + (getFinalFare(data.ride)) + '.', 'green');
     } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
-  /*
-   * ─────────────────────────────────────────────────────────────────────────
-   * CHANGE 2: driverReject — now a LOCAL-ONLY pass.
-   *
-   * Instead of calling the server to mark the ride as rejected (which would
-   * close it for ALL drivers), we simply add the rideId to driverPassedRides
-   * and re-render. The ride stays pending in the DB and remains visible to
-   * every other driver. Only the current driver's view hides it.
-   *
-   * The ride will still disappear from this driver's list, and a toast
-   * confirms the action. If the driver refreshes and logs back in, the passed
-   * rides won't be remembered — that's intentional (session-only).
-   *
-   * The server-side /reject endpoint should still exist for cases where the
-   * PASSENGER declines a counter (passengerRejectCounter calls it). Drivers
-   * no longer use it.
-   * ─────────────────────────────────────────────────────────────────────────
-   */
   function driverReject(rideId) {
     if (!driver) return;
     driverPassedRides.add(rideId);
@@ -1685,8 +1667,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (!driver) return;
     try {
       const res = await fetch(`${API_URL}/rides/${rideId}/complete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ driverId: driver.id })
       });
       if (!res.ok) {
@@ -1704,25 +1685,20 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     const input = document.getElementById('counter-input-' + rideId);
     const val   = parseFloat(input ? input.value : 0);
     const ride  = getRide(rideId);
-
     if (!val || val <= ride.offered_fare) {
       toast('⚠️', 'Counter must be higher', 'Your counter needs to beat their $' + ride.offered_fare + ' offer.', 'amber');
       return;
     }
-
     try {
       const res = await fetch(`${API_URL}/rides/${rideId}/counter`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ counterFare: val, driverId: driver.id })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-
       data.ride.previous_counter_fare = ride.counter_fare || ride.offered_fare;
-
       sendRideUpdate(data.ride);
-      toast('💬', 'Counter sent', '$' + val + " is now with the passenger. Ball's in their court.", 'blue');
+      toast('💬', 'Counter sent', '$' + val + " is now with the passenger.", 'blue');
     } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
@@ -1730,27 +1706,20 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   async function passengerAcceptCounter(rideId) {
     try {
       const res = await fetch(`${API_URL}/rides/${rideId}/accept-counter`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({})
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       sendRideUpdate(data.ride);
-      toast('🎉', 'Ride confirmed!', 'Deal locked at $' + data.ride.offered_fare + '. Your driver is on the way.', 'green');
+      toast('🎉', 'Ride confirmed!', 'Deal locked at $' + getFinalFare(data.ride) + '. Your driver is on the way.', 'green');
     } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
-  /*
-   * CHANGE 2: passengerRejectCounter — this is the ONLY place that truly
-   * closes a ride (status → rejected). A passenger explicitly declining a
-   * counter is the correct trigger for global closure.
-   */
   async function passengerRejectCounter(rideId) {
     try {
       const res = await fetch(`${API_URL}/rides/${rideId}/decline-counter`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        method: 'POST', headers: { 'Content-Type': 'application/json' }
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -1763,41 +1732,31 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     const input = document.getElementById('passenger-counter-input-' + rideId);
     const val   = parseFloat(input ? input.value : 0);
     const ride  = getRide(rideId);
-
     if (!val || val >= ride.counter_fare) {
       toast('⚠️', 'Counter must be lower', 'Your counter needs to be lower than their $' + ride.counter_fare + ' offer.', 'amber');
       return;
     }
-
     try {
       const res = await fetch(`${API_URL}/rides/${rideId}/counter`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ counterFare: val, driverId: null, isPassenger: true })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-
       data.ride.previous_counter_fare = ride.counter_fare;
-
       sendRideUpdate(data.ride);
-      toast('💬', 'Counter sent', '$' + val + " is now with the driver. Ball's in their court.", 'blue');
+      toast('💬', 'Counter sent', '$' + val + " is now with the driver.", 'blue');
     } catch (err) { toast('❌', 'Error', err.message, 'red'); }
   }
 
   function togglePassengerCounterForm(rideId) {
-    const ride = getRide(rideId); 
+    const ride = getRide(rideId);
     if (!ride) return;
-    if (ride.passengerCounterInputVisible === undefined) {
-      ride.passengerCounterInputVisible = false;
-    }
     ride.passengerCounterInputVisible = !ride.passengerCounterInputVisible;
-
     const allRidesIndex = allRides.findIndex(r => r.id === rideId);
     const myRidesIndex  = myRides.findIndex(r => r.id === rideId);
     if (allRidesIndex >= 0) allRides[allRidesIndex].passengerCounterInputVisible = ride.passengerCounterInputVisible;
     if (myRidesIndex  >= 0) myRides[myRidesIndex].passengerCounterInputVisible  = ride.passengerCounterInputVisible;
-
     renderPassengerRequests();
   }
 
@@ -1807,7 +1766,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     const listEl  = document.getElementById('passenger-requests-list');
     const emptyEl = document.getElementById('passenger-requests-empty');
     if (!listEl) return;
-
     if (myRides.length === 0) {
       emptyEl.style.display = '';
       listEl.innerHTML = '';
@@ -1819,11 +1777,11 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
   function renderPassengerCard(r) {
     let extra = '';
-    const offeredFare        = r.offered_fare;
-    const counterFare        = r.counter_fare;
-    const previousCounterFare = r.previous_counter_fare != null
-      ? r.previous_counter_fare
-      : offeredFare;
+    const offeredFare     = r.offered_fare;
+    const originalFare    = getOriginalFare(r);  // FIX: always the first bid
+    const counterFare     = r.counter_fare;
+    const previousCounterFare = r.previous_counter_fare != null ? r.previous_counter_fare : offeredFare;
+    const finalFare       = getFinalFare(r);
 
     if (r.status === 'countered') {
       const driverObj = resolveDriver(r);
@@ -1861,7 +1819,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
             <div class="action-row">
               <button class="btn btn-primary btn-sm" onclick="passengerAcceptCounter('${r.id}')">Accept $${counterFare}</button>
               <button class="btn btn-amber btn-sm" onclick="togglePassengerCounterForm('${r.id}')">Propose a Counter</button>
-              <button class="btn btn-ghost   btn-sm" onclick="passengerRejectCounter('${r.id}')">Decline &amp; Close</button>
+              <button class="btn btn-ghost btn-sm" onclick="passengerRejectCounter('${r.id}')">Decline &amp; Close</button>
             </div>
             ${r.passengerCounterInputVisible ? `
               <div class="counter-form" style="margin-top:12px;">
@@ -1883,7 +1841,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
               <span style="color:var(--text-dim);margin:0 2px;">→</span>
               <span class="price-now">Your counter: $${counterFare}</span>
             </div>
-            <p>Your counter of $${counterFare} has been sent to the driver. Waiting for their response — they can accept, decline, or counter again.</p>
+            <p>Your counter of $${counterFare} has been sent. Waiting for their response.</p>
             <div class="status-note wait" style="margin-top:12px;">
               ⏳ <span>Waiting for driver to respond to your $${counterFare} counter.</span>
             </div>
@@ -1894,7 +1852,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (r.status === 'confirmed' || r.status === 'completed') {
       const driverObj = resolveDriver(r);
       const isComplete = r.status === 'completed';
-      const finalFare  = getFinalFare(r);
       const statusIcon = isComplete ? '🏁' : '🎉';
       const statusMsg  = isComplete
         ? `Ride completed at <strong>$${finalFare}</strong>. Thanks for riding!`
@@ -1928,8 +1885,12 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     }
 
     if (r.status === 'rejected') {
-      extra = `<div class="status-note closed">— <span>This one didn't land. Feel free to submit a fresh offer — sometimes a small bump makes all the difference.</span></div>`;
+      extra = `<div class="status-note closed">— <span>This one didn't land. Feel free to submit a fresh offer.</span></div>`;
     }
+
+    // FIX (BUG E): only show strikethrough if finalFare genuinely differs from the ORIGINAL bid
+    const showStrikethrough = (r.status === 'confirmed' || r.status === 'completed')
+      && String(finalFare) !== String(originalFare);
 
     return `
       <div class="ride-card ${r.status}">
@@ -1942,10 +1903,10 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
               (r.status === 'confirmed' || r.status === 'completed') ? 'Final fare' : 'Your offer'
             }</div>
             <div class="price-big ${r.status==='countered' ? 'counter-col' : ''}">$${
-              (r.status === 'confirmed' || r.status === 'completed') ? getFinalFare(r) : offeredFare
+              (r.status === 'confirmed' || r.status === 'completed') ? finalFare : offeredFare
             }</div>
-            ${(r.status === 'confirmed' || r.status === 'completed') && getFinalFare(r) !== offeredFare
-              ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">bid $${offeredFare}</div>`
+            ${showStrikethrough
+              ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">bid $${originalFare}</div>`
               : ''}
           </div>
         </div>
@@ -1995,15 +1956,12 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     if (m) m.value = '';
     if (x) x.value = '';
     if (l) l.value = '';
-    driverSearchText = '';
-    driverFareMin = '';
-    driverFareMax = '';
-    driverLocationFilter = '';
+    driverSearchText = ''; driverFareMin = ''; driverFareMax = ''; driverLocationFilter = '';
     updateFilterBadge();
     renderDriverView();
   }
 
-  /* ═══════════ RENDER: ALL RIDES (PASSENGER) ═══════════ */
+  /* ═══════════ RENDER: ALL RIDES (PASSENGER BOTTOM SECTION) ═══════════ */
   let passengerRideFilter = 'all';
 
   function filterPassengerRides(f) {
@@ -2015,18 +1973,25 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     renderAllRides();
   }
 
+  /*
+   * FIX (BUG I): When a passenger is logged in, the bottom "All Rides" section
+   * now shows ALL rides from allRides (not just their own), so it's genuinely
+   * useful for seeing market trends. Their own rides always appear in "Your Negotiations" above.
+   * For guests (no passenger), show all pending/countered rides as before.
+   */
   function renderAllRides() {
     const listEl  = document.getElementById('all-rides-list');
     const emptyEl = document.getElementById('all-rides-empty');
     if (!listEl) return;
 
-    let filtered = allRides;
-    if (passenger) {
-      filtered = allRides.filter(r => r.passenger_phone === passenger.phone);
-    } else if (driver) {
+    let filtered = [...allRides];
+
+    // For driver view: only show active rides
+    if (driver && !passenger) {
       filtered = allRides.filter(r => r.status === 'pending' || r.status === 'countered');
     }
-    
+
+    // Apply passenger tab filter
     if (passenger) {
       if (passengerRideFilter === 'pending')   filtered = filtered.filter(r => r.status === 'pending' || r.status === 'countered');
       if (passengerRideFilter === 'confirmed') filtered = filtered.filter(r => r.status === 'confirmed' || r.status === 'completed');
@@ -2043,52 +2008,60 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
   function renderAllRidesCard(r) {
     let extra = '';
+    const finalFare = getFinalFare(r);
+    const originalFare = getOriginalFare(r);
+
     if (r.status === 'confirmed' || r.status === 'completed') {
       const driverObj = resolveDriver(r);
       const isComplete = r.status === 'completed';
-      const finalFare  = getFinalFare(r);
       const statusIcon = isComplete ? '🏁' : '🎉';
       const statusMsg  = isComplete
         ? `Ride completed at <strong>$${finalFare}</strong>. Thanks for riding!`
         : `Confirmed at <strong>$${finalFare}</strong> — driver is on the way.`;
       const driverRole = isComplete ? 'Driver · Ride Complete' : 'Driver · En Route';
 
-      const driverBlock = driverObj
-        ? `<div class="driver-contact-block">
-             <div class="driver-contact-block-header">
-               <div class="contact-avatar-sm green-avatar">${(driverObj.name||'D')[0].toUpperCase()}</div>
-               <div>
-                 <div class="driver-contact-name">${driverObj.name||'Driver'}</div>
-                 <div class="driver-contact-role">${driverRole}</div>
+      // Only show driver contact block for the ride owner
+      const isOwner = passenger && r.passenger_phone === passenger.phone;
+      const driverBlock = isOwner
+        ? (driverObj
+          ? `<div class="driver-contact-block">
+               <div class="driver-contact-block-header">
+                 <div class="contact-avatar-sm green-avatar">${(driverObj.name||'D')[0].toUpperCase()}</div>
+                 <div>
+                   <div class="driver-contact-name">${driverObj.name||'Driver'}</div>
+                   <div class="driver-contact-role">${driverRole}</div>
+                 </div>
                </div>
-             </div>
-             <div class="driver-contact-row">
-               <span class="contact-info-icon">📞</span>
-               ${phoneLink(driverObj.contact_no)}
-             </div>
-             ${driverObj.vehicle_info
-               ? `<div class="driver-contact-row"><span class="contact-info-icon">🚘</span><span>${driverObj.vehicle_info}</span></div>`
-               : ''}
-           </div>`
-        : (r.accepted_by || r.countered_by)
-          ? `<div class="driver-loading">⏳ Loading driver details…</div>`
-          : '';
+               <div class="driver-contact-row">
+                 <span class="contact-info-icon">📞</span>
+                 ${phoneLink(driverObj.contact_no)}
+               </div>
+               ${driverObj.vehicle_info ? `<div class="driver-contact-row"><span class="contact-info-icon">🚘</span><span>${driverObj.vehicle_info}</span></div>` : ''}
+             </div>`
+          : (r.accepted_by || r.countered_by)
+            ? `<div class="driver-loading">⏳ Loading driver details…</div>`
+            : '')
+        : '';
 
       extra = `
         <div class="status-note ok">${statusIcon} <span>${statusMsg}</span></div>
         ${driverBlock}`;
     }
 
+    const showStrikethrough = (r.status === 'confirmed' || r.status === 'completed')
+      && String(finalFare) !== String(originalFare);
+
     return `
       <div class="ride-card ${r.status}">
         <div class="ride-card-top">
           <div>
             ${badgeHTML(r.status)}
-            <div style="margin-top:8px;">${r.passenger_name}</div>
+            <div style="margin-top:8px;font-size:0.88rem;font-weight:600;">${r.passenger_name}</div>
           </div>
           <div class="price-block">
-            <div class="price-label-sm">Offer</div>
-            <div class="price-big">$${r.offered_fare}</div>
+            <div class="price-label-sm">${(r.status==='confirmed'||r.status==='completed')?'Final':'Offer'}</div>
+            <div class="price-big">$${(r.status==='confirmed'||r.status==='completed') ? finalFare : r.offered_fare}</div>
+            ${showStrikethrough ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">bid $${originalFare}</div>` : ''}
           </div>
         </div>
         <div class="route">
@@ -2101,73 +2074,66 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       </div>`;
   }
 
+  /* ═══════════ RENDER: DRIVER VIEW ═══════════ */
   function renderDriverView() {
     const listEl  = document.getElementById('driver-requests-list');
     const emptyEl = document.getElementById('driver-requests-empty');
     const countEl = document.getElementById('driver-count');
     if (!listEl) return;
 
-    // CHANGE 2: count excludes rides this driver has passed on
     const availableRides = allRides.filter(r =>
       (r.status === 'pending' || r.status === 'countered') &&
       !driverPassedRides.has(r.id)
     );
     if (countEl) countEl.textContent = availableRides.length;
 
-    let filtered = allRides;
+    let filtered = [];
+
     if (driverFilter === 'all') {
-      filtered = allRides.filter(r => 
-        r.status === 'pending' || 
-        r.status === 'countered' || 
-        r.status === 'confirmed' || 
-        r.status === 'completed' || 
-        r.status === 'rejected'
+      filtered = allRides.filter(r =>
+        r.status === 'pending' || r.status === 'countered' ||
+        r.status === 'confirmed' || r.status === 'completed' || r.status === 'rejected'
       );
     } else if (driverFilter === 'pending') {
       filtered = allRides.filter(r => r.status === 'pending');
     } else if (driverFilter === 'countered') {
       filtered = allRides.filter(r => r.status === 'countered');
     } else if (driverFilter === 'closed') {
-      filtered = allRides.filter(r => 
+      /*
+       * FIX (BUG J + BUG G): Use String() coercion for safe UUID comparison.
+       * accepted_by is set for direct accept; countered_by for accept-counter flow.
+       * Both are now set by our fixed server.js (accept-counter also sets accepted_by).
+       */
+      filtered = allRides.filter(r =>
         (r.status === 'confirmed' || r.status === 'rejected' || r.status === 'completed') &&
-        (r.accepted_by === driver.id || r.countered_by === driver.id)
+        (String(r.accepted_by) === String(driver.id) || String(r.countered_by) === String(driver.id))
       );
     }
 
-    // CHANGE 2: always hide rides this driver passed on (except in 'closed' tab where
-    // only this driver's own confirmed/completed/rejected rides appear anyway)
+    // Hide rides this driver passed on (except in closed tab)
     if (driverFilter !== 'closed') {
       filtered = filtered.filter(r => !driverPassedRides.has(r.id));
     }
 
     if (driverSearchText) {
-      filtered = filtered.filter(r => 
-        (r.passenger_name && r.passenger_name.toLowerCase().includes(driverSearchText)) ||
-        (r.passenger_phone && r.passenger_phone.toLowerCase().includes(driverSearchText))
+      filtered = filtered.filter(r =>
+        (r.passenger_name || '').toLowerCase().includes(driverSearchText) ||
+        (r.passenger_phone || '').toLowerCase().includes(driverSearchText)
       );
     }
-    
     if (driverLocationFilter) {
-      filtered = filtered.filter(r => 
-        (r.pickup_location && r.pickup_location.toLowerCase().includes(driverLocationFilter)) ||
-        (r.dropoff_location && r.dropoff_location.toLowerCase().includes(driverLocationFilter))
+      filtered = filtered.filter(r =>
+        (r.pickup_location || '').toLowerCase().includes(driverLocationFilter) ||
+        (r.dropoff_location || '').toLowerCase().includes(driverLocationFilter)
       );
     }
-    
     if (driverFareMin) {
       const minFare = parseFloat(driverFareMin);
-      filtered = filtered.filter(r => {
-        const fare = r.counter_fare || r.offered_fare;
-        return fare >= minFare;
-      });
+      filtered = filtered.filter(r => (+(r.counter_fare || r.offered_fare)) >= minFare);
     }
-    
     if (driverFareMax) {
       const maxFare = parseFloat(driverFareMax);
-      filtered = filtered.filter(r => {
-        const fare = r.counter_fare || r.offered_fare;
-        return fare <= maxFare;
-      });
+      filtered = filtered.filter(r => (+(r.counter_fare || r.offered_fare)) <= maxFare);
     }
 
     if (filtered.length === 0) {
@@ -2180,14 +2146,11 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   }
 
   function renderDriverCard(r) {
-    const isClosed        = r.status === 'confirmed' || r.status === 'rejected';
-    const offeredFare     = r.offered_fare;
-    const counterFare     = r.counter_fare;
-    const previousCounterFare = r.previous_counter_fare != null
-      ? r.previous_counter_fare
-      : offeredFare;
-
-    const finalFare = getFinalFare(r);
+    const isClosed    = r.status === 'confirmed' || r.status === 'completed' || r.status === 'rejected';
+    const offeredFare = r.offered_fare;
+    const counterFare = r.counter_fare;
+    const finalFare   = getFinalFare(r);
+    const previousCounterFare = r.previous_counter_fare != null ? r.previous_counter_fare : offeredFare;
 
     let actions    = '';
     let closedNote = '';
@@ -2215,7 +2178,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
       if (r.status === 'countered') {
         const passengerCounteredLast = r.passenger_countered === true;
-
         if (passengerCounteredLast) {
           actions = `
             <div class="counter-banner" style="margin-top:12px;">
@@ -2225,11 +2187,11 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
                 <span style="color:var(--text-dim);margin:0 2px;">→</span>
                 <span class="price-now">Passenger countered: $${counterFare}</span>
               </div>
-              <p>They think $${counterFare} is a fair deal. Accept and lock it in — counter again, or pass on this one.</p>
+              <p>They think $${counterFare} is fair. Accept and lock it in — or counter again.</p>
               <div class="action-row">
                 <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept $${counterFare}</button>
                 <button class="btn btn-amber btn-sm" onclick="toggleCounterForm('${r.id}')">Propose a Counter</button>
-                <button class="btn btn-danger  btn-sm" onclick="driverReject('${r.id}')">Pass</button>
+                <button class="btn btn-danger btn-sm" onclick="driverReject('${r.id}')">Pass</button>
               </div>
               ${r.counterInputVisible ? `
                 <div class="counter-form" style="margin-top:12px;">
@@ -2271,13 +2233,13 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       closedNote = `<div class="status-note closed" style="margin-top:12px;">— <span>You passed on this one. Plenty more offers on the way.</span></div>`;
     }
     if (r.status === 'completed') {
-      closedNote = `<div class="status-note ok" style="margin-top:12px;">🏁 <span>Ride completed at <strong>$${finalFare}</strong>.</span></div>`;
+      closedNote = `<div class="status-note ok" style="margin-top:12px;">🏁 <span>Ride completed at <strong>$${finalFare}</strong>. Great job!</span></div>`;
     }
 
     const showingPrice = (r.status === 'confirmed' || r.status === 'completed')
       ? finalFare
       : (r.status === 'countered' && counterFare) ? counterFare : offeredFare;
-    const priceLabel   = (r.status === 'confirmed' || r.status === 'completed')
+    const priceLabel = (r.status === 'confirmed' || r.status === 'completed')
       ? 'Final fare'
       : r.status === 'countered'
         ? (r.passenger_countered ? 'Passenger\'s counter' : 'Your counter')
@@ -2310,36 +2272,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       </div>`;
   }
 
-  /* ═══════════ HELPERS ═══════════ */
-  function getRide(id) { 
-    return allRides.find(r => r.id === id) || myRides.find(r => r.id === id);
-  }
-
-  function getFinalFare(r) {
-    if ((r.status === 'confirmed' || r.status === 'completed') && r.counter_fare) {
-      return r.counter_fare;
-    }
-    return r.offered_fare;
-  }
-
-  function badgeHTML(status) {
-    const labels = { pending:'Awaiting response', countered:'Counter proposed', confirmed:'Confirmed', completed:'Completed', rejected:'Closed' };
-    return `<span class="badge badge-${status}">${labels[status]||status}</span>`;
-  }
-
-  function timeAgo(date, pickupTime) {
-    const targetDate = pickupTime || date;
-    const s = Math.floor((new Date() - new Date(targetDate)) / 1000);
-    const actualTime = new Date(targetDate).toLocaleString('en-US', { 
-      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
-    });
-    let relativeTime;
-    if (s < 60)        relativeTime = 'Just now';
-    else if (s < 3600) relativeTime = Math.floor(s/60) + 'm ago';
-    else               relativeTime = Math.floor(s/3600) + 'h ago';
-    return `${actualTime} · ${relativeTime}`;
-  }
-
   /* ═══════════ TOASTS ═══════════ */
   function toast(icon, title, msg, type) {
     const palette = { green:'#16a34a', amber:'#d97706', red:'#dc2626', blue:'#2563eb' };
@@ -2370,38 +2302,8 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     loadAllRides();
     switchTab('passenger');
   }
-  
+
   initializeApp();
 </script>
-
-<!--
-  ════════════════════════════════════════════════════════════════
-  BACKEND NOTE — one small addition needed in server.js
-  ════════════════════════════════════════════════════════════════
-  The driverCache fetch calls GET /api/drivers/:id/profile.
-  Add this route to server.js so the frontend can hydrate
-  driver details for historical rides:
-
-  app.get('/api/drivers/:id/profile', async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { data: driver, error } = await supabase
-        .from('drivers')
-        .select('id, name, contact_no, vehicle_info')
-        .eq('id', id)
-        .single();
-      if (error || !driver) return res.status(404).json({ error: 'Driver not found' });
-      res.json({ driver });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
-  CHANGE 2 NOTE — /api/rides/:id/reject is NO LONGER called by drivers.
-  Drivers now pass locally (frontend-only, no DB write). The /reject endpoint
-  should be kept for passengerRejectCounter which still uses /decline-counter,
-  but driver "Pass" clicks no longer mutate ride status in the DB.
-  ════════════════════════════════════════════════════════════════
--->
 </body>
 </html>
