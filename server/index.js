@@ -71,7 +71,6 @@ function broadcastRideUpdate(ride) {
 async function checkAndExpireRides() {
   try {
     await supabase.rpc('expire_pending_rides');
-    // Only broadcast updates for active (non-expired) pending/countered rides
     const { data } = await supabase.from('ride_requests').select('*').in('status', ['pending', 'countered']).gt('expires_at', new Date().toISOString());
     if (data) data.forEach(ride => broadcastRideUpdate(ride));
   } catch (err) {
@@ -82,6 +81,31 @@ async function checkAndExpireRides() {
 setInterval(checkAndExpireRides, 30000);
 
 // ─────────────────────────────────────────────
+// HELPER: Dual-write to ride_negotiations
+// ─────────────────────────────────────────────
+// This is a "best-effort" write. If it fails, we log the error but do NOT
+// block the main response — ride_requests remains the source of truth during
+// the dual-write phase. The new table is additive and non-blocking.
+async function logNegotiationStep({ requestId, proposedBy, proposedById, fare, status }) {
+  try {
+    const { error } = await supabase
+      .from('ride_negotiations')
+      .insert([{
+        request_id:     requestId,
+        proposed_by:    proposedBy,
+        proposed_by_id: proposedById || null,
+        fare:           fare,
+        status:         status
+      }]);
+    if (error) {
+      console.warn('[ride_negotiations] Dual-write failed (non-fatal):', error.message);
+    }
+  } catch (err) {
+    console.warn('[ride_negotiations] Dual-write exception (non-fatal):', err.message);
+  }
+}
+
+// ─────────────────────────────────────────────
 // PASSENGERS
 // ─────────────────────────────────────────────
 
@@ -90,8 +114,6 @@ setInterval(checkAndExpireRides, 30000);
  * Register or look up a passenger by phone number.
  * - If phone already exists: returns existing record (name is IGNORED — phone is the identity).
  * - If phone is new: creates a new record with the provided name.
- * FIX: previously, a new name could silently shadow an existing account.
- * Now we always return the authoritative record for that phone.
  */
 app.post('/api/passengers', async (req, res) => {
   try {
@@ -100,7 +122,6 @@ app.post('/api/passengers', async (req, res) => {
       return res.status(400).json({ error: 'Name and phone are required' });
     }
 
-    // Check if passenger already exists for this phone
     let { data: existing } = await supabase
       .from('passengers')
       .select('*')
@@ -108,11 +129,9 @@ app.post('/api/passengers', async (req, res) => {
       .single();
 
     if (existing) {
-      // Phone is the unique identity — return existing record regardless of supplied name
       return res.json({ passenger: existing });
     }
 
-    // New phone — create the passenger
     const { data, error } = await supabase
       .from('passengers')
       .insert([{ name, phone }])
@@ -153,67 +172,49 @@ app.get('/api/passengers/:phone', async (req, res) => {
 // DRIVERS
 // ─────────────────────────────────────────────
 
-/**
- * POST /api/drivers/signup
- * Register a new driver account.
- */
 app.post('/api/drivers/signup', async (req, res) => {
   try {
     const { name, username, password, contact_no, vehicle_info } = req.body;
-    
-    // Validation
+
     if (!name || !username || !password || !contact_no) {
       return res.status(400).json({ error: 'Name, username, password, and contact number are required' });
     }
-    
+
     if (password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters long' });
     }
 
-    // Check if username already exists
-    const { data: existingUser, error: userError } = await supabase
+    const { data: existingUser } = await supabase
       .from('drivers')
       .select('id')
       .eq('username', username)
       .single();
-    
+
     if (existingUser) {
       return res.status(409).json({ error: 'Username already exists' });
     }
 
-    // Check if phone number already exists
-    const { data: existingPhone, error: phoneError } = await supabase
+    const { data: existingPhone } = await supabase
       .from('drivers')
       .select('id')
       .eq('contact_no', contact_no)
       .single();
-    
+
     if (existingPhone) {
       return res.status(409).json({ error: 'Phone number already registered' });
     }
 
-    // Hash password
     const bcrypt = require('bcryptjs');
-    const saltRounds = 10;
-    const password_hash = await bcrypt.hash(password, saltRounds);
+    const password_hash = await bcrypt.hash(password, 10);
 
-    // Create new driver
     const { data, error } = await supabase
       .from('drivers')
-      .insert([{
-        name,
-        username,
-        password_hash,
-        contact_no,
-        vehicle_info: vehicle_info || null,
-        is_online: false
-      }])
+      .insert([{ name, username, password_hash, contact_no, vehicle_info: vehicle_info || null, is_online: false }])
       .select()
       .single();
 
     if (error) throw error;
 
-    // Return driver data without password hash
     const { password_hash: _, ...driverData } = data;
     res.status(201).json({ driver: driverData });
   } catch (err) {
@@ -264,10 +265,7 @@ app.post('/api/drivers', async (req, res) => {
 app.post('/api/drivers/logout', async (req, res) => {
   try {
     const { driverId } = req.body;
-    await supabase
-      .from('drivers')
-      .update({ is_online: false })
-      .eq('id', driverId);
+    await supabase.from('drivers').update({ is_online: false }).eq('id', driverId);
     res.json({ success: true });
   } catch (err) {
     console.error('Error logging out driver:', err);
@@ -279,31 +277,14 @@ app.post('/api/drivers/logout', async (req, res) => {
 // RIDES
 // ─────────────────────────────────────────────
 
-/**
- * POST /api/rides
- * Create a new ride request.
- * FIX: We now look up the passenger by phone to enforce that the authoritative
- * name (from the passengers table) is always used, preventing a caller from
- * submitting a ride with an arbitrary name for an existing phone number.
- */
 app.post('/api/rides', async (req, res) => {
   try {
-    const {
-      passengerId,
-      passengerPhone,
-      pickupLocation,
-      dropoffLocation,
-      pickupTime,
-      offeredFare
-    } = req.body;
+    const { passengerId, passengerPhone, pickupLocation, dropoffLocation, pickupTime, offeredFare } = req.body;
 
-    // passengerName is no longer trusted from the request body for existing passengers.
-    // We resolve the canonical name from the passengers table using the phone number.
     if (!passengerPhone || !pickupLocation || !dropoffLocation || !offeredFare) {
       return res.status(400).json({ error: 'Phone, pickup, dropoff and fare are required' });
     }
 
-    // Resolve canonical passenger record by phone
     const { data: passenger, error: passengerError } = await supabase
       .from('passengers')
       .select('id, name')
@@ -311,29 +292,23 @@ app.post('/api/rides', async (req, res) => {
       .single();
 
     if (passengerError || !passenger) {
-      return res.status(400).json({
-        error: 'Passenger not found. Please register first using your phone number.'
-      });
+      return res.status(400).json({ error: 'Passenger not found. Please register first using your phone number.' });
     }
 
-    // Use the canonical name and id from the passengers table
-    const resolvedPassengerId = passenger.id;
-    const resolvedPassengerName = passenger.name;
-
-    const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(); // 2 hours expiry
+    const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
 
     const { data, error } = await supabase
       .from('ride_requests')
       .insert([{
-        passenger_id: resolvedPassengerId,
-        passenger_name: resolvedPassengerName,
-        passenger_phone: passengerPhone,
-        pickup_location: pickupLocation,
+        passenger_id:     passenger.id,
+        passenger_name:   passenger.name,
+        passenger_phone:  passengerPhone,
+        pickup_location:  pickupLocation,
         dropoff_location: dropoffLocation,
-        pickup_time: pickupTime,
-        offered_fare: offeredFare,
-        status: 'pending',
-        expires_at: expiresAt
+        pickup_time:      pickupTime,
+        offered_fare:     offeredFare,
+        status:           'pending',
+        expires_at:       expiresAt
       }])
       .select()
       .single();
@@ -352,10 +327,7 @@ app.get('/api/rides', async (req, res) => {
   try {
     const { status, passengerId, passengerPhone } = req.query;
 
-    let query = supabase
-      .from('ride_requests')
-      .select('*')
-      .order('created_at', { ascending: false });
+    let query = supabase.from('ride_requests').select('*').order('created_at', { ascending: false });
 
     if (passengerId) {
       query = query.eq('passenger_id', passengerId);
@@ -380,16 +352,10 @@ app.get('/api/rides', async (req, res) => {
 app.get('/api/rides/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { data, error } = await supabase
-      .from('ride_requests')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const { data, error } = await supabase.from('ride_requests').select('*').eq('id', id).single();
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({ error: 'Ride not found' });
-      }
+      if (error.code === 'PGRST116') return res.status(404).json({ error: 'Ride not found' });
       throw error;
     }
     res.json({ ride: data });
@@ -407,7 +373,7 @@ app.patch('/api/rides/:id', async (req, res) => {
     const updateData = { status };
     if (counterFare) updateData.counter_fare = counterFare;
     if (counteredBy) updateData.countered_by = counteredBy;
-    if (acceptedBy) updateData.accepted_by = acceptedBy;
+    if (acceptedBy)  updateData.accepted_by  = acceptedBy;
 
     const { data, error } = await supabase
       .from('ride_requests')
@@ -426,6 +392,9 @@ app.patch('/api/rides/:id', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────
+// COUNTER — dual-write to ride_negotiations
+// ─────────────────────────────────────────────
 app.post('/api/rides/:id/counter', async (req, res) => {
   try {
     const { id } = req.params;
@@ -435,24 +404,34 @@ app.post('/api/rides/:id/counter', async (req, res) => {
       return res.status(400).json({ error: 'Counter fare required' });
     }
 
-    // Set expiry to 2 hours from now
+    // ── 1. Fetch current ride state (needed for dual-write metadata) ──
+    const { data: existingRide, error: fetchErr } = await supabase
+      .from('ride_requests')
+      .select('offered_fare, counter_fare, countered_by, passenger_countered')
+      .eq('id', id)
+      .single();
+
+    if (fetchErr || !existingRide) {
+      return res.status(404).json({ error: 'Ride not found' });
+    }
+
     const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
-    
+
     const updateData = {
-      status: 'countered',
+      status:     'countered',
       counter_fare: counterFare,
-      expires_at: expiresAt
+      expires_at:   expiresAt
     };
 
-    // Set the appropriate countered_by field based on who is countering
     if (isPassenger) {
-      updateData.countered_by = null; // Passenger countering back
+      updateData.countered_by        = null;
       updateData.passenger_countered = true;
     } else {
-      updateData.countered_by = driverId; // Driver countering
+      updateData.countered_by        = driverId;
       updateData.passenger_countered = false;
     }
 
+    // ── 2. Update ride_requests (primary source of truth) ──
     const { data, error } = await supabase
       .from('ride_requests')
       .update(updateData)
@@ -467,14 +446,26 @@ app.post('/api/rides/:id/counter', async (req, res) => {
       throw error;
     }
 
-    // Attach driver info only for driver counters
+    // ── 3. DUAL-WRITE: Insert counter step into ride_negotiations ──
+    // Determine proposed_by_id: if passenger is countering back, they don't
+    // have a server-side ID in the request body, so we fall back to null.
+    const proposedById = isPassenger ? null : driverId;
+
+    await logNegotiationStep({
+      requestId:    id,
+      proposedBy:   isPassenger ? 'passenger' : 'driver',
+      proposedById: proposedById,
+      fare:         counterFare,
+      status:       'countered'
+    });
+
+    // ── 4. Attach driver info for frontend (unchanged) ──
     if (!isPassenger && driverId) {
       const { data: driver } = await supabase
         .from('drivers')
         .select('name, contact_no, vehicle_info')
         .eq('id', driverId)
         .single();
-
       data.driver = driver;
     }
 
@@ -486,6 +477,9 @@ app.post('/api/rides/:id/counter', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────
+// ACCEPT — driver accepts passenger's offer
+// ─────────────────────────────────────────────
 app.post('/api/rides/:id/accept', async (req, res) => {
   try {
     const { id } = req.params;
@@ -493,10 +487,7 @@ app.post('/api/rides/:id/accept', async (req, res) => {
 
     const { data, error } = await supabase
       .from('ride_requests')
-      .update({
-        status: 'confirmed',
-        accepted_by: driverId
-      })
+      .update({ status: 'confirmed', accepted_by: driverId })
       .eq('id', id)
       .in('status', ['pending', 'countered'])
       .select()
@@ -508,6 +499,15 @@ app.post('/api/rides/:id/accept', async (req, res) => {
       }
       throw error;
     }
+
+    // ── DUAL-WRITE: log acceptance ──
+    await logNegotiationStep({
+      requestId:    id,
+      proposedBy:   'driver',
+      proposedById: driverId,
+      fare:         data.counter_fare || data.offered_fare,
+      status:       'accepted'
+    });
 
     const { data: driver } = await supabase
       .from('drivers')
@@ -524,6 +524,9 @@ app.post('/api/rides/:id/accept', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────
+// REJECT — driver passes (server-side, used by passenger decline-counter only now)
+// ─────────────────────────────────────────────
 app.post('/api/rides/:id/reject', async (req, res) => {
   try {
     const { id } = req.params;
@@ -542,11 +545,7 @@ app.post('/api/rides/:id/reject', async (req, res) => {
     if (ride.status === 'countered' && ride.countered_by === driverId) {
       const { data, error } = await supabase
         .from('ride_requests')
-        .update({
-          status: 'pending',
-          counter_fare: null,
-          countered_by: null
-        })
+        .update({ status: 'pending', counter_fare: null, countered_by: null })
         .eq('id', id)
         .select()
         .single();
@@ -579,6 +578,9 @@ app.post('/api/rides/:id/reject', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────
+// ACCEPT-COUNTER — passenger accepts driver's counter
+// ─────────────────────────────────────────────
 app.post('/api/rides/:id/accept-counter', async (req, res) => {
   try {
     const { id } = req.params;
@@ -595,15 +597,21 @@ app.post('/api/rides/:id/accept-counter', async (req, res) => {
 
     const { data, error } = await supabase
       .from('ride_requests')
-      .update({
-        status: 'confirmed',
-        offered_fare: ride.counter_fare
-      })
+      .update({ status: 'confirmed', offered_fare: ride.counter_fare })
       .eq('id', id)
       .select()
       .single();
 
     if (error) throw error;
+
+    // ── DUAL-WRITE: log passenger acceptance ──
+    await logNegotiationStep({
+      requestId:    id,
+      proposedBy:   'passenger',
+      proposedById: null, // passenger ID not passed in body; null is acceptable
+      fare:         ride.counter_fare,
+      status:       'accepted'
+    });
 
     if (ride.countered_by) {
       const { data: driver } = await supabase
@@ -622,6 +630,9 @@ app.post('/api/rides/:id/accept-counter', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────
+// COMPLETE
+// ─────────────────────────────────────────────
 app.post('/api/rides/:id/complete', async (req, res) => {
   try {
     const { id } = req.params;
@@ -637,12 +648,12 @@ app.post('/api/rides/:id/complete', async (req, res) => {
     }
 
     await supabase.from('ride_history').insert([{
-      request_id: id,
-      driver_id: driverId,
-      passenger_name: data[0].passenger_name,
-      pickup_location: data[0].pickup_location,
+      request_id:       id,
+      driver_id:        driverId,
+      passenger_name:   data[0].passenger_name,
+      pickup_location:  data[0].pickup_location,
       dropoff_location: data[0].dropoff_location,
-      final_fare: data[0].offered_fare
+      final_fare:       data[0].offered_fare
     }]);
 
     broadcastRideUpdate(data[0]);
@@ -653,17 +664,23 @@ app.post('/api/rides/:id/complete', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────
+// DECLINE-COUNTER — passenger declines driver's counter (global close)
+// ─────────────────────────────────────────────
 app.post('/api/rides/:id/decline-counter', async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Fetch current fare before we null it out, for the negotiation log
+    const { data: existing } = await supabase
+      .from('ride_requests')
+      .select('counter_fare, offered_fare')
+      .eq('id', id)
+      .single();
+
     const { data, error } = await supabase
       .from('ride_requests')
-      .update({
-        status: 'rejected',
-        counter_fare: null,
-        countered_by: null
-      })
+      .update({ status: 'rejected', counter_fare: null, countered_by: null })
       .eq('id', id)
       .eq('status', 'countered')
       .select()
@@ -676,6 +693,15 @@ app.post('/api/rides/:id/decline-counter', async (req, res) => {
       throw error;
     }
 
+    // ── DUAL-WRITE: log passenger rejection ──
+    await logNegotiationStep({
+      requestId:    id,
+      proposedBy:   'passenger',
+      proposedById: null,
+      fare:         existing?.counter_fare || existing?.offered_fare || 0,
+      status:       'rejected'
+    });
+
     broadcastRideUpdate(data);
     res.json({ ride: data });
   } catch (err) {
@@ -685,22 +711,39 @@ app.post('/api/rides/:id/decline-counter', async (req, res) => {
 });
 
 // ─────────────────────────────────────────────
+// NEGOTIATIONS — full history for admin portal
+// ─────────────────────────────────────────────
+/**
+ * GET /api/rides/:id/negotiations
+ * Returns every counter/accept/reject step for a given ride,
+ * ordered chronologically by round number.
+ * Used exclusively by the admin portal's fare timeline widget.
+ */
+app.get('/api/rides/:id/negotiations', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from('ride_negotiations')
+      .select('*')
+      .eq('request_id', id)
+      .order('round', { ascending: true });
+
+    if (error) throw error;
+    res.json({ negotiations: data || [] });
+  } catch (err) {
+    console.error('Error fetching negotiations:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────
 // HISTORY
 // ─────────────────────────────────────────────
 
-/**
- * GET /api/rides/history/passenger/:phone
- * Full ride history for a passenger identified by phone number.
- * FIX: Was previously at /api/rides/history/:phone — kept that alias too for
- * backwards compatibility, but the preferred path is more explicit.
- * Includes ALL statuses (completed, rejected, expired, etc.) so the passenger
- * can see their complete record, not just active rides.
- */
 app.get('/api/rides/history/passenger/:phone', async (req, res) => {
   try {
     const { phone } = req.params;
 
-    // Verify the passenger exists
     const { data: passenger, error: passengerError } = await supabase
       .from('passengers')
       .select('id, name')
@@ -742,18 +785,10 @@ app.get('/api/rides/history/:phone', async (req, res) => {
   }
 });
 
-/**
- * GET /api/drivers/:id/history
- * Full ride history for a driver.
- * FIX: This endpoint was entirely missing. Drivers had no way to retrieve
- * their past rides. Now queries ride_history joined with ride_requests
- * for the full picture.
- */
 app.get('/api/drivers/:id/history', async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Verify driver exists
     const { data: driver, error: driverError } = await supabase
       .from('drivers')
       .select('id, name, username')
@@ -764,7 +799,6 @@ app.get('/api/drivers/:id/history', async (req, res) => {
       return res.status(404).json({ error: 'Driver not found' });
     }
 
-    // Query ride_history for completed rides by this driver
     const { data: historyRows, error: histError } = await supabase
       .from('ride_history')
       .select('*')
@@ -773,8 +807,6 @@ app.get('/api/drivers/:id/history', async (req, res) => {
 
     if (histError) throw histError;
 
-    // Also pull any confirmed/completed ride_requests accepted by this driver
-    // (covers cases where ride_history insert may have failed or ride is still in-progress)
     const { data: activeRides, error: activeError } = await supabase
       .from('ride_requests')
       .select('*')
@@ -783,11 +815,7 @@ app.get('/api/drivers/:id/history', async (req, res) => {
 
     if (activeError) throw activeError;
 
-    res.json({
-      driver,
-      history: historyRows || [],
-      rides: activeRides || []
-    });
+    res.json({ driver, history: historyRows || [], rides: activeRides || [] });
   } catch (err) {
     console.error('Error fetching driver history:', err);
     res.status(500).json({ error: err.message });
@@ -810,67 +838,67 @@ app.post('/api/admin/expire-rides', async (req, res) => {
 });
 
 // ─────────────────────────────────────────────
-// SERVER BOOT
+// DRIVER PROFILE
 // ─────────────────────────────────────────────
 
 app.get('/api/drivers/:id/profile', async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { data: driver, error } = await supabase
-        .from('drivers')
-        .select('id, name, username, contact_no, vehicle_info')
-        .eq('id', id)
-        .single();
-      if (error || !driver) return res.status(404).json({ error: 'Driver not found' });
-      res.json({ driver });
-    } catch (err) {
-      console.error('Error fetching driver profile:', err);
-      res.status(500).json({ error: err.message });
-    }
-  });
+  try {
+    const { id } = req.params;
+    const { data: driver, error } = await supabase
+      .from('drivers')
+      .select('id, name, username, contact_no, vehicle_info')
+      .eq('id', id)
+      .single();
+    if (error || !driver) return res.status(404).json({ error: 'Driver not found' });
+    res.json({ driver });
+  } catch (err) {
+    console.error('Error fetching driver profile:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.patch('/api/drivers/:id/profile', async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { name, contact_no, vehicle_info, password, username } = req.body;
-      
-      // Build update object with only provided fields
-      const updateData = {};
-      if (name) updateData.name = name;
-      if (contact_no) updateData.contact_no = contact_no;
-      if (vehicle_info) updateData.vehicle_info = vehicle_info;
-      if (password) {
-        // Hash new password if provided
-        const bcrypt = require('bcryptjs');
-        const saltRounds = 10;
-        updateData.password_hash = await bcrypt.hash(password, saltRounds);
-      }
-      if (username) updateData.username = username;
-      
-      const { data: driver, error } = await supabase
-        .from('drivers')
-        .update(updateData)
-        .eq('id', id)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      if (!driver) return res.status(404).json({ error: 'Driver not found' });
-      
-      // Return updated driver data (without password hash)
-      const { data: updatedDriver, error: fetchError } = await supabase
-        .from('drivers')
-        .select('id, name, username, contact_no, vehicle_info')
-        .eq('id', id)
-        .single();
-      
-      if (fetchError) throw fetchError;
-      res.json({ driver: updatedDriver });
-    } catch (err) {
-      console.error('Error updating driver profile:', err);
-      res.status(500).json({ error: err.message });
+  try {
+    const { id } = req.params;
+    const { name, contact_no, vehicle_info, password, username } = req.body;
+
+    const updateData = {};
+    if (name)         updateData.name         = name;
+    if (contact_no)   updateData.contact_no   = contact_no;
+    if (vehicle_info) updateData.vehicle_info = vehicle_info;
+    if (username)     updateData.username     = username;
+    if (password) {
+      const bcrypt = require('bcryptjs');
+      updateData.password_hash = await bcrypt.hash(password, 10);
     }
-  });
+
+    const { data: driver, error } = await supabase
+      .from('drivers')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    if (!driver) return res.status(404).json({ error: 'Driver not found' });
+
+    const { data: updatedDriver, error: fetchError } = await supabase
+      .from('drivers')
+      .select('id, name, username, contact_no, vehicle_info')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) throw fetchError;
+    res.json({ driver: updatedDriver });
+  } catch (err) {
+    console.error('Error updating driver profile:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────
+// SERVER BOOT
+// ─────────────────────────────────────────────
 
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
