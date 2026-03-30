@@ -1,18 +1,24 @@
 {
-  "name": "ride-n-go",
+  "name": "ride-negotiation-app",
   "version": "1.0.0",
-  "private": true,
-  "description": "Ride fare negotiation app",
+  "description": "A ride negotiation platform with driver signup",
+  "main": "server/index.js",
   "scripts": {
-    "dev": "node server/index.js",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js"
   },
   "dependencies": {
+    "express": "^4.18.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "@supabase/supabase-js": "^2.39.0",
-    "ws": "^8.16.0",
+    "@supabase/supabase-js": "^2.33.1",
+    "ws": "^8.14.2",
     "bcryptjs": "^2.4.3"
-  }
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": ["ride", "negotiation", "driver", "passenger", "signup"],
+  "author": "",
+  "license": "MIT"
 }
