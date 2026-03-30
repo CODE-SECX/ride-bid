@@ -860,7 +860,7 @@ function renderDashboard(){
             <tr onclick="openRideDetail('${r.id}')">
               <td><span class="link">${r.passenger_name}</span></td>
               <td style="max-width:200px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem">${r.pickup_location} → ${r.dropoff_location}</div></td>
-              <td class="fare">₹${r.offered_fare}</td>
+              <td class="fare">$${r.offered_fare}</td>
               <td><span class="badge b-${r.status}">${r.status}</span></td>
             </tr>`).join('')}
         </tbody>
@@ -1031,7 +1031,7 @@ function renderRidesTable(){
       <td><span class="link" onclick="event.stopPropagation();openPassengerDetailByPhone('${r.passenger_phone}')">${r.passenger_name}</span><div style="font-size:.7rem;color:var(--text3)">${r.passenger_phone}</div></td>
       <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem" title="${r.pickup_location}">${r.pickup_location}</td>
       <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem" title="${r.dropoff_location}">${r.dropoff_location}</td>
-      <td><span class="fare">₹${r.offered_fare}</span>${r.counter_fare?`<span class="counter-fare">₹${r.counter_fare}</span>`:''}</td>
+      <td><span class="fare">$${r.offered_fare}</span>${r.counter_fare?`<span class="counter-fare">$${r.counter_fare}</span>`:''}</td>
       <td><span class="badge b-${r.status}">${r.status}</span></td>
       <td>${drv?`<span class="link" onclick="event.stopPropagation();openDriverDetail('${drv.id}')">${drv.name}</span>`:`<span style="color:var(--text3)">—</span>`}</td>
       <td class="mono">${fmtDate(r.created_at)}</td>
@@ -1059,8 +1059,8 @@ function toggleRideFilters(){
 function updateFilterTags(){
   const tags=[];
   if(state.ridesStatus) tags.push(['Status: '+state.ridesStatus,()=>{state.ridesStatus='';document.getElementById('rides-status-filter').value='';renderRidesTable();}]);
-  if(state.ridesFareMin) tags.push(['Fare ≥ ₹'+state.ridesFareMin,()=>{state.ridesFareMin='';document.getElementById('fare-min').value='';renderRidesTable();}]);
-  if(state.ridesFareMax) tags.push(['Fare ≤ ₹'+state.ridesFareMax,()=>{state.ridesFareMax='';document.getElementById('fare-max').value='';renderRidesTable();}]);
+  if(state.ridesFareMin) tags.push(['Fare ≥ $'+state.ridesFareMin,()=>{state.ridesFareMin='';document.getElementById('fare-min').value='';renderRidesTable();}]);
+  if(state.ridesFareMax) tags.push(['Fare ≤ $'+state.ridesFareMax,()=>{state.ridesFareMax='';document.getElementById('fare-max').value='';renderRidesTable();}]);
   if(state.ridesDateFrom) tags.push(['From: '+state.ridesDateFrom,()=>{state.ridesDateFrom='';document.getElementById('date-from').value='';renderRidesTable();}]);
   if(state.ridesDateTo) tags.push(['To: '+state.ridesDateTo,()=>{state.ridesDateTo='';document.getElementById('date-to').value='';renderRidesTable();}]);
   document.getElementById('rides-filter-tags').innerHTML = tags.map((t,i)=>`
@@ -1106,7 +1106,7 @@ function openDriverDetail(id){
       <div class="profile-stats">
         <div><div class="ps-val">${rides.length}</div><div class="ps-label">Total Rides</div></div>
         <div><div class="ps-val">${completed.length}</div><div class="ps-label">Completed</div></div>
-        <div><div class="ps-val fare" style="font-size:1.2rem">₹${totalRev.toFixed(0)}</div><div class="ps-label">Revenue</div></div>
+        <div><div class="ps-val fare" style="font-size:1.2rem">$${totalRev.toFixed(0)}</div><div class="ps-label">Revenue</div></div>
       </div>
     </div>
     <div class="detail-grid">
@@ -1125,7 +1125,7 @@ function openDriverDetail(id){
         <div class="card" style="margin-top:1rem">
           <div class="card-title"><span>Performance</span></div>
           <div class="info-list">
-            <div class="info-row"><span class="info-row-label">Avg Fare</span><span class="info-row-val fare">${completed.length?'₹'+(totalRev/completed.length).toFixed(0):'—'}</span></div>
+            <div class="info-row"><span class="info-row-label">Avg Fare</span><span class="info-row-val fare">${completed.length?'$'+(totalRev/completed.length).toFixed(0):'—'}</span></div>
             <div class="info-row"><span class="info-row-label">Completion Rate</span><span class="info-row-val">${rides.length?((completed.length/rides.length)*100).toFixed(0)+'%':'—'}</span></div>
             <div class="info-row"><span class="info-row-label">Pending Rides</span><span class="info-row-val">${rides.filter(r=>r.status==='pending').length}</span></div>
           </div>
@@ -1139,7 +1139,7 @@ function openDriverDetail(id){
               <td class="mono">#${r.id}</td>
               <td><span class="link" onclick="event.stopPropagation();openPassengerDetailByPhone('${r.passenger_phone}')">${r.passenger_name}</span></td>
               <td style="font-size:.75rem">${r.pickup_location} → ${r.dropoff_location}</td>
-              <td class="fare">₹${r.offered_fare}</td>
+              <td class="fare">$${r.offered_fare}</td>
               <td><span class="badge b-${r.status}">${r.status}</span></td>
               <td class="mono">${fmtDate(r.created_at)}</td>
             </tr>`).join('')}
@@ -1190,7 +1190,7 @@ function renderPassengerProfile(p){
       <div class="profile-stats">
         <div><div class="ps-val">${rides.length}</div><div class="ps-label">Total Rides</div></div>
         <div><div class="ps-val">${completed.length}</div><div class="ps-label">Completed</div></div>
-        <div><div class="ps-val fare" style="font-size:1.2rem">₹${totalSpent.toFixed(0)}</div><div class="ps-label">Spent</div></div>
+        <div><div class="ps-val fare" style="font-size:1.2rem">$${totalSpent.toFixed(0)}</div><div class="ps-label">Spent</div></div>
       </div>
     </div>
     <div class="detail-grid">
@@ -1207,7 +1207,7 @@ function renderPassengerProfile(p){
         <div class="card" style="margin-top:1rem">
           <div class="card-title"><span>Activity Stats</span></div>
           <div class="info-list">
-            <div class="info-row"><span class="info-row-label">Avg Fare</span><span class="info-row-val fare">${completed.length?'₹'+(totalSpent/completed.length).toFixed(0):'—'}</span></div>
+            <div class="info-row"><span class="info-row-label">Avg Fare</span><span class="info-row-val fare">${completed.length?'$'+(totalSpent/completed.length).toFixed(0):'—'}</span></div>
             <div class="info-row"><span class="info-row-label">Completion Rate</span><span class="info-row-val">${rides.length?((completed.length/rides.length)*100).toFixed(0)+'%':'—'}</span></div>
             <div class="info-row"><span class="info-row-label">Last Ride</span><span class="info-row-val mono">${rides.length?fmtDate(rides[0].created_at):'Never'}</span></div>
           </div>
@@ -1220,7 +1220,7 @@ function renderPassengerProfile(p){
                 <div class="tl-dot ${r.status==='completed'?'active':''}"></div>
                 <div class="tl-date">${fmtDateTime(r.created_at)}</div>
                 <div class="tl-title">${r.pickup_location} → ${r.dropoff_location}</div>
-                <div class="tl-sub">₹${r.offered_fare} · <span class="badge b-${r.status}">${r.status}</span></div>
+                <div class="tl-sub">$${r.offered_fare} · <span class="badge b-${r.status}">${r.status}</span></div>
               </div>`).join('')}
           </div>
         </div>
@@ -1233,7 +1233,7 @@ function renderPassengerProfile(p){
             return `<tr onclick="openRideDetail('${r.id}')">
               <td class="mono">#${r.id}</td>
               <td style="font-size:.75rem">${r.pickup_location} → ${r.dropoff_location}</td>
-              <td class="fare">₹${r.offered_fare}</td>
+              <td class="fare">$${r.offered_fare}</td>
               <td><span class="badge b-${r.status}">${r.status}</span></td>
               <td>${drv?`<span class="link" onclick="event.stopPropagation();openDriverDetail('${drv.id}')">${drv.name}</span>`:'—'}</td>
               <td class="mono">${fmtDate(r.created_at)}</td>
@@ -1261,7 +1261,7 @@ function openRideDetail(id){
           <div class="rdc-title">Ride Request <span class="badge b-${r.status}" style="margin-left:.5rem">${r.status}</span></div>
           <div class="rdc-id">ID: #${r.id} · Created ${fmtDateTime(r.created_at)}</div>
         </div>
-        <div class="fare" style="font-size:1.75rem">₹${r.offered_fare}${r.counter_fare?`<span style="font-size:.9rem;color:var(--text3);text-decoration:line-through;margin-left:.5rem">₹${r.counter_fare}</span>`:''}</div>
+        <div class="fare" style="font-size:1.75rem">$${r.offered_fare}${r.counter_fare?`<span style="font-size:.9rem;color:var(--text3);text-decoration:line-through;margin-left:.5rem">$${r.counter_fare}</span>`:''}</div>
       </div>
 
       <div class="route-vis">
@@ -1277,8 +1277,8 @@ function openRideDetail(id){
       </div>
 
       <div class="rdc-grid">
-        <div class="rdc-field"><label>Offered Fare</label><div class="val fare">₹${r.offered_fare}</div></div>
-        ${r.counter_fare?`<div class="rdc-field"><label>Counter Fare</label><div class="val" style="color:var(--violet)">₹${r.counter_fare}</div></div>`:''}
+        <div class="rdc-field"><label>Offered Fare</label><div class="val fare">$${r.offered_fare}</div></div>
+        ${r.counter_fare?`<div class="rdc-field"><label>Counter Fare</label><div class="val" style="color:var(--violet)">$${r.counter_fare}</div></div>`:''}
         <div class="rdc-field"><label>Pickup Time</label><div class="val mono">${r.pickup_time?fmtDateTime(r.pickup_time):'Not set'}</div></div>
         <div class="rdc-field"><label>Status</label><div class="val"><span class="badge b-${r.status}">${r.status}</span></div></div>
         <div class="rdc-field"><label>Created</label><div class="val mono">${fmtDateTime(r.created_at)}</div></div>
@@ -1326,8 +1326,8 @@ function renderAnalytics(){
 
   document.getElementById('analytics-kpis').innerHTML = `
     <div class="kpi"><div class="kpi-label">Completion Rate</div><div class="kpi-val">${ri.length?((completed.length/ri.length)*100).toFixed(1)+'%':'—'}</div></div>
-    <div class="kpi"><div class="kpi-label">Total Revenue</div><div class="kpi-val fare" style="font-size:1.5rem">₹${rev.toFixed(0)}</div></div>
-    <div class="kpi"><div class="kpi-label">Avg Fare</div><div class="kpi-val fare" style="font-size:1.5rem">${completed.length?'₹'+(rev/completed.length).toFixed(0):'—'}</div></div>`;
+    <div class="kpi"><div class="kpi-label">Total Revenue</div><div class="kpi-val fare" style="font-size:1.5rem">$${rev.toFixed(0)}</div></div>
+    <div class="kpi"><div class="kpi-label">Avg Fare</div><div class="kpi-val fare" style="font-size:1.5rem">${completed.length?'$'+(rev/completed.length).toFixed(0):'—'}</div></div>`;
 
   // Fare distribution
   const buckets = [0,100,200,300,400,500,600];
@@ -1336,7 +1336,7 @@ function renderAnalytics(){
   if(fc._chart) fc._chart.destroy();
   fc._chart = new Chart(fc,{
     type:'bar',
-    data:{labels:buckets.slice(0,-1).map((v,i)=>`₹${v}-${buckets[i+1]}`),datasets:[{data:fareData,backgroundColor:'rgba(77,159,255,0.25)',borderColor:'var(--blue)',borderWidth:2,borderRadius:4}]},
+    data:{labels:buckets.slice(0,-1).map((v,i)=>`$${v}-${buckets[i+1]}`),datasets:[{data:fareData,backgroundColor:'rgba(77,159,255,0.25)',borderColor:'var(--blue)',borderWidth:2,borderRadius:4}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5c6480',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5c6480',font:{size:10}}}}}
   });
 
