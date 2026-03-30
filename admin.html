@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Super Admin Portal - RideBid</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+/* ─── Reset & Design Tokens ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #0f172a;
+  --surface:      #1e293b;
+  --surface2:     #334155;
+  --surface3:     #475569;
+  --border:       #475569;
+  --border-mid:   #64748b;
+  --border-focus: #3b82f6;
+
+  --text:           #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted:     #94a3b8;
+  --text-dim:       #64748b;
+
+  --green:        #10b981;
+  --green-mid:    #34d399;
+  --green-light:  #064e3b;
+  --green-border: #059669;
+
+  --blue:         #3b82f6;
+  --blue-mid:     #60a5fa;
+  --blue-light:   #1e3a8a;
+  --blue-border:  #2563eb;
+
+  --amber:        #f59e0b;
+  --amber-light:  #451a03;
+  --amber-border: #d97706;
+
+  --red:          #ef4444;
+  --red-light:    #7f1d1d;
+  --red-border:   #dc2626;
+
+  --violet:       #8b5cf6;
+  --violet-light: #4c1d95;
+  --violet-border:#7c3aed;
+
+  --radius:    12px;
+  --radius-sm: 8px;
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ─── Login Screen ─── */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--bg) 0%, var(--surface) 100%);
+}
+
+.login-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 400px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.login-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.login-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background: var(--blue);
+  color: white;
+  width: 100%;
+}
+
+.btn-primary:hover {
+  background: var(--blue-mid);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.btn-secondary:hover {
+  background: var(--surface3);
+}
+
+.btn-danger {
+  background: var(--red);
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.btn-success {
+  background: var(--green);
+  color: white;
+}
+
+.btn-success:hover {
+  background: var(--green-mid);
+}
+
+/* ─── Admin Dashboard ─── */
+.admin-container {
+  display: none;
+  min-height: 100vh;
+}
+
+.admin-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.admin-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logout-btn {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.logout-btn:hover {
+  background: var(--surface3);
+}
+
+.admin-content {
+  padding: 2rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.stat-title {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.tab.active {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.data-table {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  background: var(--surface2);
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.table tbody tr:hover {
+  background: var(--surface2);
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.status-pending {
+  background: var(--amber-light);
+  color: var(--amber);
+  border: 1px solid var(--amber-border);
+}
+
+.status-confirmed {
+  background: var(--green-light);
+  color: var(--green);
+  border: 1px solid var(--green-border);
+}
+
+.status-completed {
+  background: var(--blue-light);
+  color: var(--blue);
+  border: 1px solid var(--blue-border);
+}
+
+.status-rejected {
+  background: var(--red-light);
+  color: var(--red);
+  border: 1px solid var(--red-border);
+}
+
+.status-online {
+  background: var(--green-light);
+  color: var(--green);
+  border: 1px solid var(--green-border);
+}
+
+.status-offline {
+  background: var(--surface3);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.alert {
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+  border: 1px solid;
+}
+
+.alert-error {
+  background: var(--red-light);
+  color: var(--red);
+  border-color: var(--red-border);
+}
+
+.alert-success {
+  background: var(--green-light);
+  color: var(--green);
+  border-color: var(--green-border);
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+.vehicle-info {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.ride-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.location {
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.fare {
+  font-weight: 600;
+  color: var(--green);
+}
+
+@media (max-width: 768px) {
+  .admin-content {
+    padding: 1rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .admin-header {
+    padding: 1rem;
+  }
+  
+  .table {
+    font-size: 0.75rem;
+  }
+  
+  .table th,
+  .table td {
+    padding: 0.5rem;
+  }
+}
+</style>
+</head>
+<body>
+<!-- Login Screen -->
+<div id="loginScreen" class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1 class="login-title">🔐 Super Admin</h1>
+      <p class="login-subtitle">RideBid Admin Portal</p>
+    </div>
+    <form id="loginForm">
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input type="text" id="username" class="form-input" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input type="password" id="password" class="form-input" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Sign In</button>
+    </form>
+    <div id="loginError" class="alert alert-error" style="display: none;"></div>
+  </div>
+</div>
+
+<!-- Admin Dashboard -->
+<div id="adminDashboard" class="admin-container">
+  <header class="admin-header">
+    <h1 class="admin-title">🚗 RideBid Admin Portal</h1>
+    <div class="admin-user">
+      <span id="adminName">Admin</span>
+      <button id="logoutBtn" class="logout-btn">Logout</button>
+    </div>
+  </header>
+
+  <main class="admin-content">
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-title">Total Drivers</div>
+        <div class="stat-value" id="totalDrivers">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Total Rides</div>
+        <div class="stat-value" id="totalRides">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Active Rides</div>
+        <div class="stat-value" id="activeRides">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Online Drivers</div>
+        <div class="stat-value" id="onlineDrivers">0</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="drivers">Drivers</button>
+      <button class="tab" data-tab="rides">Rides</button>
+      <button class="tab" data-tab="passengers">Passengers</button>
+    </div>
+
+    <!-- Tab Content -->
+    <div id="driversTab" class="tab-content active">
+      <div class="data-table">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Username</th>
+              <th>Contact</th>
+              <th>Vehicle</th>
+              <th>Status</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody id="driversTableBody">
+            <tr>
+              <td colspan="7" class="loading">Loading drivers...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="ridesTab" class="tab-content">
+      <div class="data-table">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Passenger</th>
+              <th>Pickup</th>
+              <th>Dropoff</th>
+              <th>Fare</th>
+              <th>Status</th>
+              <th>Driver</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody id="ridesTableBody">
+            <tr>
+              <td colspan="8" class="loading">Loading rides...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="passengersTab" class="tab-content">
+      <div class="data-table">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Total Rides</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody id="passengersTableBody">
+            <tr>
+              <td colspan="5" class="loading">Loading passengers...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+let supabase;
+let currentAdmin = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const response = await fetch('/api/config');
+    const config = await response.json();
+    supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+  } catch (error) {
+    console.error('Failed to initialize Supabase:', error);
+  }
+
+  // Check if already logged in
+  const token = localStorage.getItem('adminToken');
+  if (token) {
+    // Validate token and show dashboard
+    showDashboard();
+  }
+
+  setupEventListeners();
+});
+
+function setupEventListeners() {
+  // Login form
+  document.getElementById('loginForm').addEventListener('submit', handleLogin);
+  
+  // Logout
+  document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+  
+  // Tabs
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+  });
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const errorDiv = document.getElementById('loginError');
+  
+  try {
+    // For demo purposes, we'll use hardcoded credentials
+    // In production, you'd validate against super_admins table
+    if ((username === 'superadmin' && password === 'admin123') ||
+        (username === 'admin1' && password === 'password123') ||
+        (username === 'testadmin' && password === 'test123')) {
+      
+      currentAdmin = { username, name: username.charAt(0).toUpperCase() + username.slice(1) };
+      localStorage.setItem('adminToken', btoa(username + ':' + Date.now()));
+      showDashboard();
+    } else {
+      throw new Error('Invalid credentials');
+    }
+  } catch (error) {
+    errorDiv.textContent = error.message;
+    errorDiv.style.display = 'block';
+    setTimeout(() => {
+      errorDiv.style.display = 'none';
+    }, 5000);
+  }
+}
+
+function handleLogout() {
+  localStorage.removeItem('adminToken');
+  currentAdmin = null;
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('adminDashboard').style.display = 'none';
+  document.getElementById('loginForm').reset();
+}
+
+function showDashboard() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminDashboard').style.display = 'block';
+  document.getElementById('adminName').textContent = currentAdmin?.name || 'Admin';
+  
+  loadDashboardData();
+}
+
+async function loadDashboardData() {
+  await Promise.all([
+    loadStats(),
+    loadDrivers(),
+    loadRides(),
+    loadPassengers()
+  ]);
+}
+
+async function loadStats() {
+  try {
+    const [driversRes, ridesRes, activeRidesRes, onlineDriversRes] = await Promise.all([
+      supabase.from('drivers').select('id', { count: 'exact' }),
+      supabase.from('ride_requests').select('id', { count: 'exact' }),
+      supabase.from('ride_requests').select('id', { count: 'exact' }).in('status', ['pending', 'confirmed']),
+      supabase.from('drivers').select('id', { count: 'exact' }).eq('is_online', true)
+    ]);
+
+    document.getElementById('totalDrivers').textContent = driversRes.count || 0;
+    document.getElementById('totalRides').textContent = ridesRes.count || 0;
+    document.getElementById('activeRides').textContent = activeRidesRes.count || 0;
+    document.getElementById('onlineDrivers').textContent = onlineDriversRes.count || 0;
+  } catch (error) {
+    console.error('Error loading stats:', error);
+  }
+}
+
+async function loadDrivers() {
+  try {
+    const { data: drivers, error } = await supabase
+      .from('drivers')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const tbody = document.getElementById('driversTableBody');
+    tbody.innerHTML = drivers.map(driver => `
+      <tr>
+        <td>${driver.id}</td>
+        <td>${driver.name}</td>
+        <td>${driver.username}</td>
+        <td>${driver.contact_no}</td>
+        <td>
+          <div class="vehicle-info">${driver.vehicle_info || 'N/A'}</div>
+        </td>
+        <td>
+          <span class="status-badge ${driver.is_online ? 'status-online' : 'status-offline'}">
+            ${driver.is_online ? 'Online' : 'Offline'}
+          </span>
+        </td>
+        <td>${new Date(driver.created_at).toLocaleDateString()}</td>
+      </tr>
+    `).join('');
+  } catch (error) {
+    console.error('Error loading drivers:', error);
+    document.getElementById('driversTableBody').innerHTML = 
+      '<tr><td colspan="7" class="loading">Error loading drivers</td></tr>';
+  }
+}
+
+async function loadRides() {
+  try {
+    const { data: rides, error } = await supabase
+      .from('ride_requests')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (error) throw error;
+
+    const tbody = document.getElementById('ridesTableBody');
+    tbody.innerHTML = rides.map(ride => `
+      <tr>
+        <td>${ride.id}</td>
+        <td>
+          <div>${ride.passenger_name}</div>
+          <div class="vehicle-info">${ride.passenger_phone}</div>
+        </td>
+        <td>
+          <div class="ride-details">
+            <div class="location">${ride.pickup_location}</div>
+          </div>
+        </td>
+        <td>
+          <div class="ride-details">
+            <div class="location">${ride.dropoff_location}</div>
+          </div>
+        </td>
+        <td>
+          <div class="fare">$${ride.offered_fare}</div>
+          ${ride.counter_fare ? `<div class="vehicle-info">Counter: $${ride.counter_fare}</div>` : ''}
+        </td>
+        <td>
+          <span class="status-badge status-${ride.status}">
+            ${ride.status.charAt(0).toUpperCase() + ride.status.slice(1)}
+          </span>
+        </td>
+        <td>${ride.accepted_by || '-'}</td>
+        <td>${new Date(ride.created_at).toLocaleDateString()}</td>
+      </tr>
+    `).join('');
+  } catch (error) {
+    console.error('Error loading rides:', error);
+    document.getElementById('ridesTableBody').innerHTML = 
+      '<tr><td colspan="8" class="loading">Error loading rides</td></tr>';
+  }
+}
+
+async function loadPassengers() {
+  try {
+    const { data: passengers, error } = await supabase
+      .from('passengers')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    // Get ride counts for each passenger
+    const passengersWithRideCounts = await Promise.all(
+      passengers.map(async (passenger) => {
+        const { count } = await supabase
+          .from('ride_requests')
+          .select('*', { count: 'exact', head: true })
+          .eq('passenger_phone', passenger.phone);
+        
+        return { ...passenger, rideCount: count || 0 };
+      })
+    );
+
+    const tbody = document.getElementById('passengersTableBody');
+    tbody.innerHTML = passengersWithRideCounts.map(passenger => `
+      <tr>
+        <td>${passenger.id}</td>
+        <td>${passenger.name}</td>
+        <td>${passenger.phone}</td>
+        <td>${passenger.rideCount}</td>
+        <td>${new Date(passenger.created_at).toLocaleDateString()}</td>
+      </tr>
+    `).join('');
+  } catch (error) {
+    console.error('Error loading passengers:', error);
+    document.getElementById('passengersTableBody').innerHTML = 
+      '<tr><td colspan="5" class="loading">Error loading passengers</td></tr>';
+  }
+}
+
+function switchTab(tabName) {
+  // Update tab buttons
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.tab === tabName);
+  });
+  
+  // Update tab content
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.classList.toggle('active', content.id === `${tabName}Tab`);
+  });
+}
+</script>
+</body>
+</html>
