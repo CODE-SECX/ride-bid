@@ -148,6 +148,75 @@ app.get('/api/passengers/:phone', async (req, res) => {
 // DRIVERS
 // ─────────────────────────────────────────────
 
+/**
+ * POST /api/drivers/signup
+ * Register a new driver account.
+ */
+app.post('/api/drivers/signup', async (req, res) => {
+  try {
+    const { name, username, password, contact_no, vehicle_info } = req.body;
+    
+    // Validation
+    if (!name || !username || !password || !contact_no) {
+      return res.status(400).json({ error: 'Name, username, password, and contact number are required' });
+    }
+    
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    }
+
+    // Check if username already exists
+    const { data: existingUser, error: userError } = await supabase
+      .from('drivers')
+      .select('id')
+      .eq('username', username)
+      .single();
+    
+    if (existingUser) {
+      return res.status(409).json({ error: 'Username already exists' });
+    }
+
+    // Check if phone number already exists
+    const { data: existingPhone, error: phoneError } = await supabase
+      .from('drivers')
+      .select('id')
+      .eq('contact_no', contact_no)
+      .single();
+    
+    if (existingPhone) {
+      return res.status(409).json({ error: 'Phone number already registered' });
+    }
+
+    // Hash password
+    const bcrypt = require('bcryptjs');
+    const saltRounds = 10;
+    const password_hash = await bcrypt.hash(password, saltRounds);
+
+    // Create new driver
+    const { data, error } = await supabase
+      .from('drivers')
+      .insert([{
+        name,
+        username,
+        password_hash,
+        contact_no,
+        vehicle_info: vehicle_info || null,
+        is_online: false
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Return driver data without password hash
+    const { password_hash: _, ...driverData } = data;
+    res.status(201).json({ driver: driverData });
+  } catch (err) {
+    console.error('Error creating driver:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/drivers', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -361,40 +430,21 @@ app.post('/api/rides/:id/counter', async (req, res) => {
       return res.status(400).json({ error: 'Counter fare required' });
     }
 
-    // ✅ FETCH the current ride first
-    const { data: currentRide, error: fetchError } = await supabase
-      .from('ride_requests')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (fetchError || !currentRide) {
-      return res.status(404).json({ error: 'Ride not found' });
-    }
-
-    // ✅ Calculate previous_counter_fare BEFORE updating
-    // The current counter_fare becomes the "previous"
-    // OR fall back to offered_fare if no prior counter
-    const previousCounterFare = currentRide.counter_fare != null 
-      ? currentRide.counter_fare 
-      : currentRide.offered_fare;
-
     // Set expiry to 2 hours from now
     const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
     
     const updateData = {
       status: 'countered',
-      counter_fare: counterFare,        // ✅ New counter
-      previous_counter_fare: previousCounterFare,  // ✅ ADD THIS LINE
+      counter_fare: counterFare,
       expires_at: expiresAt
     };
 
     // Set the appropriate countered_by field based on who is countering
     if (isPassenger) {
-      updateData.countered_by = null;
+      updateData.countered_by = null; // Passenger countering back
       updateData.passenger_countered = true;
     } else {
-      updateData.countered_by = driverId;
+      updateData.countered_by = driverId; // Driver countering
       updateData.passenger_countered = false;
     }
 
