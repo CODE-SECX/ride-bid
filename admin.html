@@ -1,811 +1,1518 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Super Admin Portal - RideBid</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RideBid — Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-/* ─── Reset & Design Tokens ─── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-:root {
-  --bg:           #0f172a;
-  --surface:      #1e293b;
-  --surface2:     #334155;
-  --surface3:     #475569;
-  --border:       #475569;
-  --border-mid:   #64748b;
-  --border-focus: #3b82f6;
-
-  --text:           #f1f5f9;
-  --text-secondary: #cbd5e1;
-  --text-muted:     #94a3b8;
-  --text-dim:       #64748b;
-
-  --green:        #10b981;
-  --green-mid:    #34d399;
-  --green-light:  #064e3b;
-  --green-border: #059669;
-
-  --blue:         #3b82f6;
-  --blue-mid:     #60a5fa;
-  --blue-light:   #1e3a8a;
-  --blue-border:  #2563eb;
-
-  --amber:        #f59e0b;
-  --amber-light:  #451a03;
-  --amber-border: #d97706;
-
-  --red:          #ef4444;
-  --red-light:    #7f1d1d;
-  --red-border:   #dc2626;
-
-  --violet:       #8b5cf6;
-  --violet-light: #4c1d95;
-  --violet-border:#7c3aed;
-
-  --radius:    12px;
-  --radius-sm: 8px;
-  --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+:root{
+  --ink:#0a0c10;
+  --ink2:#12151d;
+  --ink3:#1a1e2a;
+  --panel:#1f2433;
+  --panel2:#252a3a;
+  --panel3:#2d3347;
+  --rim:#323852;
+  --rim2:#3d4560;
+  --accent:#e8ff47;
+  --accent2:#c8e820;
+  --accent-dim:rgba(232,255,71,0.12);
+  --accent-glow:rgba(232,255,71,0.25);
+  --blue:#4d9fff;
+  --blue-dim:rgba(77,159,255,0.12);
+  --teal:#00d4a8;
+  --teal-dim:rgba(0,212,168,0.1);
+  --orange:#ff7a2f;
+  --orange-dim:rgba(255,122,47,0.1);
+  --red:#ff4d6a;
+  --red-dim:rgba(255,77,106,0.1);
+  --violet:#a78bfa;
+  --violet-dim:rgba(167,139,250,0.1);
+  --text:#e8ecf4;
+  --text2:#9ba3bc;
+  --text3:#5c6480;
+  --font-display:'Syne',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+  --font-mono:'DM Mono',monospace;
+  --r:10px;
+  --r2:6px;
+  --ease:cubic-bezier(.4,0,.2,1);
 }
 
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.6;
-  min-height: 100vh;
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--ink);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--ink2)}
+::-webkit-scrollbar-thumb{background:var(--rim);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:var(--rim2)}
+
+/* ── Login ── */
+#login{
+  position:fixed;inset:0;z-index:999;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(232,255,71,0.06) 0%,transparent 70%),
+             radial-gradient(ellipse 60% 80% at 100% 100%,rgba(77,159,255,0.05) 0%,transparent 70%),
+             var(--ink);
+}
+.login-box{
+  width:420px;max-width:95vw;
+  background:var(--panel);
+  border:1px solid var(--rim);
+  border-radius:16px;
+  padding:2.5rem;
+  box-shadow:0 40px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03);
+}
+.login-logo{
+  font-family:var(--font-display);font-size:1.75rem;font-weight:800;
+  color:var(--accent);letter-spacing:-.02em;margin-bottom:.25rem;
+}
+.login-sub{font-size:.8rem;color:var(--text3);margin-bottom:2rem;font-family:var(--font-mono)}
+.field{margin-bottom:1.25rem}
+.field label{display:block;font-size:.75rem;font-weight:600;color:var(--text2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem}
+.field input{
+  width:100%;padding:.75rem 1rem;
+  background:var(--ink3);border:1px solid var(--rim);border-radius:var(--r2);
+  color:var(--text);font-family:var(--font-body);font-size:.875rem;
+  transition:border-color .2s,box-shadow .2s;
+}
+.field input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  padding:.75rem 1.5rem;border:none;border-radius:var(--r2);
+  font-family:var(--font-body);font-size:.875rem;font-weight:600;cursor:pointer;
+  transition:all .2s var(--ease);
+}
+.btn-accent{background:var(--accent);color:var(--ink);width:100%}
+.btn-accent:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 6px 20px var(--accent-glow)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--rim)}
+.btn-ghost:hover{background:var(--panel2);color:var(--text)}
+.btn-sm{padding:.4rem .875rem;font-size:.8rem}
+.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,77,106,.2)}
+.btn-danger:hover{background:var(--red);color:#fff}
+.err-msg{
+  margin-top:1rem;padding:.75rem;border-radius:var(--r2);
+  background:var(--red-dim);color:var(--red);border:1px solid rgba(255,77,106,.2);
+  font-size:.8rem;display:none;
 }
 
-/* ─── Login Screen ─── */
-.login-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, var(--bg) 0%, var(--surface) 100%);
+/* ── App Shell ── */
+#app{display:none;min-height:100vh;display:none;flex-direction:column}
+.topbar{
+  height:56px;display:flex;align-items:center;gap:1rem;
+  padding:0 1.5rem;background:var(--ink2);
+  border-bottom:1px solid var(--rim);
+  position:sticky;top:0;z-index:100;
+}
+.topbar-logo{font-family:var(--font-display);font-size:1.1rem;font-weight:800;color:var(--accent);letter-spacing:-.02em}
+.topbar-sep{width:1px;height:24px;background:var(--rim);margin:0 .5rem}
+.nav-pill{
+  padding:.35rem .875rem;border-radius:99px;font-size:.8rem;font-weight:500;
+  cursor:pointer;border:none;background:transparent;color:var(--text2);
+  transition:all .2s;font-family:var(--font-body);
+}
+.nav-pill.active,.nav-pill:hover{background:var(--panel2);color:var(--text)}
+.nav-pill.active{color:var(--accent)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:.75rem}
+.global-search-wrap{position:relative}
+.global-search{
+  width:260px;padding:.45rem .875rem .45rem 2.25rem;
+  background:var(--panel);border:1px solid var(--rim);border-radius:99px;
+  color:var(--text);font-family:var(--font-body);font-size:.8rem;
+  transition:all .2s;
+}
+.global-search:focus{outline:none;border-color:var(--accent);width:320px;background:var(--panel2)}
+.gsearch-icon{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.875rem;pointer-events:none}
+.search-results-drop{
+  position:absolute;top:calc(100% + .5rem);right:0;width:380px;
+  background:var(--panel2);border:1px solid var(--rim);border-radius:var(--r);
+  box-shadow:0 20px 40px rgba(0,0,0,.5);display:none;z-index:200;max-height:480px;overflow-y:auto;
+}
+.search-results-drop.open{display:block}
+.search-group-title{padding:.5rem 1rem;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);background:var(--panel)}
+.search-item{
+  display:flex;align-items:center;gap:.75rem;padding:.625rem 1rem;
+  cursor:pointer;transition:background .15s;border-bottom:1px solid var(--rim);
+}
+.search-item:last-child{border-bottom:none}
+.search-item:hover{background:var(--panel3)}
+.search-item-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0}
+.si-driver{background:var(--teal-dim);color:var(--teal)}
+.si-passenger{background:var(--blue-dim);color:var(--blue)}
+.si-ride{background:var(--accent-dim);color:var(--accent)}
+.search-item-name{font-size:.8rem;font-weight:500;color:var(--text)}
+.search-item-sub{font-size:.7rem;color:var(--text3);margin-top:1px}
+.admin-badge{
+  padding:.25rem .625rem;background:var(--accent-dim);color:var(--accent);
+  border-radius:99px;font-size:.7rem;font-weight:600;font-family:var(--font-mono);
+  border:1px solid rgba(232,255,71,.2);
 }
 
-.login-card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 2.5rem;
-  width: 100%;
-  max-width: 400px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-lg);
-}
+/* ── Page Views ── */
+.page{display:none;padding:1.5rem;max-width:1600px;margin:0 auto;width:100%}
+.page.active{display:block}
 
-.login-header {
-  text-align: center;
-  margin-bottom: 2rem;
+/* ── Dashboard ── */
+.dash-hero{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;
 }
+@media(max-width:900px){.dash-hero{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.dash-hero{grid-template-columns:1fr}}
+.kpi{
+  background:var(--panel);border:1px solid var(--rim);border-radius:var(--r);
+  padding:1.25rem 1.5rem;position:relative;overflow:hidden;
+  transition:border-color .2s,transform .2s;
+}
+.kpi:hover{border-color:var(--rim2);transform:translateY(-2px)}
+.kpi::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.015) 0%,transparent 60%);
+  pointer-events:none;
+}
+.kpi-label{font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:.625rem}
+.kpi-val{font-family:var(--font-display);font-size:2.25rem;font-weight:700;line-height:1;color:var(--text);margin-bottom:.5rem}
+.kpi-delta{font-size:.75rem;color:var(--teal);display:flex;align-items:center;gap:.25rem}
+.kpi-delta.down{color:var(--red)}
+.kpi-accent{position:absolute;top:.75rem;right:1rem;font-size:1.5rem;opacity:.2}
 
-.login-title {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 0.5rem;
-}
+.dash-grid{display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin-bottom:1rem}
+@media(max-width:1100px){.dash-grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--rim);border-radius:var(--r);padding:1.25rem}
+.card-title{font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.card-title span{flex:1}
+.card-title .card-action{font-family:var(--font-body);font-size:.75rem;font-weight:400;color:var(--text3);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.card-title .card-action:hover{color:var(--text)}
 
-.login-subtitle {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
+/* ── Status badges ── */
+.badge{
+  display:inline-flex;align-items:center;padding:.2rem .625rem;
+  border-radius:99px;font-size:.7rem;font-weight:600;font-family:var(--font-mono);
 }
+.b-pending{background:rgba(255,122,47,.12);color:var(--orange);border:1px solid rgba(255,122,47,.25)}
+.b-confirmed{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(0,212,168,.25)}
+.b-completed{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(77,159,255,.25)}
+.b-rejected,.b-expired{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,77,106,.2)}
+.b-countered{background:var(--violet-dim);color:var(--violet);border:1px solid rgba(167,139,250,.2)}
+.b-online{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(0,212,168,.25)}
+.b-offline{background:var(--panel3);color:var(--text3);border:1px solid var(--rim)}
 
-.form-group {
-  margin-bottom: 1.5rem;
+/* ── Table ── */
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--rim)}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+thead tr{background:var(--panel2)}
+th{
+  padding:.875rem 1rem;text-align:left;
+  font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--text3);border-bottom:1px solid var(--rim);white-space:nowrap;
+  cursor:pointer;user-select:none;
 }
+th:hover{color:var(--text)}
+th .sort-icon{margin-left:.25rem;opacity:.4}
+th.sorted .sort-icon{opacity:1;color:var(--accent)}
+td{
+  padding:.75rem 1rem;border-bottom:1px solid rgba(50,56,82,.5);
+  color:var(--text2);vertical-align:middle;
+}
+tbody tr:last-child td{border-bottom:none}
+tbody tr{transition:background .1s;cursor:pointer}
+tbody tr:hover{background:var(--panel2)}
+tbody tr:hover td{color:var(--text)}
+.link{color:var(--blue);cursor:pointer;text-decoration:none;font-weight:500}
+.link:hover{text-decoration:underline;text-underline-offset:2px}
+.mono{font-family:var(--font-mono);font-size:.75rem}
+.fare{color:var(--accent);font-weight:600;font-family:var(--font-mono)}
+.counter-fare{color:var(--text3);font-size:.7rem;text-decoration:line-through;margin-left:.25rem}
 
-.form-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--text);
-  font-size: 0.875rem;
+/* ── Toolbar ── */
+.toolbar{display:flex;align-items:center;gap:.625rem;margin-bottom:1rem;flex-wrap:wrap}
+.toolbar-search{
+  position:relative;flex:1;min-width:200px;max-width:320px;
 }
+.toolbar-search input{
+  width:100%;padding:.5rem .875rem .5rem 2rem;
+  background:var(--panel);border:1px solid var(--rim);border-radius:var(--r2);
+  color:var(--text);font-family:var(--font-body);font-size:.8rem;
+  transition:border-color .2s;
+}
+.toolbar-search input:focus{outline:none;border-color:var(--accent)}
+.toolbar-search .ts-icon{position:absolute;left:.625rem;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.8rem}
+.filter-btn{
+  display:inline-flex;align-items:center;gap:.375rem;
+  padding:.5rem .875rem;background:var(--panel);border:1px solid var(--rim);border-radius:var(--r2);
+  color:var(--text2);font-size:.8rem;cursor:pointer;transition:all .2s;font-family:var(--font-body);
+  white-space:nowrap;
+}
+.filter-btn:hover,.filter-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.filter-select{
+  padding:.5rem .875rem;background:var(--panel);border:1px solid var(--rim);border-radius:var(--r2);
+  color:var(--text2);font-size:.8rem;cursor:pointer;font-family:var(--font-body);
+  transition:border-color .2s;
+}
+.filter-select:focus{outline:none;border-color:var(--accent);color:var(--text)}
+.filter-panel{
+  background:var(--panel2);border:1px solid var(--rim);border-radius:var(--r);
+  padding:1rem;margin-bottom:1rem;display:none;
+}
+.filter-panel.open{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.75rem}
+.fp-field label{font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:.375rem}
+.fp-field input,.fp-field select{
+  width:100%;padding:.45rem .75rem;background:var(--panel);border:1px solid var(--rim);border-radius:var(--r2);
+  color:var(--text);font-family:var(--font-body);font-size:.8rem;
+}
+.fp-field input:focus,.fp-field select:focus{outline:none;border-color:var(--accent)}
+.filter-tags{display:flex;flex-wrap:wrap;gap:.375rem;margin-bottom:.75rem}
+.f-tag{
+  display:inline-flex;align-items:center;gap:.375rem;
+  padding:.25rem .625rem;background:var(--accent-dim);color:var(--accent);
+  border-radius:99px;font-size:.7rem;font-weight:500;
+  border:1px solid rgba(232,255,71,.2);
+}
+.f-tag button{background:none;border:none;color:var(--accent);cursor:pointer;font-size:.75rem;line-height:1;padding:0 0 0 .25rem}
 
-.form-input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-size: 0.875rem;
-  transition: all 0.2s;
+/* ── Pagination ── */
+.pagination{display:flex;align-items:center;justify-content:flex-end;gap:.5rem;margin-top:1rem;flex-wrap:wrap}
+.pg-info{font-size:.75rem;color:var(--text3);margin-right:auto;font-family:var(--font-mono)}
+.pg-btn{
+  padding:.375rem .75rem;background:var(--panel);border:1px solid var(--rim);border-radius:var(--r2);
+  color:var(--text2);font-size:.75rem;cursor:pointer;transition:all .2s;
 }
+.pg-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.pg-btn:disabled{opacity:.35;cursor:default}
+.pg-btn.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
 
-.form-input:focus {
-  outline: none;
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+/* ── Detail Views ── */
+.detail-view{display:none;padding:1.5rem;max-width:1400px;margin:0 auto;width:100%}
+.detail-view.active{display:block}
+.back-btn{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.45rem .875rem;background:var(--panel);border:1px solid var(--rim);border-radius:var(--r2);
+  color:var(--text2);font-size:.8rem;cursor:pointer;margin-bottom:1.5rem;
+  transition:all .2s;font-family:var(--font-body);
 }
+.back-btn:hover{border-color:var(--accent);color:var(--accent)}
+.profile-header{
+  display:grid;grid-template-columns:auto 1fr auto;gap:1.5rem;align-items:start;
+  background:var(--panel);border:1px solid var(--rim);border-radius:var(--r);
+  padding:1.5rem;margin-bottom:1.5rem;
+}
+@media(max-width:700px){.profile-header{grid-template-columns:1fr}}
+.avatar{
+  width:72px;height:72px;border-radius:var(--r);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:1.75rem;font-weight:800;
+  flex-shrink:0;
+}
+.av-driver{background:linear-gradient(135deg,var(--teal-dim) 0%,rgba(0,212,168,.25) 100%);color:var(--teal);border:1px solid rgba(0,212,168,.3)}
+.av-passenger{background:linear-gradient(135deg,var(--blue-dim) 0%,rgba(77,159,255,.25) 100%);color:var(--blue);border:1px solid rgba(77,159,255,.3)}
+.profile-name{font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:var(--text);margin-bottom:.375rem}
+.profile-meta{font-size:.8rem;color:var(--text3);display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.5rem}
+.profile-meta span{display:flex;align-items:center;gap:.375rem}
+.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;text-align:right}
+@media(max-width:700px){.profile-stats{grid-template-columns:repeat(3,1fr);text-align:left}}
+.ps-val{font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:var(--text)}
+.ps-label{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
 
-.btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-weight: 500;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+.detail-grid{display:grid;grid-template-columns:1fr 2fr;gap:1rem}
+@media(max-width:1000px){.detail-grid{grid-template-columns:1fr}}
+.info-list{display:flex;flex-direction:column;gap:.5rem}
+.info-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.625rem .875rem;background:var(--panel2);border-radius:var(--r2);
+  font-size:.8rem;
 }
+.info-row-label{color:var(--text3);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em}
+.info-row-val{color:var(--text);text-align:right}
 
-.btn-primary {
-  background: var(--blue);
-  color: white;
-  width: 100%;
+/* ── Ride Detail ── */
+.ride-detail-card{
+  background:var(--panel);border:1px solid var(--rim);border-radius:var(--r);padding:1.5rem;margin-bottom:1rem;
 }
+.rdc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;gap:1rem;flex-wrap:wrap}
+.rdc-title{font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--text)}
+.rdc-id{font-family:var(--font-mono);font-size:.75rem;color:var(--text3);margin-top:.2rem}
+.route-vis{
+  display:grid;grid-template-columns:1fr auto 1fr;gap:.75rem;align-items:center;
+  background:var(--panel2);border-radius:var(--r);padding:1rem;margin-bottom:1.25rem;
+}
+.route-point{text-align:center}
+.route-point-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.375rem}
+.route-point-loc{font-size:.875rem;font-weight:500;color:var(--text)}
+.route-arrow{color:var(--text3);font-size:1.25rem;text-align:center}
+.rdc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.25rem}
+@media(max-width:600px){.rdc-grid{grid-template-columns:1fr}}
+.rdc-field label{font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:.25rem}
+.rdc-field .val{font-size:.875rem;color:var(--text)}
+.entity-chip{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.5rem .875rem;background:var(--panel2);border:1px solid var(--rim);border-radius:var(--r2);
+  cursor:pointer;transition:all .2s;text-decoration:none;
+}
+.entity-chip:hover{border-color:var(--accent);background:var(--accent-dim)}
+.entity-chip-icon{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.75rem}
+.entity-chip-label{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block}
+.entity-chip-name{font-size:.8rem;font-weight:600;color:var(--text)}
 
-.btn-primary:hover {
-  background: var(--blue-mid);
-  transform: translateY(-1px);
+/* ── Timeline ── */
+.timeline{position:relative;padding-left:1.5rem}
+.timeline::before{content:'';position:absolute;left:.5rem;top:0;bottom:0;width:1px;background:var(--rim)}
+.tl-item{position:relative;margin-bottom:1.25rem;padding-left:.75rem}
+.tl-dot{
+  position:absolute;left:-1.375rem;top:.25rem;
+  width:8px;height:8px;border-radius:50%;background:var(--rim2);
+  border:2px solid var(--panel);
 }
+.tl-dot.active{background:var(--accent)}
+.tl-date{font-family:var(--font-mono);font-size:.7rem;color:var(--text3);margin-bottom:.2rem}
+.tl-title{font-size:.8rem;font-weight:600;color:var(--text)}
+.tl-sub{font-size:.75rem;color:var(--text3)}
 
-.btn-secondary {
-  background: var(--surface2);
-  color: var(--text);
-}
+/* ── Charts ── */
+.chart-wrap{position:relative;height:200px}
 
-.btn-secondary:hover {
-  background: var(--surface3);
+/* ── Relationship Graph ── */
+.graph-wrap{
+  position:relative;height:360px;background:var(--panel2);
+  border-radius:var(--r);overflow:hidden;border:1px solid var(--rim);
 }
+#graphCanvas{width:100%;height:100%}
+.graph-legend{
+  position:absolute;bottom:1rem;left:1rem;display:flex;gap:.75rem;flex-wrap:wrap;
+}
+.gl-item{display:flex;align-items:center;gap:.375rem;font-size:.7rem;color:var(--text3)}
+.gl-dot{width:8px;height:8px;border-radius:50%}
 
-.btn-danger {
-  background: var(--red);
-  color: white;
-}
+/* ── Empty State ── */
+.empty{padding:3rem;text-align:center;color:var(--text3)}
+.empty-icon{font-size:2.5rem;margin-bottom:.75rem;opacity:.4}
+.empty-title{font-size:.875rem;font-weight:600;color:var(--text2);margin-bottom:.375rem}
+.empty-sub{font-size:.8rem}
 
-.btn-danger:hover {
-  background: #dc2626;
+/* ── Loading ── */
+.loader{display:flex;align-items:center;justify-content:center;padding:2.5rem;color:var(--text3)}
+.spin{
+  width:18px;height:18px;border:2px solid var(--rim);border-top-color:var(--accent);
+  border-radius:50%;animation:spin .7s linear infinite;margin-right:.75rem;
 }
+@keyframes spin{to{transform:rotate(360deg)}}
 
-.btn-success {
-  background: var(--green);
-  color: white;
+/* ── Toast ── */
+.toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:1000;display:flex;flex-direction:column-reverse;gap:.5rem}
+.toast{
+  padding:.75rem 1.25rem;border-radius:var(--r);font-size:.8rem;font-weight:500;
+  border:1px solid;min-width:200px;max-width:340px;
+  animation:slideIn .3s var(--ease);box-shadow:0 8px 24px rgba(0,0,0,.4);
 }
+.toast-info{background:var(--blue-dim);color:var(--blue);border-color:rgba(77,159,255,.25)}
+.toast-success{background:var(--teal-dim);color:var(--teal);border-color:rgba(0,212,168,.25)}
+.toast-error{background:var(--red-dim);color:var(--red);border-color:rgba(255,77,106,.2)}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
 
-.btn-success:hover {
-  background: var(--green-mid);
+/* ── Tab system ── */
+.tab-bar{display:flex;gap:.25rem;margin-bottom:1.25rem;border-bottom:1px solid var(--rim);padding-bottom:0}
+.tab-pill{
+  padding:.5rem 1.125rem;border:none;background:transparent;
+  color:var(--text3);font-family:var(--font-body);font-size:.8rem;font-weight:500;
+  cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:all .2s;
 }
+.tab-pill:hover{color:var(--text)}
+.tab-pill.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
 
-/* ─── Admin Dashboard ─── */
-.admin-container {
-  display: none;
-  min-height: 100vh;
-}
+/* ── Page titles ── */
+.page-title{font-family:var(--font-display);font-size:1.5rem;font-weight:800;color:var(--text);margin-bottom:1.25rem;letter-spacing:-.02em}
+.page-title span{color:var(--accent)}
 
-.admin-header {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.admin-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.admin-user {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.logout-btn {
-  background: var(--surface2);
-  color: var(--text);
-  border: 1px solid var(--border);
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 0.875rem;
-}
-
-.logout-btn:hover {
-  background: var(--surface3);
-}
-
-.admin-content {
-  padding: 2rem;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-}
-
-.stat-title {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.5rem;
-}
-
-.stat-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.tab {
-  padding: 0.75rem 1.5rem;
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s;
-}
-
-.tab.active {
-  color: var(--blue);
-  border-bottom-color: var(--blue);
-}
-
-.tab:hover {
-  color: var(--text);
-}
-
-.tab-content {
-  display: none;
-}
-
-.tab-content.active {
-  display: block;
-}
-
-.data-table {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table th {
-  background: var(--surface2);
-  padding: 1rem;
-  text-align: left;
-  font-weight: 600;
-  color: var(--text);
-  font-size: 0.875rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.table td {
-  padding: 1rem;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-
-.table tbody tr:hover {
-  background: var(--surface2);
-}
-
-.status-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  display: inline-block;
-}
-
-.status-pending {
-  background: var(--amber-light);
-  color: var(--amber);
-  border: 1px solid var(--amber-border);
-}
-
-.status-confirmed {
-  background: var(--green-light);
-  color: var(--green);
-  border: 1px solid var(--green-border);
-}
-
-.status-completed {
-  background: var(--blue-light);
-  color: var(--blue);
-  border: 1px solid var(--blue-border);
-}
-
-.status-rejected {
-  background: var(--red-light);
-  color: var(--red);
-  border: 1px solid var(--red-border);
-}
-
-.status-online {
-  background: var(--green-light);
-  color: var(--green);
-  border: 1px solid var(--green-border);
-}
-
-.status-offline {
-  background: var(--surface3);
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-}
-
-.alert {
-  padding: 1rem;
-  border-radius: var(--radius-sm);
-  margin-bottom: 1rem;
-  border: 1px solid;
-}
-
-.alert-error {
-  background: var(--red-light);
-  color: var(--red);
-  border-color: var(--red-border);
-}
-
-.alert-success {
-  background: var(--green-light);
-  color: var(--green);
-  border-color: var(--green-border);
-}
-
-.loading {
-  text-align: center;
-  padding: 2rem;
-  color: var(--text-secondary);
-}
-
-.vehicle-info {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-top: 0.25rem;
-}
-
-.ride-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.location {
-  font-size: 0.875rem;
-  color: var(--text);
-}
-
-.fare {
-  font-weight: 600;
-  color: var(--green);
-}
-
-@media (max-width: 768px) {
-  .admin-content {
-    padding: 1rem;
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .admin-header {
-    padding: 1rem;
-  }
-  
-  .table {
-    font-size: 0.75rem;
-  }
-  
-  .table th,
-  .table td {
-    padding: 0.5rem;
-  }
-}
+/* ── Breadcrumb ── */
+.breadcrumb{display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--text3);margin-bottom:1.5rem}
+.breadcrumb a{color:var(--text3);cursor:pointer;text-decoration:none}
+.breadcrumb a:hover{color:var(--text)}
+.breadcrumb span{color:var(--text2)}
+.bc-sep{color:var(--rim2)}
 </style>
 </head>
 <body>
-<!-- Login Screen -->
-<div id="loginScreen" class="login-container">
-  <div class="login-card">
-    <div class="login-header">
-      <h1 class="login-title">🔐 Super Admin</h1>
-      <p class="login-subtitle">RideBid Admin Portal</p>
+
+<!-- ─── Login ─── -->
+<div id="login">
+  <div class="login-box">
+    <div class="login-logo">RideBid ⚡</div>
+    <div class="login-sub">// command_center v2.0</div>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="l-user" placeholder="superadmin" autocomplete="username"/>
     </div>
-    <form id="loginForm">
-      <div class="form-group">
-        <label class="form-label" for="username">Username</label>
-        <input type="text" id="username" class="form-input" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="password">Password</label>
-        <input type="password" id="password" class="form-input" required>
-      </div>
-      <button type="submit" class="btn btn-primary">Sign In</button>
-    </form>
-    <div id="loginError" class="alert alert-error" style="display: none;"></div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <button class="btn btn-accent" onclick="doLogin()">Access Command Center</button>
+    <div class="err-msg" id="l-err"></div>
   </div>
 </div>
 
-<!-- Admin Dashboard -->
-<div id="adminDashboard" class="admin-container">
-  <header class="admin-header">
-    <h1 class="admin-title">🚗 RideBid Admin Portal</h1>
-    <div class="admin-user">
-      <span id="adminName">Admin</span>
-      <button id="logoutBtn" class="logout-btn">Logout</button>
+<!-- ─── App ─── -->
+<div id="app" style="display:none;flex-direction:column">
+  <header class="topbar">
+    <span class="topbar-logo">RideBid ⚡</span>
+    <div class="topbar-sep"></div>
+    <button class="nav-pill active" onclick="showPage('dashboard',this)">Dashboard</button>
+    <button class="nav-pill" onclick="showPage('drivers',this)">Drivers</button>
+    <button class="nav-pill" onclick="showPage('passengers',this)">Passengers</button>
+    <button class="nav-pill" onclick="showPage('rides',this)">Rides</button>
+    <button class="nav-pill" onclick="showPage('analytics',this)">Analytics</button>
+    <div class="topbar-right">
+      <div class="global-search-wrap">
+        <span class="gsearch-icon">🔍</span>
+        <input class="global-search" id="globalSearch" placeholder="Search drivers, passengers, rides…" oninput="globalSearchFn(this.value)" onblur="setTimeout(()=>closeGSearch(),200)"/>
+        <div class="search-results-drop" id="searchDrop"></div>
+      </div>
+      <span class="admin-badge">ADMIN</span>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Sign Out</button>
     </div>
   </header>
 
-  <main class="admin-content">
-    <!-- Stats Cards -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-title">Total Drivers</div>
-        <div class="stat-value" id="totalDrivers">0</div>
+  <div style="flex:1;overflow-y:auto">
+
+  <!-- DASHBOARD PAGE -->
+  <div class="page active" id="pg-dashboard">
+    <div class="page-title">Command Center <span>Overview</span></div>
+    <div class="dash-hero">
+      <div class="kpi"><div class="kpi-label">Total Drivers</div><div class="kpi-val" id="k-drivers">—</div><div class="kpi-delta" id="k-drivers-sub"></div><div class="kpi-accent">🚗</div></div>
+      <div class="kpi"><div class="kpi-label">Total Rides</div><div class="kpi-val" id="k-rides">—</div><div class="kpi-delta" id="k-rides-sub"></div><div class="kpi-accent">📍</div></div>
+      <div class="kpi"><div class="kpi-label">Active Rides</div><div class="kpi-val" id="k-active">—</div><div class="kpi-delta" id="k-active-sub"></div><div class="kpi-accent">⚡</div></div>
+      <div class="kpi"><div class="kpi-label">Online Drivers</div><div class="kpi-val" id="k-online">—</div><div class="kpi-delta" id="k-online-sub"></div><div class="kpi-accent">🟢</div></div>
+    </div>
+    <div class="dash-grid">
+      <div class="card">
+        <div class="card-title"><span>Recent Rides</span><span class="card-action" onclick="showPage('rides',document.querySelector('[onclick*=rides]'))">View all →</span></div>
+        <div id="dash-recent-rides"></div>
       </div>
-      <div class="stat-card">
-        <div class="stat-title">Total Rides</div>
-        <div class="stat-value" id="totalRides">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">Active Rides</div>
-        <div class="stat-value" id="activeRides">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title">Online Drivers</div>
-        <div class="stat-value" id="onlineDrivers">0</div>
+      <div class="card">
+        <div class="card-title"><span>Status Breakdown</span></div>
+        <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
+        <div style="margin-top:1rem" id="status-legend"></div>
       </div>
     </div>
-
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab active" data-tab="drivers">Drivers</button>
-      <button class="tab" data-tab="rides">Rides</button>
-      <button class="tab" data-tab="passengers">Passengers</button>
-    </div>
-
-    <!-- Tab Content -->
-    <div id="driversTab" class="tab-content active">
-      <div class="data-table">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Username</th>
-              <th>Contact</th>
-              <th>Vehicle</th>
-              <th>Status</th>
-              <th>Joined</th>
-            </tr>
-          </thead>
-          <tbody id="driversTableBody">
-            <tr>
-              <td colspan="7" class="loading">Loading drivers...</td>
-            </tr>
-          </tbody>
-        </table>
+    <div class="dash-grid">
+      <div class="card">
+        <div class="card-title"><span>Ride Activity (7 days)</span></div>
+        <div class="chart-wrap"><canvas id="activityChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>Top Drivers</span></div>
+        <div id="top-drivers-list"></div>
       </div>
     </div>
+  </div>
 
-    <div id="ridesTab" class="tab-content">
-      <div class="data-table">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Passenger</th>
-              <th>Pickup</th>
-              <th>Dropoff</th>
-              <th>Fare</th>
-              <th>Status</th>
-              <th>Driver</th>
-              <th>Created</th>
-            </tr>
-          </thead>
-          <tbody id="ridesTableBody">
-            <tr>
-              <td colspan="8" class="loading">Loading rides...</td>
-            </tr>
-          </tbody>
-        </table>
+  <!-- DRIVERS PAGE -->
+  <div class="page" id="pg-drivers">
+    <div class="page-title">Driver <span>Registry</span></div>
+    <div class="toolbar">
+      <div class="toolbar-search"><span class="ts-icon">🔍</span><input placeholder="Search by name, username, phone…" oninput="filterDrivers(this.value)" id="driver-search"/></div>
+      <select class="filter-select" onchange="filterDriverStatus(this.value)">
+        <option value="">All Status</option><option value="online">Online</option><option value="offline">Offline</option>
+      </select>
+      <div style="margin-left:auto;display:flex;gap:.5rem">
+        <span style="font-size:.75rem;color:var(--text3);align-self:center" id="drivers-count"></span>
       </div>
     </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th onclick="sortTable('drivers','id')">ID <span class="sort-icon">↕</span></th>
+          <th onclick="sortTable('drivers','name')">Name <span class="sort-icon">↕</span></th>
+          <th>Username</th>
+          <th>Contact</th>
+          <th>Vehicle</th>
+          <th onclick="sortTable('drivers','is_online')">Status <span class="sort-icon">↕</span></th>
+          <th onclick="sortTable('drivers','created_at')">Joined <span class="sort-icon">↕</span></th>
+          <th>Action</th>
+        </tr></thead>
+        <tbody id="drivers-tbody"></tbody>
+      </table>
+    </div>
+    <div class="pagination" id="drivers-pg"></div>
+  </div>
 
-    <div id="passengersTab" class="tab-content">
-      <div class="data-table">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Phone</th>
-              <th>Total Rides</th>
-              <th>Joined</th>
-            </tr>
-          </thead>
-          <tbody id="passengersTableBody">
-            <tr>
-              <td colspan="5" class="loading">Loading passengers...</td>
-            </tr>
-          </tbody>
-        </table>
+  <!-- PASSENGERS PAGE -->
+  <div class="page" id="pg-passengers">
+    <div class="page-title">Passenger <span>Directory</span></div>
+    <div class="toolbar">
+      <div class="toolbar-search"><span class="ts-icon">🔍</span><input placeholder="Search by name or phone…" oninput="filterPassengers(this.value)" id="passenger-search"/></div>
+      <div style="margin-left:auto"><span style="font-size:.75rem;color:var(--text3)" id="passengers-count"></span></div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th onclick="sortTable('passengers','id')">ID <span class="sort-icon">↕</span></th>
+          <th onclick="sortTable('passengers','name')">Name <span class="sort-icon">↕</span></th>
+          <th>Phone</th>
+          <th onclick="sortTable('passengers','created_at')">Joined <span class="sort-icon">↕</span></th>
+          <th>Action</th>
+        </tr></thead>
+        <tbody id="passengers-tbody"></tbody>
+      </table>
+    </div>
+    <div class="pagination" id="passengers-pg"></div>
+  </div>
+
+  <!-- RIDES PAGE -->
+  <div class="page" id="pg-rides">
+    <div class="page-title">Rides <span>Ledger</span></div>
+    <div class="toolbar">
+      <div class="toolbar-search"><span class="ts-icon">🔍</span><input placeholder="Search by passenger, location…" oninput="filterRides(this.value)" id="rides-search"/></div>
+      <select class="filter-select" id="rides-status-filter" onchange="applyRideFilters()">
+        <option value="">All Status</option>
+        <option value="pending">Pending</option><option value="countered">Countered</option>
+        <option value="confirmed">Confirmed</option><option value="completed">Completed</option>
+        <option value="rejected">Rejected</option><option value="expired">Expired</option>
+      </select>
+      <button class="filter-btn" id="rides-filter-toggle" onclick="toggleRideFilters()">⚙ Filters</button>
+      <div style="margin-left:auto"><span style="font-size:.75rem;color:var(--text3)" id="rides-count"></span></div>
+    </div>
+    <div class="filter-panel" id="rides-filter-panel">
+      <div class="fp-field"><label>Fare Min ($)</label><input type="number" id="fare-min" placeholder="0" oninput="applyRideFilters()"/></div>
+      <div class="fp-field"><label>Fare Max ($)</label><input type="number" id="fare-max" placeholder="999" oninput="applyRideFilters()"/></div>
+      <div class="fp-field"><label>Date From</label><input type="date" id="date-from" onchange="applyRideFilters()"/></div>
+      <div class="fp-field"><label>Date To</label><input type="date" id="date-to" onchange="applyRideFilters()"/></div>
+      <div class="fp-field"><label>Driver ID</label><input type="text" id="filter-driver-id" placeholder="Driver ID…" oninput="applyRideFilters()"/></div>
+    </div>
+    <div class="filter-tags" id="rides-filter-tags"></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>ID</th>
+          <th onclick="sortTable('rides','passenger_name')">Passenger <span class="sort-icon">↕</span></th>
+          <th>Pickup</th><th>Dropoff</th>
+          <th onclick="sortTable('rides','offered_fare')">Fare <span class="sort-icon">↕</span></th>
+          <th onclick="sortTable('rides','status')">Status <span class="sort-icon">↕</span></th>
+          <th>Driver</th>
+          <th onclick="sortTable('rides','created_at')">Date <span class="sort-icon">↕</span></th>
+        </tr></thead>
+        <tbody id="rides-tbody"></tbody>
+      </table>
+    </div>
+    <div class="pagination" id="rides-pg"></div>
+  </div>
+
+  <!-- ANALYTICS PAGE -->
+  <div class="page" id="pg-analytics">
+    <div class="page-title">Analytics <span>& Insights</span></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem" id="analytics-kpis"></div>
+    <div class="dash-grid" style="margin-bottom:1rem">
+      <div class="card">
+        <div class="card-title"><span>Fare Distribution</span></div>
+        <div class="chart-wrap"><canvas id="fareChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>Completion Rate Trend</span></div>
+        <div class="chart-wrap"><canvas id="completionChart"></canvas></div>
       </div>
     </div>
-  </main>
-</div>
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-title"><span>Relationship Flow — Drivers ↔ Rides ↔ Passengers</span></div>
+      <div class="graph-wrap">
+        <canvas id="graphCanvas"></canvas>
+        <div class="graph-legend">
+          <div class="gl-item"><div class="gl-dot" style="background:var(--teal)"></div>Driver</div>
+          <div class="gl-item"><div class="gl-dot" style="background:var(--accent)"></div>Ride</div>
+          <div class="gl-item"><div class="gl-dot" style="background:var(--blue)"></div>Passenger</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- DRIVER DETAIL VIEW -->
+  <div class="detail-view" id="dv-driver">
+    <div class="breadcrumb">
+      <a onclick="showPage('drivers')">Drivers</a><span class="bc-sep">›</span>
+      <span id="dv-driver-bc">Driver Profile</span>
+    </div>
+    <div id="dv-driver-content"></div>
+  </div>
+
+  <!-- PASSENGER DETAIL VIEW -->
+  <div class="detail-view" id="dv-passenger">
+    <div class="breadcrumb">
+      <a onclick="showPage('passengers')">Passengers</a><span class="bc-sep">›</span>
+      <span id="dv-passenger-bc">Passenger Profile</span>
+    </div>
+    <div id="dv-passenger-content"></div>
+  </div>
+
+  <!-- RIDE DETAIL VIEW -->
+  <div class="detail-view" id="dv-ride">
+    <div class="breadcrumb" id="dv-ride-bc-wrap">
+      <a onclick="showPage('rides')">Rides</a><span class="bc-sep">›</span>
+      <span id="dv-ride-bc">Ride Details</span>
+    </div>
+    <div id="dv-ride-content"></div>
+  </div>
+
+  </div><!-- end scroll area -->
+</div><!-- end app -->
+
+<div class="toast-wrap" id="toasts"></div>
+
 <script>
-let supabaseClient;
-let currentAdmin = null;
+// ═══════════════════════════════════════════════
+// CONFIG & STATE
+// ═══════════════════════════════════════════════
+let sb = null;
+const CREDS = [['superadmin','admin123'],['admin1','password123'],['testadmin','test123']];
+let state = {
+  drivers:[],passengers:[],rides:[],
+  driversPg:1,passengersPg:1,ridesPg:1,
+  driversSort:{col:'created_at',dir:-1},
+  passengersSort:{col:'created_at',dir:-1},
+  ridesSort:{col:'created_at',dir:-1},
+  driversFilter:'',driversStatus:'',
+  passengersFilter:'',
+  ridesFilter:'',ridesStatus:'',
+  ridesFareMin:'',ridesFareMax:'',ridesDateFrom:'',ridesDateTo:'',ridesDriverId:'',
+  currentPage:'dashboard',
+  detailStack:[],
+};
+const PER_PAGE = 25;
 
-// Initialize
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const response = await fetch('/api/config');
-    const config = await response.json();
-    supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
-  } catch (error) {
-    console.error('Failed to initialize Supabase:', error);
-  }
-
-  // Check if already logged in
-  const token = localStorage.getItem('adminToken');
-  if (token) {
-    // Validate token and show dashboard
-    showDashboard();
-  }
-
-  setupEventListeners();
-});
-
-function setupEventListeners() {
-  // Login form
-  document.getElementById('loginForm').addEventListener('submit', handleLogin);
-  
-  // Logout
-  document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-  
-  // Tabs
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => switchTab(tab.dataset.tab));
-  });
-}
-
-async function handleLogin(e) {
-  e.preventDefault();
-  
-  const username = document.getElementById('username').value;
-  const password = document.getElementById('password').value;
-  const errorDiv = document.getElementById('loginError');
-  
-  try {
-    // For demo purposes, we'll use hardcoded credentials
-    // In production, you'd validate against super_admins table
-    if ((username === 'superadmin' && password === 'admin123') ||
-        (username === 'admin1' && password === 'password123') ||
-        (username === 'testadmin' && password === 'test123')) {
-      
-      currentAdmin = { username, name: username.charAt(0).toUpperCase() + username.slice(1) };
-      localStorage.setItem('adminToken', btoa(username + ':' + Date.now()));
-      showDashboard();
-    } else {
-      throw new Error('Invalid credentials');
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+(async()=>{
+  try{
+    const r = await fetch('/api/config');
+    if(r.ok){
+      const cfg = await r.json();
+      sb = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
     }
-  } catch (error) {
-    errorDiv.textContent = error.message;
-    errorDiv.style.display = 'block';
-    setTimeout(() => {
-      errorDiv.style.display = 'none';
-    }, 5000);
+  }catch(e){}
+  const tok = localStorage.getItem('rb_admin');
+  if(tok){ document.getElementById('login').style.display='none'; bootApp(); }
+})();
+
+// ═══════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════
+function doLogin(){
+  const u=document.getElementById('l-user').value.trim();
+  const p=document.getElementById('l-pass').value;
+  if(CREDS.some(([cu,cp])=>u===cu&&p===cp)){
+    localStorage.setItem('rb_admin','1');
+    document.getElementById('login').style.display='none';
+    bootApp();
+  } else {
+    const e=document.getElementById('l-err');
+    e.textContent='Invalid credentials. Try superadmin / admin123';
+    e.style.display='block';
   }
 }
-
-function handleLogout() {
-  localStorage.removeItem('adminToken');
-  currentAdmin = null;
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('adminDashboard').style.display = 'none';
-  document.getElementById('loginForm').reset();
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('login').style.display!=='none') doLogin();
+});
+function doLogout(){
+  localStorage.removeItem('rb_admin');
+  location.reload();
 }
 
-function showDashboard() {
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('adminDashboard').style.display = 'block';
-  document.getElementById('adminName').textContent = currentAdmin?.name || 'Admin';
-  
-  loadDashboardData();
+// ═══════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════
+async function bootApp(){
+  document.getElementById('app').style.display='flex';
+  await loadAllData();
+  renderDashboard();
+  renderDriversTable();
+  renderPassengersTable();
+  renderRidesTable();
+  renderAnalytics();
 }
 
-async function loadDashboardData() {
-  await Promise.all([
-    loadStats(),
-    loadDrivers(),
-    loadRides(),
-    loadPassengers()
-  ]);
-}
-
-async function loadStats() {
-  try {
-    const [driversRes, ridesRes, activeRidesRes, onlineDriversRes] = await Promise.all([
-      supabaseClient.from('drivers').select('id', { count: 'exact' }),
-      supabaseClient.from('ride_requests').select('id', { count: 'exact' }),
-      supabaseClient.from('ride_requests').select('id', { count: 'exact' }).in('status', ['pending', 'confirmed']),
-      supabaseClient.from('drivers').select('id', { count: 'exact' }).eq('is_online', true)
+async function loadAllData(){
+  if(!sb){ loadMockData(); return; }
+  try{
+    const [dr,pa,ri] = await Promise.all([
+      sb.from('drivers').select('*').order('created_at',{ascending:false}),
+      sb.from('passengers').select('*').order('created_at',{ascending:false}),
+      sb.from('ride_requests').select('*').order('created_at',{ascending:false}).limit(500)
     ]);
-
-    document.getElementById('totalDrivers').textContent = driversRes.count || 0;
-    document.getElementById('totalRides').textContent = ridesRes.count || 0;
-    document.getElementById('activeRides').textContent = activeRidesRes.count || 0;
-    document.getElementById('onlineDrivers').textContent = onlineDriversRes.count || 0;
-  } catch (error) {
-    console.error('Error loading stats:', error);
-  }
+    state.drivers = dr.data||[];
+    state.passengers = pa.data||[];
+    state.rides = ri.data||[];
+  }catch(e){ loadMockData(); }
 }
 
-async function loadDrivers() {
-  try {
-    const { data: drivers, error } = await supabaseClient
-      .from('drivers')
-      .select('*')
-      .order('created_at', { ascending: false });
+function loadMockData(){
+  // Generate realistic mock data for demonstration
+  const names = ['Arjun Sharma','Priya Patel','Rahul Verma','Deepika Singh','Amit Kumar','Sneha Reddy','Vikram Nair','Kavya Menon','Rohit Gupta','Ananya Das'];
+  const vehicles = ['Honda Activa KA01AB1234','Ola S1 Pro KA03CD5678','Royal Enfield KA05EF9012','TVS Jupiter KA07GH3456','Hero Splendor KA09IJ7890'];
+  const places = ['Koramangala','Indiranagar','Whitefield','Electronic City','HSR Layout','BTM Layout','Jayanagar','Banashankari','Rajajinagar','Hebbal','MG Road','Bellandur'];
+  const statuses = ['pending','confirmed','completed','completed','completed','rejected','countered','expired'];
 
-    if (error) throw error;
+  state.drivers = Array.from({length:20},(_,i)=>({
+    id:i+1, name:names[i%10], username:`driver_${i+1}`,
+    contact_no:`+91 9${String(800000000+i*123456).slice(0,9)}`,
+    vehicle_info:vehicles[i%5], is_online:Math.random()>.5,
+    created_at:new Date(Date.now()-Math.random()*90*864e5).toISOString()
+  }));
 
-    const tbody = document.getElementById('driversTableBody');
-    tbody.innerHTML = drivers.map(driver => `
-      <tr>
-        <td>${driver.id}</td>
-        <td>${driver.name}</td>
-        <td>${driver.username}</td>
-        <td>${driver.contact_no}</td>
-        <td>
-          <div class="vehicle-info">${driver.vehicle_info || 'N/A'}</div>
-        </td>
-        <td>
-          <span class="status-badge ${driver.is_online ? 'status-online' : 'status-offline'}">
-            ${driver.is_online ? 'Online' : 'Offline'}
-          </span>
-        </td>
-        <td>${new Date(driver.created_at).toLocaleDateString()}</td>
-      </tr>
-    `).join('');
-  } catch (error) {
-    console.error('Error loading drivers:', error);
-    document.getElementById('driversTableBody').innerHTML = 
-      '<tr><td colspan="7" class="loading">Error loading drivers</td></tr>';
-  }
-}
+  state.passengers = Array.from({length:35},(_,i)=>({
+    id:i+1, name:names[(i+3)%10]+' '+(i+1),
+    phone:`+91 7${String(700000000+i*654321).slice(0,9)}`,
+    created_at:new Date(Date.now()-Math.random()*120*864e5).toISOString()
+  }));
 
-async function loadRides() {
-  try {
-    const { data: rides, error } = await supabaseClient
-      .from('ride_requests')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(100);
-
-    if (error) throw error;
-
-    const tbody = document.getElementById('ridesTableBody');
-    tbody.innerHTML = rides.map(ride => `
-      <tr>
-        <td>${ride.id}</td>
-        <td>
-          <div>${ride.passenger_name}</div>
-          <div class="vehicle-info">${ride.passenger_phone}</div>
-        </td>
-        <td>
-          <div class="ride-details">
-            <div class="location">${ride.pickup_location}</div>
-          </div>
-        </td>
-        <td>
-          <div class="ride-details">
-            <div class="location">${ride.dropoff_location}</div>
-          </div>
-        </td>
-        <td>
-          <div class="fare">$${ride.offered_fare}</div>
-          ${ride.counter_fare ? `<div class="vehicle-info">Counter: $${ride.counter_fare}</div>` : ''}
-        </td>
-        <td>
-          <span class="status-badge status-${ride.status}">
-            ${ride.status.charAt(0).toUpperCase() + ride.status.slice(1)}
-          </span>
-        </td>
-        <td>${ride.accepted_by || '-'}</td>
-        <td>${new Date(ride.created_at).toLocaleDateString()}</td>
-      </tr>
-    `).join('');
-  } catch (error) {
-    console.error('Error loading rides:', error);
-    document.getElementById('ridesTableBody').innerHTML = 
-      '<tr><td colspan="8" class="loading">Error loading rides</td></tr>';
-  }
-}
-
-async function loadPassengers() {
-  try {
-    const { data: passengers, error } = await supabaseClient
-      .from('passengers')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    // Get ride counts for each passenger
-    const passengersWithRideCounts = await Promise.all(
-      passengers.map(async (passenger) => {
-        const { count } = await supabaseClient
-          .from('ride_requests')
-          .select('*', { count: 'exact', head: true })
-          .eq('passenger_phone', passenger.phone);
-        
-        return { ...passenger, rideCount: count || 0 };
-      })
-    );
-
-    const tbody = document.getElementById('passengersTableBody');
-    tbody.innerHTML = passengersWithRideCounts.map(passenger => `
-      <tr>
-        <td>${passenger.id}</td>
-        <td>${passenger.name}</td>
-        <td>${passenger.phone}</td>
-        <td>${passenger.rideCount}</td>
-        <td>${new Date(passenger.created_at).toLocaleDateString()}</td>
-      </tr>
-    `).join('');
-  } catch (error) {
-    console.error('Error loading passengers:', error);
-    document.getElementById('passengersTableBody').innerHTML = 
-      '<tr><td colspan="5" class="loading">Error loading passengers</td></tr>';
-  }
-}
-
-function switchTab(tabName) {
-  // Update tab buttons
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.classList.toggle('active', tab.dataset.tab === tabName);
-  });
-  
-  // Update tab content
-  document.querySelectorAll('.tab-content').forEach(content => {
-    content.classList.toggle('active', content.id === `${tabName}Tab`);
+  state.rides = Array.from({length:150},(_,i)=>{
+    const p = state.passengers[i%state.passengers.length];
+    const d = state.drivers[i%state.drivers.length];
+    const status = statuses[Math.floor(Math.random()*statuses.length)];
+    const fare = (80+Math.random()*400).toFixed(0);
+    return {
+      id:i+1, passenger_id:p.id, passenger_name:p.name, passenger_phone:p.phone,
+      pickup_location:places[Math.floor(Math.random()*places.length)],
+      dropoff_location:places[Math.floor(Math.random()*places.length)],
+      offered_fare:fare, counter_fare:status==='countered'?(+fare-20).toFixed(0):null,
+      status, accepted_by:['confirmed','completed'].includes(status)?d.id:null,
+      countered_by:status==='countered'?d.id:null,
+      created_at:new Date(Date.now()-Math.random()*60*864e5).toISOString(),
+      pickup_time:new Date(Date.now()+Math.random()*3600000).toISOString()
+    };
   });
 }
+
+// ═══════════════════════════════════════════════
+// PAGE ROUTING
+// ═══════════════════════════════════════════════
+function showPage(name, btn){
+  // Hide all pages and detail views
+  document.querySelectorAll('.page,.detail-view').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-pill').forEach(p=>p.classList.remove('active'));
+
+  // Close any detail views
+  const pg = document.getElementById('pg-'+name);
+  if(pg) pg.classList.add('active');
+
+  if(btn) btn.classList.add('active');
+  else {
+    // find matching nav pill
+    document.querySelectorAll('.nav-pill').forEach(p=>{
+      if(p.getAttribute('onclick')&&p.getAttribute('onclick').includes("'"+name+"'")) p.classList.add('active');
+    });
+  }
+  state.currentPage = name;
+}
+
+function showDetailView(viewId){
+  document.querySelectorAll('.page,.detail-view').forEach(p=>p.classList.remove('active'));
+  document.getElementById(viewId).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════
+function renderDashboard(){
+  const dr = state.drivers, ri = state.rides, pa = state.passengers;
+  const online = dr.filter(d=>d.is_online).length;
+  const active = ri.filter(r=>['pending','confirmed','countered'].includes(r.status)).length;
+  const completed = ri.filter(r=>r.status==='completed').length;
+
+  document.getElementById('k-drivers').textContent = dr.length;
+  document.getElementById('k-rides').textContent = ri.length;
+  document.getElementById('k-active').textContent = active;
+  document.getElementById('k-online').textContent = online;
+  document.getElementById('k-drivers-sub').textContent = `${online} online now`;
+  document.getElementById('k-rides-sub').textContent = `${completed} completed`;
+  document.getElementById('k-active-sub').textContent = `${ri.filter(r=>r.status==='pending').length} pending bids`;
+  document.getElementById('k-online-sub').textContent = `${((online/Math.max(dr.length,1))*100).toFixed(0)}% availability`;
+
+  // Recent rides table
+  const recent = [...ri].slice(0,8);
+  document.getElementById('dash-recent-rides').innerHTML = `
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Passenger</th><th>Route</th><th>Fare</th><th>Status</th></tr></thead>
+        <tbody>
+          ${recent.map(r=>`
+            <tr onclick="openRideDetail(${r.id})">
+              <td><span class="link">${r.passenger_name}</span></td>
+              <td style="max-width:200px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem">${r.pickup_location} → ${r.dropoff_location}</div></td>
+              <td class="fare">₹${r.offered_fare}</td>
+              <td><span class="badge b-${r.status}">${r.status}</span></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+
+  // Status donut chart
+  const statusCounts = {};
+  ri.forEach(r=>{ statusCounts[r.status]=(statusCounts[r.status]||0)+1; });
+  const sc = document.getElementById('statusChart');
+  if(sc._chart) sc._chart.destroy();
+  sc._chart = new Chart(sc,{
+    type:'doughnut',
+    data:{
+      labels:Object.keys(statusCounts),
+      datasets:[{data:Object.values(statusCounts),backgroundColor:['#ff7a2f','#00d4a8','#4d9fff','#e8ff47','#ff4d6a','#a78bfa'],borderWidth:0,hoverOffset:4}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'70%'}
+  });
+
+  // Status legend
+  document.getElementById('status-legend').innerHTML = Object.entries(statusCounts)
+    .map(([s,c])=>`<div style="display:flex;justify-content:space-between;font-size:.75rem;padding:.25rem 0;border-bottom:1px solid var(--rim)"><span style="color:var(--text2)">${s}</span><span class="mono" style="color:var(--text)">${c}</span></div>`)
+    .join('');
+
+  // Activity chart (7 days)
+  const days = [];
+  const rideCounts = [];
+  for(let i=6;i>=0;i--){
+    const d = new Date(Date.now()-i*864e5);
+    const label = d.toLocaleDateString('en',{weekday:'short'});
+    days.push(label);
+    const start = new Date(d.setHours(0,0,0,0)).toISOString();
+    const end = new Date(d.setHours(23,59,59,999)).toISOString();
+    rideCounts.push(ri.filter(r=>r.created_at>=start&&r.created_at<=end).length);
+  }
+  const ac = document.getElementById('activityChart');
+  if(ac._chart) ac._chart.destroy();
+  ac._chart = new Chart(ac,{
+    type:'bar',
+    data:{labels:days,datasets:[{data:rideCounts,backgroundColor:'rgba(232,255,71,0.2)',borderColor:'var(--accent)',borderWidth:2,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5c6480',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5c6480',font:{size:10}}}}}
+  });
+
+  // Top drivers by ride count
+  const driverRideCounts = {};
+  ri.filter(r=>r.accepted_by).forEach(r=>{ driverRideCounts[r.accepted_by]=(driverRideCounts[r.accepted_by]||0)+1; });
+  const topDrivers = Object.entries(driverRideCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  document.getElementById('top-drivers-list').innerHTML = topDrivers.map(([id,cnt])=>{
+    const d = state.drivers.find(x=>x.id==id);
+    if(!d) return '';
+    return `<div style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;border-bottom:1px solid var(--rim)" onclick="openDriverDetail(${d.id})" class="link" style="cursor:pointer">
+      <div style="width:32px;height:32px;border-radius:6px;background:var(--teal-dim);color:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0">${d.name[0]}</div>
+      <div style="flex:1"><div style="font-size:.8rem;font-weight:500;color:var(--text);cursor:pointer" onclick="openDriverDetail(${d.id})">${d.name}</div><div style="font-size:.7rem;color:var(--text3)">${d.vehicle_info||'No vehicle'}</div></div>
+      <div style="text-align:right"><div class="fare">×${cnt}</div><div style="font-size:.7rem;color:var(--text3)">rides</div></div>
+    </div>`;
+  }).join('')||'<div class="empty"><div class="empty-sub">No ride data yet</div></div>';
+}
+
+// ═══════════════════════════════════════════════
+// DRIVERS TABLE
+// ═══════════════════════════════════════════════
+function getFilteredDrivers(){
+  let list = [...state.drivers];
+  if(state.driversFilter){
+    const q = state.driversFilter.toLowerCase();
+    list = list.filter(d=>(d.name||'').toLowerCase().includes(q)||(d.username||'').toLowerCase().includes(q)||(d.contact_no||'').toLowerCase().includes(q));
+  }
+  if(state.driversStatus==='online') list=list.filter(d=>d.is_online);
+  if(state.driversStatus==='offline') list=list.filter(d=>!d.is_online);
+  list.sort((a,b)=>{
+    const c=state.driversSort.col; const dir=state.driversSort.dir;
+    const av=a[c]||'', bv=b[c]||'';
+    return typeof av==='boolean'?(av===bv?0:av?-dir:dir):String(av).localeCompare(String(bv))*dir;
+  });
+  return list;
+}
+
+function renderDriversTable(){
+  const list = getFilteredDrivers();
+  document.getElementById('drivers-count').textContent = `${list.length} drivers`;
+  const pg = state.driversPg;
+  const total = Math.ceil(list.length/PER_PAGE);
+  const page = list.slice((pg-1)*PER_PAGE, pg*PER_PAGE);
+  document.getElementById('drivers-tbody').innerHTML = page.length?page.map(d=>`
+    <tr onclick="openDriverDetail(${d.id})">
+      <td class="mono">#${d.id}</td>
+      <td><div style="font-weight:500;color:var(--text)">${d.name}</div></td>
+      <td class="mono">${d.username}</td>
+      <td>${d.contact_no}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem">${d.vehicle_info||'—'}</td>
+      <td><span class="badge b-${d.is_online?'online':'offline'}">${d.is_online?'● Online':'○ Offline'}</span></td>
+      <td class="mono">${fmtDate(d.created_at)}</td>
+      <td onclick="e=>e.stopPropagation()"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDriverDetail(${d.id})">View →</button></td>
+    </tr>`).join(''):`<tr><td colspan="8"><div class="empty"><div class="empty-icon">🚗</div><div class="empty-title">No drivers found</div></div></td></tr>`;
+  renderPagination('drivers-pg', pg, total, p=>{state.driversPg=p;renderDriversTable();});
+}
+
+function filterDrivers(v){ state.driversFilter=v; state.driversPg=1; renderDriversTable(); }
+function filterDriverStatus(v){ state.driversStatus=v; state.driversPg=1; renderDriversTable(); }
+
+// ═══════════════════════════════════════════════
+// PASSENGERS TABLE
+// ═══════════════════════════════════════════════
+function getFilteredPassengers(){
+  let list = [...state.passengers];
+  if(state.passengersFilter){
+    const q = state.passengersFilter.toLowerCase();
+    list = list.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.phone||'').toLowerCase().includes(q));
+  }
+  list.sort((a,b)=>{
+    const c=state.passengersSort.col,dir=state.passengersSort.dir;
+    return String(a[c]||'').localeCompare(String(b[c]||''))*dir;
+  });
+  return list;
+}
+
+function renderPassengersTable(){
+  const list = getFilteredPassengers();
+  document.getElementById('passengers-count').textContent = `${list.length} passengers`;
+  const pg = state.passengersPg, total = Math.ceil(list.length/PER_PAGE);
+  const page = list.slice((pg-1)*PER_PAGE, pg*PER_PAGE);
+  document.getElementById('passengers-tbody').innerHTML = page.length?page.map(p=>`
+    <tr onclick="openPassengerDetail(${p.id})">
+      <td class="mono">#${p.id}</td>
+      <td><div style="font-weight:500;color:var(--text)">${p.name}</div></td>
+      <td class="mono">${p.phone}</td>
+      <td class="mono">${fmtDate(p.created_at)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openPassengerDetail(${p.id})">View →</button></td>
+    </tr>`).join(''):`<tr><td colspan="5"><div class="empty"><div class="empty-icon">👤</div><div class="empty-title">No passengers found</div></div></td></tr>`;
+  renderPagination('passengers-pg', pg, total, p=>{state.passengersPg=p;renderPassengersTable();});
+}
+
+function filterPassengers(v){ state.passengersFilter=v; state.passengersPg=1; renderPassengersTable(); }
+
+// ═══════════════════════════════════════════════
+// RIDES TABLE
+// ═══════════════════════════════════════════════
+function getFilteredRides(){
+  let list = [...state.rides];
+  if(state.ridesFilter){
+    const q = state.ridesFilter.toLowerCase();
+    list = list.filter(r=>(r.passenger_name||'').toLowerCase().includes(q)||(r.pickup_location||'').toLowerCase().includes(q)||(r.dropoff_location||'').toLowerCase().includes(q)||(String(r.id)).includes(q));
+  }
+  if(state.ridesStatus) list=list.filter(r=>r.status===state.ridesStatus);
+  if(state.ridesFareMin) list=list.filter(r=>+r.offered_fare>=+state.ridesFareMin);
+  if(state.ridesFareMax) list=list.filter(r=>+r.offered_fare<=+state.ridesFareMax);
+  if(state.ridesDateFrom) list=list.filter(r=>r.created_at>=state.ridesDateFrom);
+  if(state.ridesDateTo) list=list.filter(r=>r.created_at<=state.ridesDateTo+'T23:59:59');
+  if(state.ridesDriverId) list=list.filter(r=>String(r.accepted_by||r.countered_by||'').includes(state.ridesDriverId));
+  list.sort((a,b)=>{
+    const c=state.ridesSort.col,dir=state.ridesSort.dir;
+    const av=a[c]||'',bv=b[c]||'';
+    return (isNaN(+av)?String(av).localeCompare(String(bv)):(+av)-(+bv))*dir;
+  });
+  return list;
+}
+
+function renderRidesTable(){
+  const list = getFilteredRides();
+  document.getElementById('rides-count').textContent = `${list.length} rides`;
+  const pg = state.ridesPg, total = Math.ceil(list.length/PER_PAGE);
+  const page = list.slice((pg-1)*PER_PAGE, pg*PER_PAGE);
+  document.getElementById('rides-tbody').innerHTML = page.length?page.map(r=>{
+    const drv = state.drivers.find(d=>d.id==r.accepted_by||d.id==r.countered_by);
+    return `<tr onclick="openRideDetail(${r.id})">
+      <td class="mono">#${r.id}</td>
+      <td><span class="link" onclick="event.stopPropagation();openPassengerDetailByPhone('${r.passenger_phone}')">${r.passenger_name}</span><div style="font-size:.7rem;color:var(--text3)">${r.passenger_phone}</div></td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem" title="${r.pickup_location}">${r.pickup_location}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem" title="${r.dropoff_location}">${r.dropoff_location}</td>
+      <td><span class="fare">₹${r.offered_fare}</span>${r.counter_fare?`<span class="counter-fare">₹${r.counter_fare}</span>`:''}</td>
+      <td><span class="badge b-${r.status}">${r.status}</span></td>
+      <td>${drv?`<span class="link" onclick="event.stopPropagation();openDriverDetail(${drv.id})">${drv.name}</span>`:`<span style="color:var(--text3)">—</span>`}</td>
+      <td class="mono">${fmtDate(r.created_at)}</td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="8"><div class="empty"><div class="empty-icon">📍</div><div class="empty-title">No rides found</div></div></td></tr>`;
+  renderPagination('rides-pg', pg, total, p=>{state.ridesPg=p;renderRidesTable();});
+  updateFilterTags();
+}
+
+function filterRides(v){ state.ridesFilter=v; state.ridesPg=1; renderRidesTable(); }
+function applyRideFilters(){
+  state.ridesStatus = document.getElementById('rides-status-filter').value;
+  state.ridesFareMin = document.getElementById('fare-min').value;
+  state.ridesFareMax = document.getElementById('fare-max').value;
+  state.ridesDateFrom = document.getElementById('date-from').value;
+  state.ridesDateTo = document.getElementById('date-to').value;
+  state.ridesDriverId = document.getElementById('filter-driver-id').value;
+  state.ridesPg=1; renderRidesTable();
+}
+function toggleRideFilters(){
+  const p=document.getElementById('rides-filter-panel');
+  const b=document.getElementById('rides-filter-toggle');
+  p.classList.toggle('open'); b.classList.toggle('active');
+}
+function updateFilterTags(){
+  const tags=[];
+  if(state.ridesStatus) tags.push(['Status: '+state.ridesStatus,()=>{state.ridesStatus='';document.getElementById('rides-status-filter').value='';renderRidesTable();}]);
+  if(state.ridesFareMin) tags.push(['Fare ≥ ₹'+state.ridesFareMin,()=>{state.ridesFareMin='';document.getElementById('fare-min').value='';renderRidesTable();}]);
+  if(state.ridesFareMax) tags.push(['Fare ≤ ₹'+state.ridesFareMax,()=>{state.ridesFareMax='';document.getElementById('fare-max').value='';renderRidesTable();}]);
+  if(state.ridesDateFrom) tags.push(['From: '+state.ridesDateFrom,()=>{state.ridesDateFrom='';document.getElementById('date-from').value='';renderRidesTable();}]);
+  if(state.ridesDateTo) tags.push(['To: '+state.ridesDateTo,()=>{state.ridesDateTo='';document.getElementById('date-to').value='';renderRidesTable();}]);
+  document.getElementById('rides-filter-tags').innerHTML = tags.map((t,i)=>`
+    <span class="f-tag">${t[0]}<button onclick="(${t[1].toString()})()">×</button></span>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+// SORTING
+// ═══════════════════════════════════════════════
+function sortTable(entity, col){
+  const key = entity+'Sort';
+  if(state[key].col===col) state[key].dir*=-1;
+  else { state[key].col=col; state[key].dir=-1; }
+  if(entity==='drivers') renderDriversTable();
+  if(entity==='passengers') renderPassengersTable();
+  if(entity==='rides') renderRidesTable();
+}
+
+// ═══════════════════════════════════════════════
+// DETAIL VIEWS
+// ═══════════════════════════════════════════════
+function openDriverDetail(id){
+  const d = state.drivers.find(x=>x.id==id);
+  if(!d){ toast('Driver not found','error'); return; }
+  const rides = state.rides.filter(r=>r.accepted_by==id||r.countered_by==id);
+  const completed = rides.filter(r=>r.status==='completed');
+  const totalRev = completed.reduce((s,r)=>s+(+r.offered_fare||0),0);
+
+  document.getElementById('dv-driver-bc').textContent = d.name;
+  document.getElementById('dv-driver-content').innerHTML = `
+    <div class="profile-header">
+      <div class="avatar av-driver">${d.name[0]}</div>
+      <div>
+        <div class="profile-name">${d.name}</div>
+        <div class="profile-meta">
+          <span>👤 @${d.username}</span>
+          <span>📞 ${d.contact_no}</span>
+          ${d.vehicle_info?`<span>🚗 ${d.vehicle_info}</span>`:''}
+          <span>📅 Joined ${fmtDate(d.created_at)}</span>
+        </div>
+        <span class="badge b-${d.is_online?'online':'offline'}">${d.is_online?'● Online':'○ Offline'}</span>
+      </div>
+      <div class="profile-stats">
+        <div><div class="ps-val">${rides.length}</div><div class="ps-label">Total Rides</div></div>
+        <div><div class="ps-val">${completed.length}</div><div class="ps-label">Completed</div></div>
+        <div><div class="ps-val fare" style="font-size:1.2rem">₹${totalRev.toFixed(0)}</div><div class="ps-label">Revenue</div></div>
+      </div>
+    </div>
+    <div class="detail-grid">
+      <div>
+        <div class="card">
+          <div class="card-title"><span>Driver Info</span></div>
+          <div class="info-list">
+            <div class="info-row"><span class="info-row-label">ID</span><span class="info-row-val mono">#${d.id}</span></div>
+            <div class="info-row"><span class="info-row-label">Username</span><span class="info-row-val mono">${d.username}</span></div>
+            <div class="info-row"><span class="info-row-label">Phone</span><span class="info-row-val">${d.contact_no}</span></div>
+            <div class="info-row"><span class="info-row-label">Vehicle</span><span class="info-row-val" style="text-align:right;max-width:180px">${d.vehicle_info||'Not set'}</span></div>
+            <div class="info-row"><span class="info-row-label">Status</span><span class="info-row-val"><span class="badge b-${d.is_online?'online':'offline'}">${d.is_online?'Online':'Offline'}</span></span></div>
+            <div class="info-row"><span class="info-row-label">Joined</span><span class="info-row-val mono">${fmtDateTime(d.created_at)}</span></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:1rem">
+          <div class="card-title"><span>Performance</span></div>
+          <div class="info-list">
+            <div class="info-row"><span class="info-row-label">Avg Fare</span><span class="info-row-val fare">${completed.length?'₹'+(totalRev/completed.length).toFixed(0):'—'}</span></div>
+            <div class="info-row"><span class="info-row-label">Completion Rate</span><span class="info-row-val">${rides.length?((completed.length/rides.length)*100).toFixed(0)+'%':'—'}</span></div>
+            <div class="info-row"><span class="info-row-label">Pending Rides</span><span class="info-row-val">${rides.filter(r=>r.status==='pending').length}</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>Ride History</span> <span style="font-size:.75rem;color:var(--text3);font-weight:400">${rides.length} rides</span></div>
+        ${rides.length?`<div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Passenger</th><th>Route</th><th>Fare</th><th>Status</th><th>Date</th></tr></thead><tbody>
+          ${rides.slice(0,30).map(r=>`
+            <tr onclick="openRideDetail(${r.id})">
+              <td class="mono">#${r.id}</td>
+              <td><span class="link" onclick="event.stopPropagation();openPassengerDetailByPhone('${r.passenger_phone}')">${r.passenger_name}</span></td>
+              <td style="font-size:.75rem">${r.pickup_location} → ${r.dropoff_location}</td>
+              <td class="fare">₹${r.offered_fare}</td>
+              <td><span class="badge b-${r.status}">${r.status}</span></td>
+              <td class="mono">${fmtDate(r.created_at)}</td>
+            </tr>`).join('')}
+        </tbody></table></div>`:`<div class="empty"><div class="empty-icon">📍</div><div class="empty-title">No rides yet</div></div>`}
+      </div>
+    </div>`;
+
+  showDetailView('dv-driver');
+  window.scrollTo(0,0);
+}
+
+function openPassengerDetail(id){
+  const p = state.passengers.find(x=>x.id==id);
+  if(!p){ toast('Passenger not found','error'); return; }
+  renderPassengerProfile(p);
+}
+
+function openPassengerDetailByPhone(phone){
+  const p = state.passengers.find(x=>x.phone===phone);
+  if(!p){
+    // Try to create a ghost passenger entry for display
+    const ghostRide = state.rides.find(r=>r.passenger_phone===phone);
+    if(ghostRide){
+      renderPassengerProfile({id:'—',name:ghostRide.passenger_name,phone:phone,created_at:ghostRide.created_at});
+      return;
+    }
+    toast('Passenger not found','error'); return;
+  }
+  renderPassengerProfile(p);
+}
+
+function renderPassengerProfile(p){
+  const rides = state.rides.filter(r=>r.passenger_phone===p.phone||r.passenger_id==p.id);
+  const completed = rides.filter(r=>r.status==='completed');
+  const totalSpent = completed.reduce((s,r)=>s+(+r.offered_fare||0),0);
+
+  document.getElementById('dv-passenger-bc').textContent = p.name;
+  document.getElementById('dv-passenger-content').innerHTML = `
+    <div class="profile-header">
+      <div class="avatar av-passenger">${p.name[0]}</div>
+      <div>
+        <div class="profile-name">${p.name}</div>
+        <div class="profile-meta">
+          <span>📞 ${p.phone}</span>
+          <span>📅 Joined ${fmtDate(p.created_at)}</span>
+        </div>
+      </div>
+      <div class="profile-stats">
+        <div><div class="ps-val">${rides.length}</div><div class="ps-label">Total Rides</div></div>
+        <div><div class="ps-val">${completed.length}</div><div class="ps-label">Completed</div></div>
+        <div><div class="ps-val fare" style="font-size:1.2rem">₹${totalSpent.toFixed(0)}</div><div class="ps-label">Spent</div></div>
+      </div>
+    </div>
+    <div class="detail-grid">
+      <div>
+        <div class="card">
+          <div class="card-title"><span>Passenger Info</span></div>
+          <div class="info-list">
+            <div class="info-row"><span class="info-row-label">ID</span><span class="info-row-val mono">#${p.id}</span></div>
+            <div class="info-row"><span class="info-row-label">Name</span><span class="info-row-val">${p.name}</span></div>
+            <div class="info-row"><span class="info-row-label">Phone</span><span class="info-row-val mono">${p.phone}</span></div>
+            <div class="info-row"><span class="info-row-label">Joined</span><span class="info-row-val mono">${fmtDateTime(p.created_at)}</span></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:1rem">
+          <div class="card-title"><span>Activity Stats</span></div>
+          <div class="info-list">
+            <div class="info-row"><span class="info-row-label">Avg Fare</span><span class="info-row-val fare">${completed.length?'₹'+(totalSpent/completed.length).toFixed(0):'—'}</span></div>
+            <div class="info-row"><span class="info-row-label">Completion Rate</span><span class="info-row-val">${rides.length?((completed.length/rides.length)*100).toFixed(0)+'%':'—'}</span></div>
+            <div class="info-row"><span class="info-row-label">Last Ride</span><span class="info-row-val mono">${rides.length?fmtDate(rides[0].created_at):'Never'}</span></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:1rem">
+          <div class="card-title"><span>Ride Timeline</span></div>
+          <div class="timeline">
+            ${rides.slice(0,6).map(r=>`
+              <div class="tl-item" onclick="openRideDetail(${r.id})" style="cursor:pointer">
+                <div class="tl-dot ${r.status==='completed'?'active':''}"></div>
+                <div class="tl-date">${fmtDateTime(r.created_at)}</div>
+                <div class="tl-title">${r.pickup_location} → ${r.dropoff_location}</div>
+                <div class="tl-sub">₹${r.offered_fare} · <span class="badge b-${r.status}">${r.status}</span></div>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>Ride History</span> <span style="font-size:.75rem;color:var(--text3);font-weight:400">${rides.length} rides</span></div>
+        ${rides.length?`<div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Route</th><th>Fare</th><th>Status</th><th>Driver</th><th>Date</th></tr></thead><tbody>
+          ${rides.slice(0,30).map(r=>{
+            const drv = state.drivers.find(d=>d.id==r.accepted_by);
+            return `<tr onclick="openRideDetail(${r.id})">
+              <td class="mono">#${r.id}</td>
+              <td style="font-size:.75rem">${r.pickup_location} → ${r.dropoff_location}</td>
+              <td class="fare">₹${r.offered_fare}</td>
+              <td><span class="badge b-${r.status}">${r.status}</span></td>
+              <td>${drv?`<span class="link" onclick="event.stopPropagation();openDriverDetail(${drv.id})">${drv.name}</span>`:'—'}</td>
+              <td class="mono">${fmtDate(r.created_at)}</td>
+            </tr>`;
+          }).join('')}
+        </tbody></table></div>`:`<div class="empty"><div class="empty-icon">📍</div><div class="empty-title">No rides yet</div></div>`}
+      </div>
+    </div>`;
+
+  showDetailView('dv-passenger');
+  window.scrollTo(0,0);
+}
+
+function openRideDetail(id){
+  const r = state.rides.find(x=>x.id==id);
+  if(!r){ toast('Ride not found','error'); return; }
+  const drv = state.drivers.find(d=>d.id==r.accepted_by||d.id==r.countered_by);
+  const pax = state.passengers.find(p=>p.phone===r.passenger_phone||p.id==r.passenger_id);
+
+  document.getElementById('dv-ride-bc').textContent = `Ride #${r.id}`;
+  document.getElementById('dv-ride-content').innerHTML = `
+    <div class="ride-detail-card">
+      <div class="rdc-header">
+        <div>
+          <div class="rdc-title">Ride Request <span class="badge b-${r.status}" style="margin-left:.5rem">${r.status}</span></div>
+          <div class="rdc-id">ID: #${r.id} · Created ${fmtDateTime(r.created_at)}</div>
+        </div>
+        <div class="fare" style="font-size:1.75rem">₹${r.offered_fare}${r.counter_fare?`<span style="font-size:.9rem;color:var(--text3);text-decoration:line-through;margin-left:.5rem">₹${r.counter_fare}</span>`:''}</div>
+      </div>
+
+      <div class="route-vis">
+        <div class="route-point">
+          <div class="route-point-label">📍 Pickup</div>
+          <div class="route-point-loc">${r.pickup_location}</div>
+        </div>
+        <div class="route-arrow">→</div>
+        <div class="route-point">
+          <div class="route-point-label">🏁 Dropoff</div>
+          <div class="route-point-loc">${r.dropoff_location}</div>
+        </div>
+      </div>
+
+      <div class="rdc-grid">
+        <div class="rdc-field"><label>Offered Fare</label><div class="val fare">₹${r.offered_fare}</div></div>
+        ${r.counter_fare?`<div class="rdc-field"><label>Counter Fare</label><div class="val" style="color:var(--violet)">₹${r.counter_fare}</div></div>`:''}
+        <div class="rdc-field"><label>Pickup Time</label><div class="val mono">${r.pickup_time?fmtDateTime(r.pickup_time):'Not set'}</div></div>
+        <div class="rdc-field"><label>Status</label><div class="val"><span class="badge b-${r.status}">${r.status}</span></div></div>
+        <div class="rdc-field"><label>Created</label><div class="val mono">${fmtDateTime(r.created_at)}</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.25rem">
+        <div>
+          <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:.5rem">Passenger</div>
+          <div class="entity-chip" onclick="openPassengerDetailByPhone('${r.passenger_phone}')">
+            <div class="entity-chip-icon" style="background:var(--blue-dim);color:var(--blue)">👤</div>
+            <div>
+              <span class="entity-chip-label">Passenger</span>
+              <span class="entity-chip-name">${r.passenger_name}</span>
+              <div style="font-size:.7rem;color:var(--text3);margin-top:1px">${r.passenger_phone}</div>
+            </div>
+            <span style="margin-left:auto;color:var(--text3)">→</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:.5rem">Driver</div>
+          ${drv?`<div class="entity-chip" onclick="openDriverDetail(${drv.id})">
+            <div class="entity-chip-icon" style="background:var(--teal-dim);color:var(--teal)">🚗</div>
+            <div>
+              <span class="entity-chip-label">Driver</span>
+              <span class="entity-chip-name">${drv.name}</span>
+              <div style="font-size:.7rem;color:var(--text3);margin-top:1px">${drv.vehicle_info||drv.contact_no}</div>
+            </div>
+            <span style="margin-left:auto;color:var(--text3)">→</span>
+          </div>`:`<div style="padding:.75rem;background:var(--panel2);border-radius:var(--r2);font-size:.8rem;color:var(--text3)">No driver assigned yet</div>`}
+        </div>
+      </div>
+    </div>`;
+
+  showDetailView('dv-ride');
+  window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════════════
+// ANALYTICS
+// ═══════════════════════════════════════════════
+function renderAnalytics(){
+  const ri = state.rides, dr = state.drivers, pa = state.passengers;
+  const completed = ri.filter(r=>r.status==='completed');
+  const rev = completed.reduce((s,r)=>s+(+r.offered_fare||0),0);
+
+  document.getElementById('analytics-kpis').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Completion Rate</div><div class="kpi-val">${ri.length?((completed.length/ri.length)*100).toFixed(1)+'%':'—'}</div></div>
+    <div class="kpi"><div class="kpi-label">Total Revenue</div><div class="kpi-val fare" style="font-size:1.5rem">₹${rev.toFixed(0)}</div></div>
+    <div class="kpi"><div class="kpi-label">Avg Fare</div><div class="kpi-val fare" style="font-size:1.5rem">${completed.length?'₹'+(rev/completed.length).toFixed(0):'—'}</div></div>`;
+
+  // Fare distribution
+  const buckets = [0,100,200,300,400,500,600];
+  const fareData = buckets.slice(0,-1).map((_,i)=>ri.filter(r=>+r.offered_fare>=buckets[i]&&+r.offered_fare<buckets[i+1]).length);
+  const fc = document.getElementById('fareChart');
+  if(fc._chart) fc._chart.destroy();
+  fc._chart = new Chart(fc,{
+    type:'bar',
+    data:{labels:buckets.slice(0,-1).map((v,i)=>`₹${v}-${buckets[i+1]}`),datasets:[{data:fareData,backgroundColor:'rgba(77,159,255,0.25)',borderColor:'var(--blue)',borderWidth:2,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5c6480',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5c6480',font:{size:10}}}}}
+  });
+
+  // Completion trend (7 days)
+  const compData=[]; const labels=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(Date.now()-i*864e5);
+    const label=d.toLocaleDateString('en',{weekday:'short'});
+    labels.push(label);
+    const start=new Date(d.setHours(0,0,0,0)).toISOString();
+    const end=new Date(d.setHours(23,59,59,999)).toISOString();
+    const dayRides=ri.filter(r=>r.created_at>=start&&r.created_at<=end);
+    const dayComp=dayRides.filter(r=>r.status==='completed').length;
+    compData.push(dayRides.length?((dayComp/dayRides.length)*100).toFixed(0):0);
+  }
+  const cc=document.getElementById('completionChart');
+  if(cc._chart) cc._chart.destroy();
+  cc._chart = new Chart(cc,{
+    type:'line',
+    data:{labels,datasets:[{data:compData,borderColor:'var(--teal)',backgroundColor:'rgba(0,212,168,.1)',fill:true,tension:.4,pointBackgroundColor:'var(--teal)',pointRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5c6480',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5c6480',font:{size:10},callback:v=>v+'%'},max:100,min:0}}}
+  });
+
+  // Relationship graph
+  drawRelationshipGraph();
+}
+
+function drawRelationshipGraph(){
+  const canvas = document.getElementById('graphCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  const W = canvas.width, H = canvas.height;
+
+  // Sample entities
+  const sampleDrivers = state.drivers.slice(0,6);
+  const samplePassengers = state.passengers.slice(0,6);
+  const sampleRides = state.rides.filter(r=>r.accepted_by).slice(0,12);
+
+  const nodes = [];
+  const links = [];
+
+  // Position nodes
+  const cx = W/2, cy = H/2;
+  sampleDrivers.forEach((d,i)=>{
+    const angle = (i/sampleDrivers.length)*Math.PI*2;
+    nodes.push({id:'d'+d.id, x:cx+Math.cos(angle)*120, y:cy+Math.sin(angle)*100, label:d.name.split(' ')[0], color:'#00d4a8', type:'driver', ref:d.id});
+  });
+  samplePassengers.forEach((p,i)=>{
+    const angle = (i/samplePassengers.length)*Math.PI*2+Math.PI/6;
+    nodes.push({id:'p'+p.id, x:cx+Math.cos(angle)*220, y:cy+Math.sin(angle)*160, label:p.name.split(' ')[0], color:'#4d9fff', type:'passenger', ref:p.id});
+  });
+  sampleRides.forEach((r,i)=>{
+    const angle = (i/sampleRides.length)*Math.PI*2+Math.PI/12;
+    const rad = 60+Math.random()*30;
+    nodes.push({id:'r'+r.id, x:cx+Math.cos(angle)*rad, y:cy+Math.sin(angle)*rad*0.8, label:'#'+r.id, color:'#e8ff47', type:'ride', ref:r.id});
+    const dn = nodes.find(n=>n.id==='d'+r.accepted_by);
+    const pn = nodes.find(n=>n.id==='p'+r.passenger_id);
+    if(dn) links.push({from:dn,to:nodes[nodes.length-1]});
+    if(pn) links.push({from:pn,to:nodes[nodes.length-1]});
+  });
+
+  ctx.clearRect(0,0,W,H);
+
+  // Draw links
+  links.forEach(l=>{
+    ctx.beginPath();
+    ctx.moveTo(l.from.x,l.from.y);
+    ctx.lineTo(l.to.x,l.to.y);
+    ctx.strokeStyle='rgba(255,255,255,.07)';
+    ctx.lineWidth=1;
+    ctx.stroke();
+  });
+
+  // Draw nodes
+  nodes.forEach(n=>{
+    const r = n.type==='ride'?6:10;
+    ctx.beginPath();
+    ctx.arc(n.x,n.y,r,0,Math.PI*2);
+    ctx.fillStyle=n.color+'33';
+    ctx.fill();
+    ctx.strokeStyle=n.color;
+    ctx.lineWidth=1.5;
+    ctx.stroke();
+
+    ctx.fillStyle=n.color;
+    ctx.font=`${n.type==='ride'?9:10}px DM Mono`;
+    ctx.textAlign='center';
+    ctx.fillText(n.label, n.x, n.y-r-4);
+  });
+
+  // Make clickable
+  canvas.onclick = (e)=>{
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX-rect.left)*(canvas.width/rect.width);
+    const my = (e.clientY-rect.top)*(canvas.height/rect.height);
+    for(const n of nodes){
+      const r=n.type==='ride'?6:10;
+      if(Math.hypot(mx-n.x,my-n.y)<r+4){
+        if(n.type==='driver') openDriverDetail(n.ref);
+        if(n.type==='passenger') openPassengerDetail(n.ref);
+        if(n.type==='ride') openRideDetail(n.ref);
+        return;
+      }
+    }
+  };
+  canvas.style.cursor='pointer';
+}
+
+// ═══════════════════════════════════════════════
+// GLOBAL SEARCH
+// ═══════════════════════════════════════════════
+let gsearchTimeout;
+function globalSearchFn(q){
+  clearTimeout(gsearchTimeout);
+  if(!q.trim()){ closeGSearch(); return; }
+  gsearchTimeout = setTimeout(()=>{
+    const lq = q.toLowerCase();
+    const drivers = state.drivers.filter(d=>(d.name||'').toLowerCase().includes(lq)||(d.username||'').toLowerCase().includes(lq)||(d.contact_no||'').includes(lq)).slice(0,4);
+    const passengers = state.passengers.filter(p=>(p.name||'').toLowerCase().includes(lq)||(p.phone||'').includes(lq)).slice(0,4);
+    const rides = state.rides.filter(r=>(r.passenger_name||'').toLowerCase().includes(lq)||(String(r.id)).includes(lq)||(r.pickup_location||'').toLowerCase().includes(lq)).slice(0,4);
+
+    let html = '';
+    if(drivers.length){
+      html += `<div class="search-group-title">Drivers</div>`;
+      html += drivers.map(d=>`<div class="search-item" onclick="openDriverDetail(${d.id});closeGSearch()">
+        <div class="search-item-icon si-driver">🚗</div>
+        <div><div class="search-item-name">${d.name}</div><div class="search-item-sub">@${d.username} · ${d.contact_no}</div></div>
+        <span class="badge b-${d.is_online?'online':'offline'}" style="margin-left:auto">${d.is_online?'Online':'Offline'}</span>
+      </div>`).join('');
+    }
+    if(passengers.length){
+      html += `<div class="search-group-title">Passengers</div>`;
+      html += passengers.map(p=>`<div class="search-item" onclick="openPassengerDetail(${p.id});closeGSearch()">
+        <div class="search-item-icon si-passenger">👤</div>
+        <div><div class="search-item-name">${p.name}</div><div class="search-item-sub">${p.phone}</div></div>
+      </div>`).join('');
+    }
+    if(rides.length){
+      html += `<div class="search-group-title">Rides</div>`;
+      html += rides.map(r=>`<div class="search-item" onclick="openRideDetail(${r.id});closeGSearch()">
+        <div class="search-item-icon si-ride">📍</div>
+        <div><div class="search-item-name">Ride #${r.id} — ${r.passenger_name}</div><div class="search-item-sub">${r.pickup_location} → ${r.dropoff_location}</div></div>
+        <span class="badge b-${r.status}" style="margin-left:auto">${r.status}</span>
+      </div>`).join('');
+    }
+
+    if(!html) html=`<div style="padding:1.5rem;text-align:center;color:var(--text3);font-size:.8rem">No results for "${q}"</div>`;
+    const drop = document.getElementById('searchDrop');
+    drop.innerHTML = html;
+    drop.classList.add('open');
+  }, 200);
+}
+
+function closeGSearch(){
+  document.getElementById('searchDrop').classList.remove('open');
+  document.getElementById('globalSearch').value='';
+}
+
+// ═══════════════════════════════════════════════
+// PAGINATION
+// ═══════════════════════════════════════════════
+function renderPagination(containerId, current, total, onPage){
+  const el = document.getElementById(containerId);
+  if(total<=1){ el.innerHTML=''; return; }
+  const pages = [];
+  if(current>1) pages.push({label:'‹',p:current-1});
+  for(let i=Math.max(1,current-2);i<=Math.min(total,current+2);i++) pages.push({label:String(i),p:i,active:i===current});
+  if(current<total) pages.push({label:'›',p:current+1});
+
+  const start = (current-1)*PER_PAGE+1;
+  const end = Math.min(current*PER_PAGE, total*PER_PAGE);
+
+  el.innerHTML = `<span class="pg-info">Showing ${start}–${end}</span>`+
+    pages.map(p=>`<button class="pg-btn${p.active?' active':''}" onclick="(${onPage.toString()})(${p.p})">${p.label}</button>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════
+function fmtDate(iso){ if(!iso) return '—'; return new Date(iso).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+function fmtDateTime(iso){ if(!iso) return '—'; return new Date(iso).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }
+function toast(msg, type='info'){
+  const t = document.createElement('div');
+  t.className=`toast toast-${type}`;
+  t.textContent=msg;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(()=>t.remove(),3500);
+}
+
+// Handle window resize for graph
+window.addEventListener('resize',()=>{ if(document.getElementById('pg-analytics').classList.contains('active')) drawRelationshipGraph(); });
 </script>
 </body>
 </html>
