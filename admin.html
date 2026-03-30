@@ -532,28 +532,32 @@ tbody tr:hover td{color:var(--text)}
 let sb = null;
 
 // ─────────────────────────────────────────────────────────────
-// ★ FIX 1: TABLE NAME CONSTANTS — change these to match your
-//   actual Supabase schema if they differ.
+// TABLE NAMES — matching your exact Supabase schema:
 //
-//   Common patterns seen in ride-hailing apps:
-//     'ride_requests'  → used for the initial bid/request row
-//     'rides'          → used once a driver accepts (separate table)
-//     'bookings'       → alternative name some devs use
+//   ride_requests  → full lifecycle of a ride bid (pending →
+//                    countered → confirmed → rejected/expired)
+//                    Fields: id, passenger_id, passenger_name,
+//                    passenger_phone, pickup_location,
+//                    dropoff_location, offered_fare, status,
+//                    counter_fare, countered_by, accepted_by,
+//                    created_at, updated_at, expires_at,
+//                    pickup_time, passenger_countered,
+//                    previous_counter_fare
 //
-//   If your app uses ONE table for the full lifecycle (request →
-//   accept → complete), set RIDES_TABLE to that single table.
-//   If your app has TWO tables (requests + accepted rides), list
-//   both and the loader will merge them (see loadAllData).
+//   ride_history   → written once a ride is completed.
+//                    Fields: id, request_id (FK → ride_requests),
+//                    driver_id, passenger_name, pickup_location,
+//                    dropoff_location, final_fare, completed_at
+//
+//   The portal merges both: ride_requests drives the table/status
+//   view; ride_history supplies final_fare and completed_at for
+//   completed rides and all revenue calculations.
 // ─────────────────────────────────────────────────────────────
-const TABLE_DRIVERS    = 'drivers';
-const TABLE_PASSENGERS = 'passengers';
-const TABLE_RIDES      = 'ride_requests';  // ← PRIMARY: initial request rows
-const TABLE_RIDES_ALT  = 'rides';          // ← SECONDARY: post-acceptance rows (set null to skip)
 
 const CREDS = [['superadmin','admin123'],['admin1','password123'],['testadmin','test123']];
 
 let state = {
-  drivers:[],passengers:[],rides:[],
+  drivers:[],passengers:[],rides:[],history:[],
   driversPg:1,passengersPg:1,ridesPg:1,
   driversSort:{col:'created_at',dir:-1},
   passengersSort:{col:'created_at',dir:-1},
@@ -625,49 +629,100 @@ async function bootApp(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// DATA LOADING
-// ★ FIX 2: Load from BOTH possible ride tables and merge results
-//   so accepted/completed rides that moved tables are captured.
+// TABLE NAMES — your exact Supabase schema
+// ═══════════════════════════════════════════════════════════════
+// ride_requests  – full bid lifecycle (pending/countered/confirmed/rejected/expired)
+//   Columns: id(uuid), passenger_id, passenger_name, passenger_phone,
+//            pickup_location, dropoff_location, offered_fare, status,
+//            counter_fare, countered_by, accepted_by, created_at,
+//            updated_at, expires_at, pickup_time,
+//            passenger_countered, previous_counter_fare
+//
+// ride_history   – written once ride is completed (final fare lives HERE)
+//   Columns: id(uuid), request_id(uuid FK→ride_requests.id), driver_id,
+//            passenger_name, pickup_location, dropoff_location,
+//            final_fare, completed_at
+// ═══════════════════════════════════════════════════════════════
+const TABLE_DRIVERS    = 'drivers';
+const TABLE_PASSENGERS = 'passengers';
+const TABLE_REQUESTS   = 'ride_requests';
+const TABLE_HISTORY    = 'ride_history';
+
+// ═══════════════════════════════════════════════════════════════
+// DATA LOADING — fetches both tables, merges ride_history into
+// ride_requests rows so the UI sees one unified rides list.
 // ═══════════════════════════════════════════════════════════════
 async function loadAllData(){
   if(!sb){ loadMockData(); return; }
   try{
-    // Build ride queries: always query TABLE_RIDES; also query TABLE_RIDES_ALT if set
-    const queries = [
+    const [drRes, paRes, reqRes, histRes] = await Promise.all([
       sb.from(TABLE_DRIVERS).select('*').order('created_at',{ascending:false}),
       sb.from(TABLE_PASSENGERS).select('*').order('created_at',{ascending:false}),
-      // ★ Removed .limit(500) — fetch all records so new rides are never silently dropped
-      sb.from(TABLE_RIDES).select('*').order('created_at',{ascending:false}),
-    ];
-    if(TABLE_RIDES_ALT){
-      queries.push(sb.from(TABLE_RIDES_ALT).select('*').order('created_at',{ascending:false}));
-    }
+      // No .limit() — fetch everything so new rides are never silently dropped
+      sb.from(TABLE_REQUESTS).select('*').order('created_at',{ascending:false}),
+      sb.from(TABLE_HISTORY).select('*').order('completed_at',{ascending:false}),
+    ]);
 
-    const results = await Promise.all(queries);
-    const [drRes, paRes, riRes, riAltRes] = results;
+    if(drRes.error)   console.warn('[RideBid] drivers error:',       drRes.error.message);
+    if(paRes.error)   console.warn('[RideBid] passengers error:',    paRes.error.message);
+    if(reqRes.error)  console.warn('[RideBid] ride_requests error:', reqRes.error.message);
+    if(histRes.error) console.warn('[RideBid] ride_history error:',  histRes.error.message);
 
-    if(drRes.error) console.warn('[RideBid] drivers fetch error:', drRes.error.message);
-    if(paRes.error) console.warn('[RideBid] passengers fetch error:', paRes.error.message);
-    if(riRes.error) console.warn('[RideBid] ride_requests fetch error:', riRes.error.message);
+    state.drivers    = drRes.data  || [];
+    state.passengers = paRes.data  || [];
+    state.history    = histRes.data || [];
 
-    state.drivers    = drRes.data || [];
-    state.passengers = paRes.data || [];
+    // Build a lookup: request_id → ride_history row
+    const histByReqId = {};
+    state.history.forEach(h => { histByReqId[String(h.request_id)] = h; });
 
-    // ★ FIX 2 (cont): Merge both ride tables, deduplicate by id
-    let allRides = [...(riRes.data || [])];
-    if(riAltRes && !riAltRes.error && riAltRes.data){
-      const existingIds = new Set(allRides.map(r=>String(r.id)));
-      const newRides = riAltRes.data.filter(r=>!existingIds.has(String(r.id)));
-      allRides = [...allRides, ...newRides];
-      if(newRides.length){
-        console.info(`[RideBid] Merged ${newRides.length} extra ride(s) from '${TABLE_RIDES_ALT}'.`);
+    // Enrich each ride_request with its matching ride_history data
+    const requests = (reqRes.data || []).map(r => {
+      const hist = histByReqId[String(r.id)];
+      if(hist){
+        return {
+          ...r,
+          // ride_history.final_fare is the actual charged amount
+          final_fare:    hist.final_fare,
+          completed_at:  hist.completed_at,
+          // accepted_by already set on ride_requests; driver_id in history is source of truth
+          accepted_by:   r.accepted_by || hist.driver_id,
+          // Force status to completed in case ride_requests row lagged
+          status:        r.status === 'confirmed' ? 'completed' : (r.status || 'completed'),
+          _has_history:  true,
+        };
       }
-    }
-    // Sort merged list by created_at descending
-    allRides.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-    state.rides = allRides;
+      return r;
+    });
 
-    console.info(`[RideBid] Loaded: ${state.drivers.length} drivers, ${state.passengers.length} passengers, ${state.rides.length} rides`);
+    // Edge case: ride_history rows whose request_id has no matching ride_request
+    // (request row deleted post-completion). Synthesise a display row so admin
+    // always sees ALL completed rides.
+    const requestIds = new Set(requests.map(r => String(r.id)));
+    state.history.forEach(h => {
+      if(!requestIds.has(String(h.request_id))){
+        requests.push({
+          id:              h.request_id,
+          passenger_name:  h.passenger_name,
+          passenger_phone: '—',
+          pickup_location: h.pickup_location,
+          dropoff_location:h.dropoff_location,
+          offered_fare:    h.final_fare,
+          final_fare:      h.final_fare,
+          status:          'completed',
+          accepted_by:     h.driver_id,
+          created_at:      h.completed_at,
+          completed_at:    h.completed_at,
+          _has_history:    true,
+          _history_only:   true,
+        });
+      }
+    });
+
+    requests.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+    state.rides = requests;
+
+    console.info(`[RideBid] Loaded: ${state.drivers.length} drivers, ${state.passengers.length} passengers, ${requests.length} ride_requests (${state.history.length} with history)`);
   }catch(e){
     console.error('[RideBid] loadAllData error:', e);
     loadMockData();
@@ -676,28 +731,22 @@ async function loadAllData(){
 
 // ═══════════════════════════════════════════════════════════════
 // REALTIME SUBSCRIPTIONS
-// ★ FIX 3: Subscribe to postgres_changes on all tables so any
-//   INSERT or UPDATE (e.g. driver accepts a ride → status
-//   changes from 'pending' to 'confirmed') is reflected
-//   immediately without needing a manual refresh.
+// Watches ride_requests for INSERT/UPDATE (bid lifecycle) and
+// ride_history for INSERT (ride completion) so the dashboard
+// reflects every state change without a manual refresh.
 // ═══════════════════════════════════════════════════════════════
 function subscribeRealtime(){
-  // Helper: upsert (insert or update) a record in a state array by id
   function upsertInto(arr, record){
-    const idx = arr.findIndex(x=>String(x.id)===String(record.id));
-    if(idx>=0) arr[idx] = {...arr[idx], ...record};
+    const idx = arr.findIndex(x => String(x.id) === String(record.id));
+    if(idx >= 0) arr[idx] = {...arr[idx], ...record};
     else arr.unshift(record);
   }
-
-  // Helper: remove a record from a state array
   function removeFrom(arr, record){
-    const idx = arr.findIndex(x=>String(x.id)===String(record.id));
-    if(idx>=0) arr.splice(idx,1);
+    const idx = arr.findIndex(x => String(x.id) === String(record.id));
+    if(idx >= 0) arr.splice(idx, 1);
   }
-
-  // ── Full re-render on any change ──────────────────────────
-  function refreshAll(table, eventType, record){
-    console.info(`[Realtime] ${table} → ${eventType}`, record?.id || '');
+  function refreshAll(src, eventType, rec){
+    console.info(`[Realtime] ${src} → ${eventType}`, rec?.id || '');
     renderDashboard();
     renderDriversTable();
     renderPassengersTable();
@@ -705,87 +754,125 @@ function subscribeRealtime(){
     if(document.getElementById('pg-analytics').classList.contains('active')) renderAnalytics();
   }
 
-  // ── Drivers channel ──────────────────────────────────────
+  // ── drivers ─────────────────────────────────────────────────
   sb.channel('admin-drivers')
     .on('postgres_changes',{event:'*',schema:'public',table:TABLE_DRIVERS},(payload)=>{
       const {eventType, new:rec, old} = payload;
       if(eventType==='DELETE') removeFrom(state.drivers, old);
       else upsertInto(state.drivers, rec);
       refreshAll(TABLE_DRIVERS, eventType, rec||old);
-      toast(`Driver ${eventType.toLowerCase()}d`,'info');
     })
-    .subscribe(status=>handleChannelStatus('drivers', status));
+    .subscribe(s => handleChannelStatus('drivers', s));
 
-  // ── Passengers channel ───────────────────────────────────
+  // ── passengers ──────────────────────────────────────────────
   sb.channel('admin-passengers')
     .on('postgres_changes',{event:'*',schema:'public',table:TABLE_PASSENGERS},(payload)=>{
       const {eventType, new:rec, old} = payload;
       if(eventType==='DELETE') removeFrom(state.passengers, old);
       else upsertInto(state.passengers, rec);
       refreshAll(TABLE_PASSENGERS, eventType, rec||old);
-      toast(`Passenger ${eventType.toLowerCase()}d`,'info');
+      if(eventType==='INSERT') toast(`New passenger: ${rec.name||rec.phone}`,'info');
     })
-    .subscribe(status=>handleChannelStatus('passengers', status));
+    .subscribe(s => handleChannelStatus('passengers', s));
 
-  // ── Ride requests channel (primary table) ────────────────
+  // ── ride_requests ────────────────────────────────────────────
+  // This fires on every status transition: pending → countered →
+  // confirmed → (completed/rejected/expired)
   sb.channel('admin-ride-requests')
-    .on('postgres_changes',{event:'*',schema:'public',table:TABLE_RIDES},(payload)=>{
+    .on('postgres_changes',{event:'*',schema:'public',table:TABLE_REQUESTS},(payload)=>{
       const {eventType, new:rec, old} = payload;
-      if(eventType==='DELETE') removeFrom(state.rides, old);
-      else upsertInto(state.rides, rec);
-      refreshAll(TABLE_RIDES, eventType, rec||old);
-      // ★ This is the key toast: shows when a ride is accepted/confirmed
-      if(eventType==='UPDATE' && rec?.status){
-        toast(`Ride #${rec.id} → ${rec.status}`,'success');
-      } else if(eventType==='INSERT'){
-        toast(`New ride request #${rec.id}`,'info');
+      if(eventType==='DELETE'){
+        removeFrom(state.rides, old);
+      } else {
+        // Re-attach any existing history data we already have in memory
+        const hist = state.history.find(h => String(h.request_id) === String(rec.id));
+        if(hist){
+          rec.final_fare   = hist.final_fare;
+          rec.completed_at = hist.completed_at;
+          rec.accepted_by  = rec.accepted_by || hist.driver_id;
+          rec._has_history = true;
+        }
+        upsertInto(state.rides, rec);
+      }
+      refreshAll(TABLE_REQUESTS, eventType, rec||old);
+      if(eventType==='INSERT'){
+        toast(`New ride request from ${rec.passenger_name}`,'info');
+      } else if(eventType==='UPDATE' && rec?.status){
+        const statusEmoji = {confirmed:'✅',completed:'🏁',rejected:'❌',expired:'⏰',countered:'💬'}[rec.status]||'🔄';
+        toast(`${statusEmoji} Ride ${rec.status}: ${rec.passenger_name}`,'success');
       }
     })
-    .subscribe(status=>handleChannelStatus('ride_requests', status));
+    .subscribe(s => handleChannelStatus('ride_requests', s));
 
-  // ── Ride alt table channel (secondary, if configured) ────
-  if(TABLE_RIDES_ALT){
-    sb.channel('admin-rides-alt')
-      .on('postgres_changes',{event:'*',schema:'public',table:TABLE_RIDES_ALT},(payload)=>{
-        const {eventType, new:rec, old} = payload;
-        if(eventType==='DELETE') removeFrom(state.rides, old);
-        else upsertInto(state.rides, rec);
-        refreshAll(TABLE_RIDES_ALT, eventType, rec||old);
-        if(eventType==='UPDATE' && rec?.status){
-          toast(`Ride #${rec.id} → ${rec.status}`,'success');
-        } else if(eventType==='INSERT'){
-          toast(`New ride #${rec.id} (accepted)`,'success');
-        }
-      })
-      .subscribe(status=>handleChannelStatus('rides_alt', status));
-  }
+  // ── ride_history ─────────────────────────────────────────────
+  // Fires when a ride is completed (row inserted into ride_history).
+  // We enrich the matching ride_request row in state.rides with
+  // final_fare + completed_at so revenue numbers update instantly.
+  sb.channel('admin-ride-history')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:TABLE_HISTORY},(payload)=>{
+      const hist = payload.new;
+      // Store in raw history
+      state.history.unshift(hist);
+      // Find and enrich the matching ride_request row
+      const rideIdx = state.rides.findIndex(r => String(r.id) === String(hist.request_id));
+      if(rideIdx >= 0){
+        state.rides[rideIdx] = {
+          ...state.rides[rideIdx],
+          status:        'completed',
+          final_fare:    hist.final_fare,
+          completed_at:  hist.completed_at,
+          accepted_by:   state.rides[rideIdx].accepted_by || hist.driver_id,
+          _has_history:  true,
+        };
+      } else {
+        // Request row not in state — synthesise it
+        state.rides.unshift({
+          id:              hist.request_id,
+          passenger_name:  hist.passenger_name,
+          passenger_phone: '—',
+          pickup_location: hist.pickup_location,
+          dropoff_location:hist.dropoff_location,
+          offered_fare:    hist.final_fare,
+          final_fare:      hist.final_fare,
+          status:          'completed',
+          accepted_by:     hist.driver_id,
+          created_at:      hist.completed_at,
+          completed_at:    hist.completed_at,
+          _has_history:    true,
+          _history_only:   true,
+        });
+      }
+      refreshAll(TABLE_HISTORY, 'INSERT', hist);
+      toast(`🏁 Ride completed — ₹${hist.final_fare}`,'success');
+    })
+    .subscribe(s => handleChannelStatus('ride_history', s));
 }
 
-// Track channel subscription statuses to update the indicator
 const _channelStatus = {};
 function handleChannelStatus(name, status){
   _channelStatus[name] = status;
-  const allStatuses = Object.values(_channelStatus);
-  if(allStatuses.every(s=>s==='SUBSCRIBED'))     setRealtimeStatus('connected');
-  else if(allStatuses.some(s=>s==='CHANNEL_ERROR')) setRealtimeStatus('error');
-  else                                              setRealtimeStatus('connecting');
+  const all = Object.values(_channelStatus);
+  if(all.every(s=>s==='SUBSCRIBED'))        setRealtimeStatus('connected');
+  else if(all.some(s=>s==='CHANNEL_ERROR')) setRealtimeStatus('error');
+  else                                       setRealtimeStatus('connecting');
 }
 
-function setRealtimeStatus(state){
+function setRealtimeStatus(st){
   const dot   = document.getElementById('rt-dot');
   const label = document.getElementById('rt-label');
   if(!dot) return;
-  dot.className   = 'rt-dot';
+  dot.className = 'rt-dot';
   const map = {
     connected:  {cls:'connected', text:'live'},
     connecting: {cls:'',          text:'connecting…'},
     error:      {cls:'error',     text:'reconnecting…'},
     mock:       {cls:'',          text:'demo mode'},
   };
-  const s = map[state] || map.connecting;
+  const s = map[st] || map.connecting;
   if(s.cls) dot.classList.add(s.cls);
   label.textContent = s.text;
 }
+
 
 // ═══════════════════════════════════════════════════════════════
 // MOCK DATA (fallback when no Supabase config)
@@ -872,7 +959,7 @@ function renderDashboard(){
         <tr onclick="openRideDetail('${r.id}')">
           <td><span class="link">${r.passenger_name}</span></td>
           <td style="max-width:200px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem">${r.pickup_location} → ${r.dropoff_location}</div></td>
-          <td class="fare">$${r.offered_fare}</td>
+          <td class="fare">${r.status==="completed"&&r.final_fare ? r.final_fare : r.offered_fare}</td>
           <td><span class="badge b-${r.status}">${r.status}</span></td>
         </tr>`).join('')}
     </tbody></table></div>`;
@@ -995,7 +1082,7 @@ function renderRidesTable(){
       <td><span class="link" onclick="event.stopPropagation();openPassengerDetailByPhone('${r.passenger_phone}')">${r.passenger_name}</span><div style="font-size:.7rem;color:var(--text-muted)">${r.passenger_phone}</div></td>
       <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem">${r.pickup_location}</td>
       <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem">${r.dropoff_location}</td>
-      <td><span class="fare">$${r.offered_fare}</span>${r.counter_fare?`<span class="counter-fare">$${r.counter_fare}</span>`:''}</td>
+      <td><span class="fare">${r.status==="completed"&&r.final_fare ? r.final_fare : r.offered_fare}</span>${r.counter_fare?`<span class="counter-fare">$${r.counter_fare}</span>`:''}</td>
       <td><span class="badge b-${r.status}">${r.status}</span></td>
       <td>${drv?`<span class="link" onclick="event.stopPropagation();openDriverDetail('${drv.id}')">${drv.name}</span>`:`<span style="color:var(--text-muted)">—</span>`}</td>
       <td class="mono">${fmtDate(r.created_at)}</td>
@@ -1048,7 +1135,7 @@ function openDriverDetail(id){
   if(!d){toast('Driver not found','error');return;}
   const rides=state.rides.filter(r=>r.accepted_by==id||r.countered_by==id);
   const completed=rides.filter(r=>r.status==='completed');
-  const totalRev=completed.reduce((s,r)=>s+(+r.offered_fare||0),0);
+  const totalRev=completed.reduce((s,r)=>s+(+(r.final_fare||r.offered_fare)||0),0);
   document.getElementById('dv-driver-bc').textContent=d.name;
   document.getElementById('dv-driver-content').innerHTML=`
     <div class="profile-header">
@@ -1082,7 +1169,7 @@ function openDriverDetail(id){
       </div>
       <div class="card"><div class="card-title"><span>Ride History</span></div>
         ${rides.length?`<div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Passenger</th><th>Route</th><th>Fare</th><th>Status</th><th>Date</th></tr></thead><tbody>
-          ${rides.slice(0,30).map(r=>`<tr onclick="openRideDetail('${r.id}')"><td class="mono">#${r.id}</td><td>${r.passenger_name}</td><td style="font-size:.75rem">${r.pickup_location} → ${r.dropoff_location}</td><td class="fare">$${r.offered_fare}</td><td><span class="badge b-${r.status}">${r.status}</span></td><td class="mono">${fmtDate(r.created_at)}</td></tr>`).join('')}
+          ${rides.slice(0,30).map(r=>`<tr onclick="openRideDetail('${r.id}')"><td class="mono">#${r.id}</td><td>${r.passenger_name}</td><td style="font-size:.75rem">${r.pickup_location} → ${r.dropoff_location}</td><td class="fare">${r.status==="completed"&&r.final_fare ? r.final_fare : r.offered_fare}</td><td><span class="badge b-${r.status}">${r.status}</span></td><td class="mono">${fmtDate(r.created_at)}</td></tr>`).join('')}
         </tbody></table></div>`:`<div class="empty"><div class="empty-icon">📍</div><div class="empty-title">No rides yet</div></div>`}
       </div>
     </div>`;
@@ -1107,7 +1194,7 @@ function openPassengerDetailByPhone(phone){
 function renderPassengerProfile(p){
   const rides=state.rides.filter(r=>r.passenger_phone===p.phone||r.passenger_id==p.id);
   const completed=rides.filter(r=>r.status==='completed');
-  const totalSpent=completed.reduce((s,r)=>s+(+r.offered_fare||0),0);
+  const totalSpent=completed.reduce((s,r)=>s+(+(r.final_fare||r.offered_fare)||0),0);
   document.getElementById('dv-passenger-bc').textContent=p.name;
   document.getElementById('dv-passenger-content').innerHTML=`
     <div class="profile-header">
@@ -1141,14 +1228,14 @@ function renderPassengerProfile(p){
               <div class="tl-dot ${r.status==='completed'?'active':''}"></div>
               <div class="tl-date">${fmtDateTime(r.created_at)}</div>
               <div class="tl-title">${r.pickup_location} → ${r.dropoff_location}</div>
-              <div class="tl-sub">$${r.offered_fare} · <span class="badge b-${r.status}">${r.status}</span></div>
+              <div class="tl-sub">${r.status==="completed"&&r.final_fare ? r.final_fare : r.offered_fare} · <span class="badge b-${r.status}">${r.status}</span></div>
             </div>`).join('')}
           </div>
         </div>
       </div>
       <div class="card"><div class="card-title"><span>Ride History</span></div>
         ${rides.length?`<div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Route</th><th>Fare</th><th>Status</th><th>Driver</th><th>Date</th></tr></thead><tbody>
-          ${rides.slice(0,30).map(r=>{const drv=state.drivers.find(d=>d.id==r.accepted_by);return`<tr onclick="openRideDetail('${r.id}')"><td class="mono">#${r.id}</td><td style="font-size:.75rem">${r.pickup_location} → ${r.dropoff_location}</td><td class="fare">$${r.offered_fare}</td><td><span class="badge b-${r.status}">${r.status}</span></td><td>${drv?`<span class="link" onclick="event.stopPropagation();openDriverDetail('${drv.id}')">${drv.name}</span>`:'—'}</td><td class="mono">${fmtDate(r.created_at)}</td></tr>`;}).join('')}
+          ${rides.slice(0,30).map(r=>{const drv=state.drivers.find(d=>d.id==r.accepted_by);return`<tr onclick="openRideDetail('${r.id}')"><td class="mono">#${r.id}</td><td style="font-size:.75rem">${r.pickup_location} → ${r.dropoff_location}</td><td class="fare">${r.status==="completed"&&r.final_fare ? r.final_fare : r.offered_fare}</td><td><span class="badge b-${r.status}">${r.status}</span></td><td>${drv?`<span class="link" onclick="event.stopPropagation();openDriverDetail('${drv.id}')">${drv.name}</span>`:'—'}</td><td class="mono">${fmtDate(r.created_at)}</td></tr>`;}).join('')}
         </tbody></table></div>`:`<div class="empty"><div class="empty-icon">📍</div><div class="empty-title">No rides yet</div></div>`}
       </div>
     </div>`;
@@ -1168,7 +1255,7 @@ function openRideDetail(id){
           <div class="rdc-title">Ride Request <span class="badge b-${r.status}" style="margin-left:.5rem">${r.status}</span></div>
           <div class="rdc-id">ID: #${r.id} · Created ${fmtDateTime(r.created_at)}</div>
         </div>
-        <div class="fare" style="font-size:1.75rem">$${r.offered_fare}${r.counter_fare?`<span style="font-size:.9rem;color:var(--text-muted);text-decoration:line-through;margin-left:.5rem">$${r.counter_fare}</span>`:''}</div>
+        <div class="fare" style="font-size:1.75rem">${r.status==="completed"&&r.final_fare ? r.final_fare : r.offered_fare}${r.counter_fare?`<span style="font-size:.9rem;color:var(--text-muted);text-decoration:line-through;margin-left:.5rem">$${r.counter_fare}</span>`:''}</div>
       </div>
       <div class="route-vis">
         <div class="route-point"><div class="route-point-label">📍 Pickup</div><div class="route-point-loc">${r.pickup_location}</div></div>
@@ -1176,7 +1263,7 @@ function openRideDetail(id){
         <div class="route-point"><div class="route-point-label">🏁 Dropoff</div><div class="route-point-loc">${r.dropoff_location}</div></div>
       </div>
       <div class="rdc-grid">
-        <div class="rdc-field"><label>Offered Fare</label><div class="val fare">$${r.offered_fare}</div></div>
+        <div class="rdc-field"><label>Offered Fare</label><div class="val fare">${r.status==="completed"&&r.final_fare ? r.final_fare : r.offered_fare}</div></div>
         ${r.counter_fare?`<div class="rdc-field"><label>Counter Fare</label><div class="val" style="color:var(--violet)">$${r.counter_fare}</div></div>`:''}
         <div class="rdc-field"><label>Pickup Time</label><div class="val mono">${r.pickup_time?fmtDateTime(r.pickup_time):'Not set'}</div></div>
         <div class="rdc-field"><label>Status</label><div class="val"><span class="badge b-${r.status}">${r.status}</span></div></div>
@@ -1211,7 +1298,7 @@ function openRideDetail(id){
 function renderAnalytics(){
   const ri=state.rides;
   const completed=ri.filter(r=>r.status==='completed');
-  const rev=completed.reduce((s,r)=>s+(+r.offered_fare||0),0);
+  const rev=completed.reduce((s,r)=>s+(+(r.final_fare||r.offered_fare)||0),0);
   document.getElementById('analytics-kpis').innerHTML=`
     <div class="kpi"><div class="kpi-label">Completion Rate</div><div class="kpi-val">${ri.length?((completed.length/ri.length)*100).toFixed(1)+'%':'—'}</div></div>
     <div class="kpi"><div class="kpi-label">Total Revenue</div><div class="kpi-val fare" style="font-size:1.5rem">$${rev.toFixed(0)}</div></div>
