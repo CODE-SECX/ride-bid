@@ -841,7 +841,7 @@ function renderDashboard(){
         <thead><tr><th>Passenger</th><th>Route</th><th>Fare</th><th>Status</th></tr></thead>
         <tbody>
           ${recent.map(r=>`
-            <tr onclick="openRideDetail(${r.id})">
+            <tr onclick="openRideDetail('${r.id}')">
               <td><span class="link">${r.passenger_name}</span></td>
               <td style="max-width:200px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem">${r.pickup_location} → ${r.dropoff_location}</div></td>
               <td class="fare">₹${r.offered_fare}</td>
@@ -896,9 +896,9 @@ function renderDashboard(){
   document.getElementById('top-drivers-list').innerHTML = topDrivers.map(([id,cnt])=>{
     const d = state.drivers.find(x=>x.id==id);
     if(!d) return '';
-    return `<div style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;border-bottom:1px solid var(--rim)" onclick="openDriverDetail(${d.id})" class="link" style="cursor:pointer">
+    return `<div style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;border-bottom:1px solid var(--rim)" onclick="openDriverDetail('${d.id}')" class="link" style="cursor:pointer">
       <div style="width:32px;height:32px;border-radius:6px;background:var(--teal-dim);color:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0">${d.name[0]}</div>
-      <div style="flex:1"><div style="font-size:.8rem;font-weight:500;color:var(--text);cursor:pointer" onclick="openDriverDetail(${d.id})">${d.name}</div><div style="font-size:.7rem;color:var(--text3)">${d.vehicle_info||'No vehicle'}</div></div>
+      <div style="flex:1"><div style="font-size:.8rem;font-weight:500;color:var(--text);cursor:pointer" onclick="openDriverDetail('${d.id}')">${d.name}</div><div style="font-size:.7rem;color:var(--text3)">${d.vehicle_info||'No vehicle'}</div></div>
       <div style="text-align:right"><div class="fare">×${cnt}</div><div style="font-size:.7rem;color:var(--text3)">rides</div></div>
     </div>`;
   }).join('')||'<div class="empty"><div class="empty-sub">No ride data yet</div></div>';
@@ -930,7 +930,7 @@ function renderDriversTable(){
   const total = Math.ceil(list.length/PER_PAGE);
   const page = list.slice((pg-1)*PER_PAGE, pg*PER_PAGE);
   document.getElementById('drivers-tbody').innerHTML = page.length?page.map(d=>`
-    <tr onclick="openDriverDetail(${d.id})">
+    <tr onclick="openDriverDetail('${d.id}')">
       <td class="mono">#${d.id}</td>
       <td><div style="font-weight:500;color:var(--text)">${d.name}</div></td>
       <td class="mono">${d.username}</td>
@@ -938,7 +938,7 @@ function renderDriversTable(){
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem">${d.vehicle_info||'—'}</td>
       <td><span class="badge b-${d.is_online?'online':'offline'}">${d.is_online?'● Online':'○ Offline'}</span></td>
       <td class="mono">${fmtDate(d.created_at)}</td>
-      <td onclick="e=>e.stopPropagation()"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDriverDetail(${d.id})">View →</button></td>
+      <td onclick="e=>e.stopPropagation()"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDriverDetail('${d.id}')">View →</button></td>
     </tr>`).join(''):`<tr><td colspan="8"><div class="empty"><div class="empty-icon">🚗</div><div class="empty-title">No drivers found</div></div></td></tr>`;
   renderPagination('drivers-pg', pg, total, p=>{state.driversPg=p;renderDriversTable();});
 }
@@ -968,12 +968,12 @@ function renderPassengersTable(){
   const pg = state.passengersPg, total = Math.ceil(list.length/PER_PAGE);
   const page = list.slice((pg-1)*PER_PAGE, pg*PER_PAGE);
   document.getElementById('passengers-tbody').innerHTML = page.length?page.map(p=>`
-    <tr onclick="openPassengerDetail(${p.id})">
+    <tr onclick="openPassengerDetail('${p.id}')">
       <td class="mono">#${p.id}</td>
       <td><div style="font-weight:500;color:var(--text)">${p.name}</div></td>
       <td class="mono">${p.phone}</td>
       <td class="mono">${fmtDate(p.created_at)}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openPassengerDetail(${p.id})">View →</button></td>
+      <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openPassengerDetail('${p.id}')">View →</button></td>
     </tr>`).join(''):`<tr><td colspan="5"><div class="empty"><div class="empty-icon">👤</div><div class="empty-title">No passengers found</div></div></td></tr>`;
   renderPagination('passengers-pg', pg, total, p=>{state.passengersPg=p;renderPassengersTable();});
 }
@@ -1010,14 +1010,14 @@ function renderRidesTable(){
   const page = list.slice((pg-1)*PER_PAGE, pg*PER_PAGE);
   document.getElementById('rides-tbody').innerHTML = page.length?page.map(r=>{
     const drv = state.drivers.find(d=>d.id==r.accepted_by||d.id==r.countered_by);
-    return `<tr onclick="openRideDetail(${r.id})">
+    return `<tr onclick="openRideDetail('${r.id}')">
       <td class="mono">#${r.id}</td>
       <td><span class="link" onclick="event.stopPropagation();openPassengerDetailByPhone('${r.passenger_phone}')">${r.passenger_name}</span><div style="font-size:.7rem;color:var(--text3)">${r.passenger_phone}</div></td>
       <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem" title="${r.pickup_location}">${r.pickup_location}</td>
       <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem" title="${r.dropoff_location}">${r.dropoff_location}</td>
       <td><span class="fare">₹${r.offered_fare}</span>${r.counter_fare?`<span class="counter-fare">₹${r.counter_fare}</span>`:''}</td>
       <td><span class="badge b-${r.status}">${r.status}</span></td>
-      <td>${drv?`<span class="link" onclick="event.stopPropagation();openDriverDetail(${drv.id})">${drv.name}</span>`:`<span style="color:var(--text3)">—</span>`}</td>
+      <td>${drv?`<span class="link" onclick="event.stopPropagation();openDriverDetail('${drv.id}')">${drv.name}</span>`:`<span style="color:var(--text3)">—</span>`}</td>
       <td class="mono">${fmtDate(r.created_at)}</td>
     </tr>`;
   }).join(''):`<tr><td colspan="8"><div class="empty"><div class="empty-icon">📍</div><div class="empty-title">No rides found</div></div></td></tr>`;
@@ -1119,7 +1119,7 @@ function openDriverDetail(id){
         <div class="card-title"><span>Ride History</span> <span style="font-size:.75rem;color:var(--text3);font-weight:400">${rides.length} rides</span></div>
         ${rides.length?`<div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Passenger</th><th>Route</th><th>Fare</th><th>Status</th><th>Date</th></tr></thead><tbody>
           ${rides.slice(0,30).map(r=>`
-            <tr onclick="openRideDetail(${r.id})">
+            <tr onclick="openRideDetail('${r.id}')">
               <td class="mono">#${r.id}</td>
               <td><span class="link" onclick="event.stopPropagation();openPassengerDetailByPhone('${r.passenger_phone}')">${r.passenger_name}</span></td>
               <td style="font-size:.75rem">${r.pickup_location} → ${r.dropoff_location}</td>
@@ -1200,7 +1200,7 @@ function renderPassengerProfile(p){
           <div class="card-title"><span>Ride Timeline</span></div>
           <div class="timeline">
             ${rides.slice(0,6).map(r=>`
-              <div class="tl-item" onclick="openRideDetail(${r.id})" style="cursor:pointer">
+              <div class="tl-item" onclick="openRideDetail('${r.id}')" style="cursor:pointer">
                 <div class="tl-dot ${r.status==='completed'?'active':''}"></div>
                 <div class="tl-date">${fmtDateTime(r.created_at)}</div>
                 <div class="tl-title">${r.pickup_location} → ${r.dropoff_location}</div>
@@ -1214,12 +1214,12 @@ function renderPassengerProfile(p){
         ${rides.length?`<div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Route</th><th>Fare</th><th>Status</th><th>Driver</th><th>Date</th></tr></thead><tbody>
           ${rides.slice(0,30).map(r=>{
             const drv = state.drivers.find(d=>d.id==r.accepted_by);
-            return `<tr onclick="openRideDetail(${r.id})">
+            return `<tr onclick="openRideDetail('${r.id}')">
               <td class="mono">#${r.id}</td>
               <td style="font-size:.75rem">${r.pickup_location} → ${r.dropoff_location}</td>
               <td class="fare">₹${r.offered_fare}</td>
               <td><span class="badge b-${r.status}">${r.status}</span></td>
-              <td>${drv?`<span class="link" onclick="event.stopPropagation();openDriverDetail(${drv.id})">${drv.name}</span>`:'—'}</td>
+              <td>${drv?`<span class="link" onclick="event.stopPropagation();openDriverDetail('${drv.id}')">${drv.name}</span>`:'—'}</td>
               <td class="mono">${fmtDate(r.created_at)}</td>
             </tr>`;
           }).join('')}
@@ -1283,7 +1283,7 @@ function openRideDetail(id){
         </div>
         <div>
           <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:.5rem">Driver</div>
-          ${drv?`<div class="entity-chip" onclick="openDriverDetail(${drv.id})">
+          ${drv?`<div class="entity-chip" onclick="openDriverDetail('${drv.id}')">
             <div class="entity-chip-icon" style="background:var(--teal-dim);color:var(--teal)">🚗</div>
             <div>
               <span class="entity-chip-label">Driver</span>
@@ -1446,7 +1446,7 @@ function globalSearchFn(q){
     let html = '';
     if(drivers.length){
       html += `<div class="search-group-title">Drivers</div>`;
-      html += drivers.map(d=>`<div class="search-item" onclick="openDriverDetail(${d.id});closeGSearch()">
+      html += drivers.map(d=>`<div class="search-item" onclick="openDriverDetail('${d.id}');closeGSearch()">
         <div class="search-item-icon si-driver">🚗</div>
         <div><div class="search-item-name">${d.name}</div><div class="search-item-sub">@${d.username} · ${d.contact_no}</div></div>
         <span class="badge b-${d.is_online?'online':'offline'}" style="margin-left:auto">${d.is_online?'Online':'Offline'}</span>
@@ -1454,14 +1454,14 @@ function globalSearchFn(q){
     }
     if(passengers.length){
       html += `<div class="search-group-title">Passengers</div>`;
-      html += passengers.map(p=>`<div class="search-item" onclick="openPassengerDetail(${p.id});closeGSearch()">
+      html += passengers.map(p=>`<div class="search-item" onclick="openPassengerDetail('${p.id}');closeGSearch()">
         <div class="search-item-icon si-passenger">👤</div>
         <div><div class="search-item-name">${p.name}</div><div class="search-item-sub">${p.phone}</div></div>
       </div>`).join('');
     }
     if(rides.length){
       html += `<div class="search-group-title">Rides</div>`;
-      html += rides.map(r=>`<div class="search-item" onclick="openRideDetail(${r.id});closeGSearch()">
+      html += rides.map(r=>`<div class="search-item" onclick="openRideDetail('${r.id}');closeGSearch()">
         <div class="search-item-icon si-ride">📍</div>
         <div><div class="search-item-name">Ride #${r.id} — ${r.passenger_name}</div><div class="search-item-sub">${r.pickup_location} → ${r.dropoff_location}</div></div>
         <span class="badge b-${r.status}" style="margin-left:auto">${r.status}</span>
