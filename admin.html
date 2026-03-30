@@ -4,877 +4,700 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>RideBid — Command Center</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
+/* ── Design tokens — matched to ridenegotiate.html ── */
 :root{
-  --bg:           #0a0b0f;
-  --bg2:          #0f1117;
-  --surface:      #141720;
-  --surface2:     #1a1e2a;
-  --surface3:     #1f2433;
-  --border:       rgba(255,255,255,0.07);
-  --border-mid:   rgba(255,255,255,0.12);
-  --border-focus: #00e5a0;
+  --bg:           #f4f5f7;
+  --surface:      #ffffff;
+  --surface2:     #f8f9fb;
+  --surface3:     #f0f2f5;
+  --border:       #e4e7ec;
+  --border-mid:   #d0d5dd;
+  --border-focus: #2563eb;
 
-  --text:           #f0f2f7;
-  --text-secondary: #9ba3b8;
-  --text-muted:     #5a6070;
-  --text-dim:       #353a47;
+  --text:           #111827;
+  --text-secondary: #374151;
+  --text-muted:     #9ca3af;
+  --text-dim:       #d1d5db;
 
-  --green:        #00e5a0;
-  --green-mid:    #00c484;
-  --green-dark:   #00a36d;
-  --green-light:  rgba(0,229,160,0.08);
-  --green-border: rgba(0,229,160,0.2);
+  --green:        #16a34a;
+  --green-mid:    #22c55e;
+  --green-light:  #f0fdf4;
+  --green-border: #bbf7d0;
 
-  --blue:         #4d9fff;
-  --blue-mid:     #2d7fe0;
-  --blue-light:   rgba(77,159,255,0.08);
-  --blue-border:  rgba(77,159,255,0.2);
+  --blue:         #2563eb;
+  --blue-mid:     #3b82f6;
+  --blue-light:   #eff6ff;
+  --blue-border:  #bfdbfe;
 
-  --amber:        #ffb930;
-  --amber-light:  rgba(255,185,48,0.08);
-  --amber-border: rgba(255,185,48,0.2);
+  --amber:        #d97706;
+  --amber-light:  #fffbeb;
+  --amber-border: #fde68a;
 
-  --red:          #ff5c7a;
-  --red-light:    rgba(255,92,122,0.08);
-  --red-border:   rgba(255,92,122,0.2);
+  --red:          #dc2626;
+  --red-light:    #fef2f2;
+  --red-border:   #fecaca;
 
-  --violet:       #a78bfa;
-  --violet-light: rgba(167,139,250,0.08);
-  --violet-border:rgba(167,139,250,0.2);
+  --violet:       #7c3aed;
+  --violet-light: #f5f3ff;
+  --violet-border:#ddd6fe;
 
-  --cyan:         #22d3ee;
-  --cyan-light:   rgba(34,211,238,0.08);
-  --cyan-border:  rgba(34,211,238,0.2);
-
-  --radius:    14px;
-  --radius-sm: 8px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
-  --shadow-md: 0 4px 20px rgba(0,0,0,0.5);
-  --shadow-lg: 0 8px 40px rgba(0,0,0,0.6);
-  --shadow-glow: 0 0 20px rgba(0,229,160,0.1);
+  --radius:    16px;
+  --radius-sm: 10px;
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 28px rgba(0,0,0,0.09);
   --t: 0.18s cubic-bezier(0.4,0,0.2,1);
 
-  --topbar-h: 60px;
-  --sidebar-w: 220px;
+  --topbar-h: 62px;
 }
 
 html{scroll-behavior:smooth}
 body{
-  font-family:'Outfit',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-  overflow-x:hidden;
-  -webkit-font-smoothing:antialiased;
-  line-height:1.5;
-}
-
-/* Subtle grid texture */
-body::before{
-  content:'';
-  position:fixed;inset:0;pointer-events:none;z-index:0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
-  background-size:48px 48px;
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;-webkit-font-smoothing:antialiased;
 }
 
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border-mid);border-radius:4px}
-::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
 
-/* ═══════════════════════════════════════════
-   LOGIN
-═══════════════════════════════════════════ */
+/* ═══════════ LOGIN ═══════════ */
 #login{
   position:fixed;inset:0;z-index:999;
   display:flex;align-items:center;justify-content:center;
-  background:var(--bg);
-}
-#login::before{
-  content:'';
-  position:absolute;inset:0;pointer-events:none;
-  background:
-    radial-gradient(ellipse 60% 50% at 20% 50%, rgba(0,229,160,0.05) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 60% at 80% 50%, rgba(77,159,255,0.05) 0%, transparent 60%);
+  background:linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%);
 }
 .login-box{
-  position:relative;z-index:1;
   width:420px;max-width:92vw;
   background:var(--surface);
-  border:1px solid var(--border-mid);
-  border-radius:20px;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
   padding:2.5rem;
   box-shadow:var(--shadow-lg);
-  animation:loginFadeIn .5s ease forwards;
+  animation:fadeUp .4s ease forwards;
 }
-@keyframes loginFadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .login-logo{
-  font-family:'Syne',sans-serif;
-  font-size:1.6rem;font-weight:800;
-  color:var(--text);
-  letter-spacing:-.03em;
-  margin-bottom:.25rem;
-  display:flex;align-items:center;gap:.5rem;
+  display:flex;align-items:center;gap:10px;
+  font-size:1.4rem;font-weight:800;
+  letter-spacing:-0.03em;margin-bottom:4px;
 }
-.login-logo-dot{
-  width:10px;height:10px;border-radius:50%;
-  background:var(--green);
-  box-shadow:0 0 10px var(--green);
-  animation:pulse 2s ease infinite;
+.login-logo-mark{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,#2563eb,#16a34a);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;box-shadow:0 2px 8px rgba(37,99,235,0.22);
 }
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.login-sub{
-  font-family:'JetBrains Mono',monospace;
-  font-size:.72rem;color:var(--text-muted);
-  margin-bottom:2rem;
-  letter-spacing:.04em;
-}
-.field{margin-bottom:1.1rem}
+.login-logo em{font-style:normal;color:var(--blue)}
+.login-sub{font-size:.78rem;color:var(--text-muted);margin-bottom:1.75rem}
+.field{margin-bottom:1rem}
 .field label{
-  display:block;
-  font-size:.72rem;font-weight:600;
-  color:var(--text-secondary);
-  letter-spacing:.08em;text-transform:uppercase;
-  margin-bottom:.4rem;
+  display:block;font-size:.71rem;font-weight:600;
+  color:var(--text-secondary);letter-spacing:.01em;margin-bottom:6px;
 }
 .field input{
-  width:100%;padding:.7rem 1rem;
-  background:var(--surface2);
-  border:1.5px solid var(--border);
-  border-radius:var(--radius-sm);
-  color:var(--text);
-  font-family:'Outfit',sans-serif;font-size:.875rem;
-  transition:border-color .2s,box-shadow .2s,background .2s;
-  outline:none;
+  width:100%;padding:10px 13px;
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text);
+  font-family:'Inter',sans-serif;font-size:.875rem;
+  outline:none;transition:all var(--t);
 }
-.field input:focus{
-  border-color:var(--border-focus);
-  background:var(--surface3);
-  box-shadow:0 0 0 3px rgba(0,229,160,0.08);
-}
+.field input:focus{border-color:var(--border-focus);background:var(--surface);box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
 .field input::placeholder{color:var(--text-dim)}
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
-  padding:.7rem 1.25rem;
-  border:1.5px solid transparent;
+.btn-login{
+  width:100%;padding:11px;
+  background:var(--blue);color:#fff;
+  border:1.5px solid var(--blue);
   border-radius:var(--radius-sm);
-  font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;
-  cursor:pointer;
-  transition:all .2s;
-  letter-spacing:-.01em;
-  white-space:nowrap;
+  font-family:'Inter',sans-serif;font-size:.85rem;font-weight:600;
+  cursor:pointer;transition:all var(--t);
+  box-shadow:0 2px 8px rgba(37,99,235,0.2);
 }
-.btn:active{transform:scale(0.97)}
-.btn-accent{
-  background:var(--green);color:#0a0b0f;
-  border-color:var(--green);width:100%;
-  box-shadow:0 2px 12px rgba(0,229,160,0.25);
-}
-.btn-accent:hover{background:#00ffb0;box-shadow:0 4px 20px rgba(0,229,160,0.35);transform:translateY(-1px)}
-.btn-ghost{
-  background:var(--surface2);color:var(--text-secondary);
-  border-color:var(--border);
-}
-.btn-ghost:hover{border-color:var(--border-mid);color:var(--text);background:var(--surface3)}
-.btn-danger{background:var(--red-light);color:var(--red);border-color:var(--red-border)}
-.btn-danger:hover{background:rgba(255,92,122,0.15)}
-.btn-sm{padding:.4rem .85rem;font-size:.78rem}
-.btn-xs{padding:.28rem .65rem;font-size:.72rem}
+.btn-login:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 4px 14px rgba(37,99,235,0.28)}
 .err-msg{
-  margin-top:.875rem;padding:.7rem 1rem;
+  margin-top:.75rem;padding:.65rem 1rem;
   border-radius:var(--radius-sm);
   background:var(--red-light);color:var(--red);
   border:1px solid var(--red-border);
   font-size:.78rem;display:none;
 }
 
-/* ═══════════════════════════════════════════
-   APP SHELL
-═══════════════════════════════════════════ */
-#app{display:none;min-height:100vh;position:relative;z-index:1}
+/* ═══════════ APP SHELL ═══════════ */
+#app{display:none;min-height:100vh}
 
 /* ── Topbar ── */
 .topbar{
   height:var(--topbar-h);
   position:sticky;top:0;z-index:100;
-  display:flex;align-items:center;
-  padding:0 1.25rem 0 1rem;
-  gap:.75rem;
-  background:rgba(10,11,15,0.9);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
+  display:flex;align-items:center;padding:0 28px;gap:10px;
+  background:rgba(255,255,255,0.94);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-bottom:1px solid var(--border);
+  box-shadow:var(--shadow-xs);
 }
 .topbar-logo{
-  font-family:'Syne',sans-serif;
-  font-size:1.1rem;font-weight:800;
-  color:var(--text);letter-spacing:-.03em;
-  display:flex;align-items:center;gap:.4rem;
+  display:flex;align-items:center;gap:9px;
+  font-size:1.1rem;font-weight:800;letter-spacing:-0.03em;color:var(--text);
   flex-shrink:0;
 }
-.topbar-logo .logo-pip{
-  width:7px;height:7px;border-radius:50%;
-  background:var(--green);
-  box-shadow:0 0 8px var(--green);
-  animation:pulse 2s ease infinite;
+.topbar-logo-mark{
+  width:30px;height:30px;border-radius:8px;
+  background:linear-gradient(135deg,#2563eb,#16a34a);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;box-shadow:0 2px 6px rgba(37,99,235,0.2);
 }
-.topbar-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
-
-/* Desktop nav */
-.topbar-nav{display:flex;gap:2px;align-items:center}
+.topbar-logo em{font-style:normal;color:var(--blue)}
+.topbar-sep{width:1px;height:20px;background:var(--border);flex-shrink:0;margin:0 4px}
+.topbar-nav{display:flex;gap:2px}
 .nav-pill{
-  padding:.38rem .85rem;border-radius:6px;
-  font-size:.8rem;font-weight:500;
+  padding:7px 14px;border-radius:50px;
+  font-size:.8rem;font-weight:600;
   cursor:pointer;border:none;
   background:transparent;color:var(--text-muted);
-  transition:all .18s;font-family:'Outfit',sans-serif;
+  transition:all var(--t);font-family:'Inter',sans-serif;
+  letter-spacing:-0.01em;
 }
-.nav-pill:hover{color:var(--text-secondary);background:var(--surface2)}
-.nav-pill.active{color:var(--green);background:var(--green-light);font-weight:600}
-
-.topbar-right{margin-left:auto;display:flex;align-items:center;gap:.625rem;flex-shrink:0}
-
-/* Realtime indicator */
-.rt-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:var(--text-muted);
-  display:inline-block;margin-right:.35rem;
-  transition:background .3s,box-shadow .3s;
+.nav-pill:hover{color:var(--text-secondary);background:var(--surface3)}
+.nav-pill.active{color:var(--blue);background:var(--blue-light);font-weight:600}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.rt-status{
+  display:flex;align-items:center;gap:5px;
+  font-size:.7rem;color:var(--text-muted);font-family:'Inter',monospace;
+  padding:4px 10px;border-radius:20px;
+  background:var(--surface3);border:1px solid var(--border);
 }
-.rt-dot.connected{background:var(--green);box-shadow:0 0 0 3px var(--green-light);animation:pulse 2s ease infinite}
+.rt-dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);transition:all .3s}
+.rt-dot.connected{background:var(--green-mid);box-shadow:0 0 0 3px rgba(34,197,94,0.2);animation:breathe 2.2s ease infinite}
 .rt-dot.error{background:var(--red)}
-.rt-status{font-size:.7rem;color:var(--text-muted);display:flex;align-items:center;font-family:'JetBrains Mono',monospace;cursor:default}
-
-/* Global search */
+@keyframes breathe{0%,100%{box-shadow:0 0 0 3px rgba(34,197,94,0.2)}50%{box-shadow:0 0 0 6px rgba(34,197,94,0.05)}}
+.admin-badge{
+  padding:4px 11px;background:var(--green-light);color:var(--green);
+  border-radius:20px;font-size:.65rem;font-weight:700;
+  border:1px solid var(--green-border);letter-spacing:.06em;
+}
 .global-search-wrap{position:relative}
 .global-search{
-  width:220px;
-  padding:.42rem .85rem .42rem 2.1rem;
-  background:var(--surface2);
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);
-  color:var(--text);
-  font-family:'Outfit',sans-serif;font-size:.8rem;
-  transition:all .2s;outline:none;
+  width:200px;padding:7px 12px 7px 30px;
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:20px;color:var(--text);
+  font-family:'Inter',sans-serif;font-size:.8rem;
+  transition:all var(--t);outline:none;
 }
-.global-search:focus{border-color:var(--border-focus);width:280px;background:var(--surface3);box-shadow:0 0 0 3px rgba(0,229,160,0.06)}
+.global-search:focus{border-color:var(--border-focus);width:250px;background:var(--surface);box-shadow:0 0 0 3px rgba(37,99,235,0.08)}
 .global-search::placeholder{color:var(--text-dim)}
-.gsearch-icon{position:absolute;left:.7rem;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.8rem;pointer-events:none}
-
+.gsearch-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.78rem;pointer-events:none}
 .search-results-drop{
-  position:absolute;top:calc(100% + .5rem);right:0;width:360px;
+  position:absolute;top:calc(100% + 8px);right:0;width:360px;
   background:var(--surface);border:1px solid var(--border-mid);
   border-radius:var(--radius);box-shadow:var(--shadow-lg);
-  display:none;z-index:200;max-height:460px;overflow-y:auto;
+  display:none;z-index:200;max-height:420px;overflow-y:auto;
 }
 .search-results-drop.open{display:block}
 .search-group-title{
-  padding:.4rem .875rem;
-  font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:6px 14px;font-size:.63rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;
   color:var(--text-muted);background:var(--surface2);
   border-bottom:1px solid var(--border);
 }
 .search-item{
-  display:flex;align-items:center;gap:.75rem;
-  padding:.6rem .875rem;cursor:pointer;
-  transition:background .12s;
+  display:flex;align-items:center;gap:10px;
+  padding:9px 14px;cursor:pointer;transition:background .12s;
   border-bottom:1px solid var(--border);
 }
 .search-item:last-child{border-bottom:none}
 .search-item:hover{background:var(--surface2)}
 .search-item-icon{
-  width:28px;height:28px;border-radius:6px;
-  display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;
+  width:28px;height:28px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.82rem;flex-shrink:0;
 }
 .si-driver{background:var(--green-light);color:var(--green)}
 .si-passenger{background:var(--blue-light);color:var(--blue)}
 .si-ride{background:var(--amber-light);color:var(--amber)}
-.search-item-name{font-size:.8rem;font-weight:500;color:var(--text)}
+.search-item-name{font-size:.8rem;font-weight:600;color:var(--text)}
 .search-item-sub{font-size:.7rem;color:var(--text-muted);margin-top:1px}
-
-.admin-badge{
-  padding:.22rem .6rem;
-  background:var(--green-light);color:var(--green);
-  border-radius:99px;font-size:.65rem;font-weight:700;
-  font-family:'JetBrains Mono',monospace;
-  border:1px solid var(--green-border);
-  letter-spacing:.05em;
-}
-
-/* Hamburger (mobile) */
-.hamburger{
-  display:none;flex-direction:column;gap:4px;
-  cursor:pointer;padding:.4rem;
-  background:none;border:none;
-}
-.hamburger span{
-  display:block;width:20px;height:2px;
-  background:var(--text-secondary);
-  border-radius:2px;transition:all .25s;
-}
+.hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:.4rem;background:none;border:none}
+.hamburger span{display:block;width:20px;height:2px;background:var(--text-secondary);border-radius:2px;transition:all .25s}
 .hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
 .hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0)}
 .hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-
-/* Mobile drawer */
 .mobile-nav{
-  display:none;position:fixed;
-  top:var(--topbar-h);left:0;right:0;
-  background:var(--surface);
-  border-bottom:1px solid var(--border-mid);
-  z-index:99;
-  padding:.75rem 1rem;
-  flex-direction:column;gap:2px;
-  box-shadow:var(--shadow-md);
-  animation:slideDown .2s ease;
+  display:none;position:fixed;top:var(--topbar-h);left:0;right:0;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  z-index:99;padding:.75rem 1rem;flex-direction:column;gap:2px;
+  box-shadow:var(--shadow-md);animation:slideDown .2s ease;
 }
 .mobile-nav.open{display:flex}
-@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .mobile-nav-pill{
-  padding:.65rem 1rem;border-radius:8px;
-  font-size:.875rem;font-weight:500;
-  cursor:pointer;border:none;
-  background:transparent;color:var(--text-secondary);
-  transition:all .15s;font-family:'Outfit',sans-serif;
-  text-align:left;
+  padding:.6rem 1rem;border-radius:10px;font-size:.875rem;font-weight:500;
+  cursor:pointer;border:none;background:transparent;color:var(--text-secondary);
+  transition:all .15s;font-family:'Inter',sans-serif;text-align:left;
 }
 .mobile-nav-pill:hover{color:var(--text);background:var(--surface2)}
-.mobile-nav-pill.active{color:var(--green);background:var(--green-light);font-weight:600}
+.mobile-nav-pill.active{color:var(--blue);background:var(--blue-light);font-weight:600}
 
-/* ═══════════════════════════════════════════
-   PAGES
-═══════════════════════════════════════════ */
-.page{display:none;padding:1.5rem;max-width:1600px;margin:0 auto;width:100%;animation:pageIn .22s ease}
+/* ═══════════ PAGES ═══════════ */
+.page{display:none;padding:28px 28px 80px;max-width:1400px;margin:0 auto;width:100%;animation:rise .22s ease}
 .page.active{display:block}
-@keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
-.detail-view{display:none;padding:1.5rem;max-width:1400px;margin:0 auto;width:100%;animation:pageIn .22s ease}
+.detail-view{display:none;padding:28px 28px 80px;max-width:1300px;margin:0 auto;width:100%;animation:rise .22s ease}
 .detail-view.active{display:block}
-
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .page-title{
-  font-family:'Syne',sans-serif;
-  font-size:1.5rem;font-weight:800;
-  color:var(--text);margin-bottom:1.25rem;
-  letter-spacing:-.03em;
-  display:flex;align-items:center;gap:.625rem;
+  font-size:1.2rem;font-weight:800;letter-spacing:-0.035em;
+  color:var(--text);margin-bottom:20px;
+  display:flex;align-items:center;gap:8px;
 }
-.page-title .accent{color:var(--green)}
-.page-title .title-badge{
-  font-family:'JetBrains Mono',monospace;
-  font-size:.65rem;font-weight:500;
-  padding:.2rem .6rem;
-  background:var(--green-light);color:var(--green);
-  border:1px solid var(--green-border);
-  border-radius:99px;letter-spacing:.06em;
+.page-title .accent{color:var(--blue)}
+.title-badge{
+  font-size:.63rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--green);background:var(--green-light);
+  border:1px solid var(--green-border);padding:3px 9px;border-radius:20px;
 }
 
-/* ═══════════════════════════════════════════
-   CARDS & KPIs
-═══════════════════════════════════════════ */
+/* ═══════════ CARDS & KPIs ═══════════ */
 .card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:1.25rem;
-  box-shadow:var(--shadow-sm);
-  transition:border-color .2s,box-shadow .2s;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;
+  box-shadow:var(--shadow-sm);transition:box-shadow var(--t),border-color var(--t);
 }
-.card:hover{border-color:var(--border-mid)}
+.card:hover{box-shadow:var(--shadow-md);border-color:var(--border-mid)}
 .card-title{
-  font-family:'Syne',sans-serif;
-  font-size:.9rem;font-weight:700;
-  color:var(--text);
-  margin-bottom:1rem;
-  display:flex;align-items:center;gap:.5rem;
-  letter-spacing:-.01em;
+  font-size:.9rem;font-weight:700;letter-spacing:-0.02em;
+  color:var(--text);margin-bottom:16px;
+  display:flex;align-items:center;gap:6px;
 }
 .card-title span{flex:1}
 .card-title .card-action{
-  font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:400;
-  color:var(--text-muted);cursor:pointer;
-  transition:color .15s;
+  font-size:.74rem;font-weight:400;color:var(--text-muted);
+  cursor:pointer;transition:color var(--t);
 }
-.card-title .card-action:hover{color:var(--green)}
+.card-title .card-action:hover{color:var(--blue)}
 
-.dash-hero{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.25rem}
+.dash-hero{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
 .kpi{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:1.25rem 1.375rem;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px 20px;
   position:relative;overflow:hidden;
-  transition:border-color .2s,transform .2s,box-shadow .2s;
-  box-shadow:var(--shadow-sm);
+  transition:border-color var(--t),transform var(--t),box-shadow var(--t);
+  box-shadow:var(--shadow-sm);cursor:default;
 }
 .kpi:hover{border-color:var(--border-mid);transform:translateY(-2px);box-shadow:var(--shadow-md)}
-.kpi::before{
-  content:'';position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(135deg, transparent 60%, rgba(255,255,255,0.015) 100%);
-}
 .kpi-label{
-  font-size:.7rem;font-weight:600;
-  letter-spacing:.08em;text-transform:uppercase;
-  color:var(--text-muted);margin-bottom:.625rem;
-  font-family:'JetBrains Mono',monospace;
+  font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-muted);margin-bottom:10px;
 }
 .kpi-val{
-  font-family:'Syne',sans-serif;
-  font-size:2.1rem;font-weight:700;
-  line-height:1;color:var(--text);margin-bottom:.4rem;
+  font-size:2rem;font-weight:800;letter-spacing:-0.04em;
+  line-height:1;color:var(--text);margin-bottom:5px;
 }
-.kpi-delta{font-size:.74rem;color:var(--green);display:flex;align-items:center;gap:.25rem}
-.kpi-delta.down{color:var(--red)}
-.kpi-delta.neutral{color:var(--text-muted)}
-.kpi-accent{
-  position:absolute;top:.875rem;right:1rem;
-  font-size:1.4rem;opacity:.15;
-}
+.kpi-delta{font-size:.73rem;color:var(--text-muted)}
+.kpi-accent{position:absolute;top:14px;right:16px;font-size:1.3rem;opacity:.18}
+.kpi-val.blue{color:var(--blue)}
+.kpi-val.green{color:var(--green)}
 
-.dash-grid{display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin-bottom:1rem}
+.dash-grid{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}
 .chart-wrap{position:relative;height:200px}
 
-/* ═══════════════════════════════════════════
-   BADGES
-═══════════════════════════════════════════ */
+/* ═══════════ BADGES ═══════════ */
 .badge{
   display:inline-flex;align-items:center;
-  padding:.2rem .6rem;border-radius:99px;
-  font-size:.65rem;font-weight:700;
-  font-family:'JetBrains Mono',monospace;
-  letter-spacing:.04em;border:1px solid;
+  padding:3px 9px;border-radius:20px;
+  font-size:.64rem;font-weight:700;
+  letter-spacing:.06em;border:1px solid;text-transform:uppercase;
 }
 .badge::before{
   content:'';width:5px;height:5px;border-radius:50%;
-  background:currentColor;margin-right:.3rem;flex-shrink:0;
+  background:currentColor;margin-right:4px;flex-shrink:0;
 }
 .b-pending{background:var(--amber-light);color:var(--amber);border-color:var(--amber-border)}
 .b-confirmed{background:var(--green-light);color:var(--green);border-color:var(--green-border)}
 .b-completed{background:var(--blue-light);color:var(--blue);border-color:var(--blue-border)}
-.b-rejected,.b-expired{background:rgba(255,255,255,0.04);color:var(--text-muted);border-color:var(--border)}
+.b-rejected,.b-expired{background:var(--surface3);color:var(--text-muted);border-color:var(--border)}
 .b-countered{background:var(--violet-light);color:var(--violet);border-color:var(--violet-border)}
 .b-online{background:var(--green-light);color:var(--green);border-color:var(--green-border)}
-.b-offline{background:rgba(255,255,255,0.04);color:var(--text-muted);border-color:var(--border)}
+.b-offline{background:var(--surface3);color:var(--text-muted);border-color:var(--border)}
 
-/* ═══════════════════════════════════════════
-   TABLES
-═══════════════════════════════════════════ */
+/* ═══════════ TABLES ═══════════ */
 .tbl-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
 table{width:100%;border-collapse:collapse;font-size:.8rem;min-width:580px}
 thead tr{background:var(--surface2)}
 th{
-  padding:.8rem 1rem;text-align:left;
-  font-size:.65rem;font-weight:700;
-  letter-spacing:.08em;text-transform:uppercase;
-  color:var(--text-muted);
-  border-bottom:1px solid var(--border);
+  padding:10px 14px;text-align:left;
+  font-size:.63rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--text-muted);border-bottom:1px solid var(--border);
   white-space:nowrap;cursor:pointer;user-select:none;
-  font-family:'JetBrains Mono',monospace;
 }
 th:hover{color:var(--text-secondary)}
-th .sort-icon{margin-left:.25rem;opacity:.35}
-th.sorted .sort-icon{opacity:1;color:var(--green)}
+th .sort-icon{margin-left:3px;opacity:.35}
+th.sorted .sort-icon{opacity:1;color:var(--blue)}
 td{
-  padding:.7rem 1rem;
-  border-bottom:1px solid var(--border);
+  padding:10px 14px;border-bottom:1px solid var(--border);
   color:var(--text-secondary);vertical-align:middle;
 }
 tbody tr:last-child td{border-bottom:none}
 tbody tr{transition:background .1s;cursor:pointer}
 tbody tr:hover{background:var(--surface2)}
 tbody tr:hover td{color:var(--text)}
-.link{color:var(--blue);cursor:pointer;text-decoration:none;font-weight:500}
-.link:hover{color:#7fbfff}
-.mono{font-family:'JetBrains Mono',monospace;font-size:.75rem}
-.fare{color:var(--green);font-weight:700;font-family:'JetBrains Mono',monospace}
-.counter-fare{color:var(--text-muted);font-size:.7rem;text-decoration:line-through;margin-left:.25rem;font-family:'JetBrains Mono',monospace}
+.link{color:var(--blue);cursor:pointer;text-decoration:none;font-weight:600}
+.link:hover{color:#1d4ed8}
+.mono{font-family:'SF Mono','JetBrains Mono',monospace;font-size:.74rem}
+.fare-cell{color:var(--green);font-weight:700;font-family:'SF Mono','JetBrains Mono',monospace}
+.counter-fare{color:var(--text-muted);font-size:.69rem;text-decoration:line-through;margin-left:4px;font-family:monospace}
 
-/* ═══════════════════════════════════════════
-   TOOLBAR & FILTERS
-═══════════════════════════════════════════ */
-.toolbar{display:flex;align-items:center;gap:.6rem;margin-bottom:.875rem;flex-wrap:wrap}
-.toolbar-search{position:relative;flex:1;min-width:180px;max-width:300px}
+/* ═══════════ TOOLBAR & FILTERS ═══════════ */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.toolbar-search{position:relative;flex:1;min-width:160px;max-width:280px}
 .toolbar-search input{
-  width:100%;padding:.48rem .875rem .48rem 2rem;
-  background:var(--surface2);
-  border:1.5px solid var(--border);
-  border-radius:var(--radius-sm);
-  color:var(--text);font-family:'Outfit',sans-serif;font-size:.8rem;
-  transition:border-color .2s;outline:none;
+  width:100%;padding:8px 12px 8px 30px;
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text);
+  font-family:'Inter',sans-serif;font-size:.8rem;
+  transition:border-color var(--t);outline:none;
 }
 .toolbar-search input:focus{border-color:var(--border-focus)}
 .toolbar-search input::placeholder{color:var(--text-dim)}
-.toolbar-search .ts-icon{position:absolute;left:.6rem;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.8rem}
+.toolbar-search .ts-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.78rem}
 .filter-select{
-  padding:.48rem .875rem;
-  background:var(--surface2);border:1.5px solid var(--border);
+  padding:8px 12px;background:var(--surface);border:1.5px solid var(--border);
   border-radius:var(--radius-sm);color:var(--text-secondary);
-  font-size:.8rem;cursor:pointer;font-family:'Outfit',sans-serif;
-  transition:border-color .2s;outline:none;
+  font-size:.8rem;cursor:pointer;font-family:'Inter',sans-serif;
+  transition:border-color var(--t);outline:none;
 }
-.filter-select:focus{border-color:var(--border-focus);color:var(--text)}
+.filter-select:focus{border-color:var(--border-focus)}
 .filter-btn{
-  display:inline-flex;align-items:center;gap:.35rem;
-  padding:.48rem .875rem;
-  background:var(--surface2);border:1.5px solid var(--border);
+  display:inline-flex;align-items:center;gap:5px;
+  padding:8px 13px;background:var(--surface);border:1.5px solid var(--border);
   border-radius:var(--radius-sm);color:var(--text-secondary);
-  font-size:.8rem;cursor:pointer;transition:all .18s;
-  font-family:'Outfit',sans-serif;white-space:nowrap;
+  font-size:.8rem;cursor:pointer;transition:all var(--t);
+  font-family:'Inter',sans-serif;white-space:nowrap;
 }
-.filter-btn:hover,.filter-btn.active{border-color:var(--green);color:var(--green);background:var(--green-light)}
+.filter-btn:hover,.filter-btn.active{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
 .filter-panel{
   background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:1rem;
-  margin-bottom:.875rem;display:none;
-  box-shadow:var(--shadow-sm);
+  border-radius:var(--radius);padding:16px;
+  margin-bottom:14px;display:none;box-shadow:var(--shadow-sm);
 }
-.filter-panel.open{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem}
+.filter-panel.open{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 .fp-field label{
-  font-size:.65rem;font-weight:700;letter-spacing:.08em;
-  text-transform:uppercase;color:var(--text-muted);
-  font-family:'JetBrains Mono',monospace;
-  display:block;margin-bottom:.35rem;
+  font-size:.63rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--text-muted);display:block;margin-bottom:5px;
 }
 .fp-field input,.fp-field select{
-  width:100%;padding:.42rem .75rem;
-  background:var(--surface2);border:1.5px solid var(--border);
+  width:100%;padding:7px 11px;background:var(--surface2);border:1.5px solid var(--border);
   border-radius:var(--radius-sm);color:var(--text);
-  font-family:'Outfit',sans-serif;font-size:.8rem;outline:none;
-  transition:border-color .2s;
+  font-family:'Inter',sans-serif;font-size:.8rem;outline:none;transition:border-color var(--t);
 }
 .fp-field input:focus,.fp-field select:focus{border-color:var(--border-focus)}
-.filter-tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.75rem}
+.filter-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .f-tag{
-  display:inline-flex;align-items:center;gap:.35rem;
-  padding:.22rem .6rem;
-  background:var(--blue-light);color:var(--blue);
-  border-radius:99px;font-size:.7rem;font-weight:500;
-  border:1px solid var(--blue-border);
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 9px;background:var(--blue-light);color:var(--blue);
+  border-radius:20px;font-size:.7rem;font-weight:500;border:1px solid var(--blue-border);
 }
-.f-tag button{background:none;border:none;color:var(--blue);cursor:pointer;font-size:.75rem;line-height:1;padding:0 0 0 .2rem}
+.f-tag button{background:none;border:none;color:var(--blue);cursor:pointer;font-size:.78rem;padding:0 0 0 3px}
 
-/* ═══════════════════════════════════════════
-   PAGINATION
-═══════════════════════════════════════════ */
-.pagination{display:flex;align-items:center;justify-content:flex-end;gap:.4rem;margin-top:1rem;flex-wrap:wrap}
-.pg-info{font-size:.72rem;color:var(--text-muted);margin-right:auto;font-family:'JetBrains Mono',monospace}
+/* ═══════════ BUTTONS ═══════════ */
+.btn{
+  font-family:'Inter',sans-serif;font-weight:600;font-size:.79rem;
+  padding:8px 14px;border-radius:var(--radius-sm);
+  border:1.5px solid transparent;cursor:pointer;
+  transition:all var(--t);display:inline-flex;align-items:center;gap:5px;
+  white-space:nowrap;letter-spacing:-0.01em;
+}
+.btn:active{transform:scale(0.97)}
+.btn-ghost{
+  background:var(--surface);color:var(--text-secondary);
+  border-color:var(--border);box-shadow:var(--shadow-xs);
+}
+.btn-ghost:hover{border-color:var(--border-mid);color:var(--text);background:var(--surface2)}
+.btn-blue{
+  background:var(--blue);color:#fff;border-color:var(--blue);
+  box-shadow:0 2px 8px rgba(37,99,235,0.18);
+}
+.btn-blue:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,0.26)}
+.btn-red{background:var(--red-light);color:var(--red);border-color:var(--red-border)}
+.btn-red:hover{background:#fee2e2}
+.btn-sm{padding:6px 11px;font-size:.74rem}
+.btn-xs{padding:4px 9px;font-size:.69rem}
+
+/* ═══════════ PAGINATION ═══════════ */
+.pagination{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:14px;flex-wrap:wrap}
+.pg-info{font-size:.71rem;color:var(--text-muted);margin-right:auto;font-family:monospace}
 .pg-btn{
-  padding:.35rem .72rem;
-  background:var(--surface2);border:1.5px solid var(--border);
+  padding:5px 10px;background:var(--surface);border:1.5px solid var(--border);
   border-radius:var(--radius-sm);color:var(--text-secondary);
-  font-size:.75rem;cursor:pointer;transition:all .18s;font-family:'Outfit',sans-serif;
+  font-size:.74rem;cursor:pointer;transition:all var(--t);font-family:'Inter',sans-serif;
 }
-.pg-btn:hover:not(:disabled){border-color:var(--green);color:var(--green)}
+.pg-btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}
 .pg-btn:disabled{opacity:.3;cursor:default}
-.pg-btn.active{background:var(--green-light);border-color:var(--green);color:var(--green);font-weight:600}
+.pg-btn.active{background:var(--blue-light);border-color:var(--blue);color:var(--blue);font-weight:600}
 
-/* ═══════════════════════════════════════════
-   DETAIL VIEWS
-═══════════════════════════════════════════ */
+/* ═══════════ DETAIL VIEWS ═══════════ */
 .breadcrumb{
-  display:flex;align-items:center;gap:.5rem;
-  font-size:.75rem;color:var(--text-muted);
-  margin-bottom:1.25rem;flex-wrap:wrap;
+  display:flex;align-items:center;gap:6px;
+  font-size:.75rem;color:var(--text-muted);margin-bottom:18px;flex-wrap:wrap;
 }
-.breadcrumb a{color:var(--text-muted);cursor:pointer;text-decoration:none;transition:color .15s}
-.breadcrumb a:hover{color:var(--green)}
+.breadcrumb a{color:var(--text-muted);cursor:pointer;transition:color var(--t)}
+.breadcrumb a:hover{color:var(--blue)}
 .breadcrumb span{color:var(--text-secondary)}
 .bc-sep{color:var(--border-mid)}
 
 .profile-header{
   display:grid;grid-template-columns:auto 1fr auto;
-  gap:1.5rem;align-items:start;
+  gap:20px;align-items:start;
   background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:1.5rem;
-  margin-bottom:1.25rem;box-shadow:var(--shadow-sm);
+  border-radius:var(--radius);padding:22px;
+  margin-bottom:16px;box-shadow:var(--shadow-sm);
 }
 .avatar{
-  width:68px;height:68px;border-radius:12px;
+  width:60px;height:60px;border-radius:14px;
   display:flex;align-items:center;justify-content:center;
-  font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;
-  flex-shrink:0;
+  font-size:1.5rem;font-weight:800;flex-shrink:0;letter-spacing:-0.02em;
 }
-.av-driver{
-  background:linear-gradient(135deg,rgba(0,229,160,0.15),rgba(0,229,160,0.08));
-  color:var(--green);border:1px solid var(--green-border);
-}
-.av-passenger{
-  background:linear-gradient(135deg,rgba(77,159,255,0.15),rgba(77,159,255,0.08));
-  color:var(--blue);border:1px solid var(--blue-border);
-}
-.profile-name{
-  font-family:'Syne',sans-serif;
-  font-size:1.4rem;font-weight:700;
-  color:var(--text);margin-bottom:.35rem;letter-spacing:-.02em;
-}
+.av-driver{background:var(--green-light);color:var(--green);border:1px solid var(--green-border)}
+.av-passenger{background:var(--blue-light);color:var(--blue);border:1px solid var(--blue-border)}
+.profile-name{font-size:1.3rem;font-weight:800;letter-spacing:-0.03em;color:var(--text);margin-bottom:4px}
 .profile-meta{
   font-size:.78rem;color:var(--text-muted);
-  display:flex;gap:.875rem;flex-wrap:wrap;margin-bottom:.5rem;
+  display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px;
 }
-.profile-meta span{display:flex;align-items:center;gap:.3rem}
-.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;text-align:right}
-.ps-val{
-  font-family:'Syne',sans-serif;
-  font-size:1.4rem;font-weight:700;color:var(--text);
-}
-.ps-label{font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;font-family:'JetBrains Mono',monospace}
+.profile-meta span{display:flex;align-items:center;gap:4px}
+.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;text-align:right}
+.ps-val{font-size:1.4rem;font-weight:800;letter-spacing:-0.03em;color:var(--text)}
+.ps-label{font-size:.63rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em}
 
-.detail-grid{display:grid;grid-template-columns:1fr 2fr;gap:1rem}
-.info-list{display:flex;flex-direction:column;gap:.4rem}
+.detail-grid{display:grid;grid-template-columns:1fr 2fr;gap:14px}
+.info-list{display:flex;flex-direction:column;gap:5px}
 .info-row{
   display:flex;align-items:center;justify-content:space-between;
-  padding:.575rem .875rem;
-  background:var(--surface2);border-radius:var(--radius-sm);
-  font-size:.8rem;border:1px solid var(--border);
+  padding:8px 12px;background:var(--surface2);
+  border-radius:var(--radius-sm);font-size:.8rem;border:1px solid var(--border);
 }
-.info-row-label{color:var(--text-muted);font-weight:600;text-transform:uppercase;font-size:.65rem;letter-spacing:.07em;font-family:'JetBrains Mono',monospace}
-.info-row-val{color:var(--text);text-align:right}
+.info-row-label{color:var(--text-muted);font-weight:600;text-transform:uppercase;font-size:.62rem;letter-spacing:.07em}
+.info-row-val{color:var(--text);text-align:right;font-weight:500}
 
+/* ═══════════ RIDE DETAIL ═══════════ */
 .ride-detail-card{
   background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:1.5rem;
-  margin-bottom:1rem;box-shadow:var(--shadow-sm);
+  border-radius:var(--radius);padding:22px;
+  margin-bottom:14px;box-shadow:var(--shadow-sm);
 }
-.rdc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;gap:1rem;flex-wrap:wrap}
-.rdc-title{
-  font-family:'Syne',sans-serif;
-  font-size:1.1rem;font-weight:700;color:var(--text);letter-spacing:-.02em;
-}
-.rdc-id{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-muted);margin-top:.25rem}
+.rdc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:14px;flex-wrap:wrap}
+.rdc-title{font-size:1.15rem;font-weight:800;letter-spacing:-0.025em;color:var(--text)}
+.rdc-id{font-size:.7rem;color:var(--text-muted);margin-top:3px;font-family:monospace}
 
+/* Route visualizer */
 .route-vis{
   display:grid;grid-template-columns:1fr auto 1fr;
-  gap:.75rem;align-items:center;
-  background:var(--surface2);border-radius:var(--radius);
-  padding:1rem 1.25rem;margin-bottom:1.25rem;
-  border:1px solid var(--border);
+  gap:12px;align-items:center;
+  background:var(--surface2);border-radius:var(--radius-sm);
+  padding:14px 18px;margin-bottom:20px;border:1px solid var(--border);
 }
 .route-point{text-align:center}
-.route-point-label{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.35rem;font-family:'JetBrains Mono',monospace}
-.route-point-loc{font-size:.875rem;font-weight:500;color:var(--text)}
-.route-arrow{color:var(--text-muted);font-size:1.25rem;text-align:center;opacity:.5}
+.route-point-label{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px}
+.route-point-loc{font-size:.875rem;font-weight:600;color:var(--text)}
+.route-arrow{color:var(--text-muted);font-size:1.2rem;text-align:center;opacity:.5}
 
-.rdc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.25rem}
+.rdc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
 .rdc-field label{
   font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--text-muted);display:block;margin-bottom:.25rem;
-  font-family:'JetBrains Mono',monospace;
+  color:var(--text-muted);display:block;margin-bottom:4px;
 }
-.rdc-field .val{font-size:.875rem;color:var(--text)}
+.rdc-field .val{font-size:.875rem;font-weight:500;color:var(--text)}
 
+/* Entity chips */
 .entity-chip{
-  display:inline-flex;align-items:center;gap:.5rem;
-  padding:.5rem .875rem;
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:var(--radius-sm);cursor:pointer;
-  transition:all .18s;text-decoration:none;width:100%;
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 14px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);cursor:pointer;transition:all var(--t);width:100%;
 }
-.entity-chip:hover{border-color:var(--green);background:var(--green-light)}
+.entity-chip:hover{border-color:var(--blue);background:var(--blue-light)}
 .entity-chip-icon{
-  width:24px;height:24px;border-radius:4px;
-  display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;
+  width:26px;height:26px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;
 }
-.entity-chip-label{font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;display:block;font-family:'JetBrains Mono',monospace}
-.entity-chip-name{font-size:.82rem;font-weight:600;color:var(--text)}
+.entity-chip-label{font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;display:block}
+.entity-chip-name{font-size:.84rem;font-weight:600;color:var(--text)}
 
-/* Timeline (profile) */
-.timeline{position:relative;padding-left:1.5rem}
-.timeline::before{content:'';position:absolute;left:.5rem;top:0;bottom:0;width:1px;background:var(--border)}
-.tl-item{position:relative;margin-bottom:1.1rem;padding-left:.75rem;cursor:pointer}
-.tl-dot{position:absolute;left:-1.375rem;top:.25rem;width:8px;height:8px;border-radius:50%;background:var(--border-mid);border:2px solid var(--bg);}
-.tl-dot.active{background:var(--green);box-shadow:0 0 0 3px var(--green-light)}
-.tl-date{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--text-muted);margin-bottom:.2rem}
+/* Fare timeline */
+.fare-timeline-step{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:12px 14px;border:1px solid var(--border);
+  margin-top:-1px;position:relative;transition:background .15s;
+}
+.fare-timeline-step:first-child{border-radius:var(--radius-sm) var(--radius-sm) 0 0}
+.fare-timeline-step:last-child{border-radius:0 0 var(--radius-sm) var(--radius-sm)}
+.fare-timeline-step.is-final{background:var(--green-light);border-color:var(--green-border);z-index:2}
+.fare-timeline-step:not(.is-final){background:var(--surface2)}
+.fare-step-icon{
+  width:28px;height:28px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;flex-shrink:0;
+}
+.fare-step-actor{
+  font-size:.66rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  font-family:monospace;margin-bottom:2px;
+}
+.fare-step-amount{font-size:1.05rem;font-weight:800;letter-spacing:-0.025em;color:var(--text)}
+.fare-step-amount.final-amount{color:var(--green)}
+.fare-step-ts{font-size:.62rem;color:var(--text-muted);margin-top:2px}
+.final-pill{
+  font-size:.63rem;font-weight:700;color:var(--green);align-self:center;
+  padding:3px 9px;background:var(--green-light);border:1px solid var(--green-border);
+  border-radius:20px;margin-left:auto;flex-shrink:0;letter-spacing:.05em;text-transform:uppercase;
+}
+.data-source-pill{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:.62rem;font-weight:600;padding:2px 7px;border-radius:20px;
+  margin-left:8px;letter-spacing:.04em;vertical-align:middle;
+}
+.ds-live{background:var(--green-light);color:var(--green);border:1px solid var(--green-border)}
+.ds-fallback{background:var(--surface3);color:var(--text-muted);border:1px solid var(--border)}
+
+/* Timeline */
+.timeline{position:relative;padding-left:20px}
+.timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:1px;background:var(--border)}
+.tl-item{position:relative;margin-bottom:14px;padding-left:10px;cursor:pointer}
+.tl-dot{position:absolute;left:-18px;top:3px;width:8px;height:8px;border-radius:50%;background:var(--border-mid);border:2px solid var(--surface)}
+.tl-dot.active{background:var(--green-mid);box-shadow:0 0 0 3px var(--green-light)}
+.tl-date{font-family:monospace;font-size:.67rem;color:var(--text-muted);margin-bottom:2px}
 .tl-title{font-size:.8rem;font-weight:600;color:var(--text)}
-.tl-sub{font-size:.74rem;color:var(--text-muted);margin-top:.1rem}
+.tl-sub{font-size:.73rem;color:var(--text-muted);margin-top:2px}
 
 /* Analytics */
 .graph-wrap{
-  position:relative;height:360px;
-  background:var(--surface2);border-radius:var(--radius);
-  overflow:hidden;border:1px solid var(--border);
+  position:relative;height:340px;background:var(--surface2);
+  border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border);
 }
 #graphCanvas{width:100%;height:100%}
-.graph-legend{position:absolute;bottom:1rem;left:1rem;display:flex;gap:.75rem;flex-wrap:wrap}
-.gl-item{display:flex;align-items:center;gap:.35rem;font-size:.7rem;color:var(--text-muted)}
+.graph-legend{position:absolute;bottom:14px;left:14px;display:flex;gap:10px;flex-wrap:wrap}
+.gl-item{display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--text-muted)}
 .gl-dot{width:7px;height:7px;border-radius:50%}
 
-/* Fare timeline (ride detail) */
-.fare-timeline-step{
-  display:flex;align-items:flex-start;gap:.875rem;
-  padding:.75rem 1rem;
-  border:1px solid var(--border);
-  margin-top:-1px;position:relative;
-  transition:background .15s;
-}
-.fare-timeline-step:first-child{border-radius:var(--radius) var(--radius) 0 0}
-.fare-timeline-step:last-child{border-radius:0 0 var(--radius) var(--radius)}
-.fare-timeline-step.is-final{
-  background:var(--green-light);
-  border-color:var(--green-border);
-  z-index:2;
-}
-.fare-timeline-step:not(.is-final){background:var(--surface2)}
-.fare-step-icon{
-  width:28px;height:28px;border-radius:6px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.75rem;flex-shrink:0;
-}
-.fare-step-actor{
-  font-size:.68rem;font-weight:700;
-  letter-spacing:.06em;text-transform:uppercase;
-  font-family:'JetBrains Mono',monospace;
-  margin-bottom:.1rem;
-}
-.fare-step-amount{
-  font-family:'JetBrains Mono',monospace;
-  font-size:1.05rem;font-weight:600;
-  color:var(--text);
-}
-.fare-step-amount.final-amount{color:var(--green)}
-.fare-step-ts{font-size:.62rem;color:var(--text-muted);margin-top:.15rem}
-.final-pill{
-  font-size:.65rem;font-weight:700;
-  color:var(--green);align-self:center;
-  padding:.22rem .6rem;
-  background:var(--green-light);border:1px solid var(--green-border);
-  border-radius:99px;margin-left:auto;flex-shrink:0;
-  font-family:'JetBrains Mono',monospace;letter-spacing:.05em;
-}
-.data-source-pill{
-  display:inline-flex;align-items:center;gap:.35rem;
-  font-size:.64rem;font-weight:600;
-  padding:.15rem .55rem;border-radius:99px;
-  margin-left:.625rem;font-family:'JetBrains Mono',monospace;
-  letter-spacing:.04em;vertical-align:middle;
-}
-.ds-live{background:var(--green-light);color:var(--green);border:1px solid var(--green-border)}
-.ds-live::before{content:'●';margin-right:.2rem;animation:pulse 1.5s infinite}
-.ds-fallback{background:rgba(255,255,255,0.04);color:var(--text-muted);border:1px solid var(--border)}
-
 /* Empty & loader */
-.empty{padding:3rem;text-align:center;color:var(--text-muted)}
-.empty-icon{font-size:2.25rem;margin-bottom:.75rem;opacity:.3}
-.empty-title{font-size:.875rem;font-weight:600;color:var(--text-secondary);margin-bottom:.35rem}
+.empty{padding:40px;text-align:center;color:var(--text-muted)}
+.empty-icon{font-size:2rem;margin-bottom:10px;opacity:.5}
+.empty-title{font-size:.875rem;font-weight:600;color:var(--text-secondary);margin-bottom:4px}
 .empty-sub{font-size:.78rem}
-.loader{display:flex;align-items:center;justify-content:center;padding:2.5rem;color:var(--text-muted)}
-.spin{
-  width:18px;height:18px;
-  border:2px solid var(--border);border-top-color:var(--green);
-  border-radius:50%;animation:spin .7s linear infinite;margin-right:.75rem;
-}
+.loader{display:flex;align-items:center;justify-content:center;padding:32px;color:var(--text-muted)}
+.spin{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin-right:10px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* Toasts */
-.toast-wrap{
-  position:fixed;bottom:1.25rem;right:1.25rem;
-  z-index:1000;display:flex;flex-direction:column-reverse;gap:.5rem;
-}
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:1000;display:flex;flex-direction:column-reverse;gap:8px}
 .toast{
-  padding:.7rem 1.1rem;border-radius:var(--radius);
+  padding:10px 14px;border-radius:var(--radius);
   font-size:.8rem;font-weight:500;border:1px solid;
-  min-width:200px;max-width:320px;
+  min-width:200px;max-width:300px;
   animation:toastIn .3s cubic-bezier(0.34,1.56,0.64,1) forwards;
-  box-shadow:var(--shadow-lg);
-  font-family:'Outfit',sans-serif;
+  box-shadow:var(--shadow-lg);font-family:'Inter',sans-serif;
 }
 .toast.removing{animation:toastOut .22s ease forwards}
-@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
-@keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(10px)}}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(8px)}}
 .toast-info{background:var(--blue-light);color:var(--blue);border-color:var(--blue-border)}
 .toast-success{background:var(--green-light);color:var(--green);border-color:var(--green-border)}
 .toast-error{background:var(--red-light);color:var(--red);border-color:var(--red-border)}
+.toast-amber{background:var(--amber-light);color:var(--amber);border-color:var(--amber-border)}
 
-/* Tabs (profile detail) */
-.tab-bar{display:flex;gap:.25rem;margin-bottom:1.1rem;border-bottom:1px solid var(--border);padding-bottom:0}
-.tab-pill{
-  padding:.45rem 1rem;border:none;background:transparent;
-  color:var(--text-muted);
-  font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:500;
-  cursor:pointer;border-bottom:2px solid transparent;
-  margin-bottom:-1px;transition:all .18s;
+/* Driver confirmed card */
+.contact-info-block{
+  margin-top:14px;background:var(--blue-light);
+  border:1px solid var(--blue-border);border-radius:var(--radius-sm);padding:14px 16px;
 }
-.tab-pill:hover{color:var(--text-secondary)}
-.tab-pill.active{color:var(--green);border-bottom-color:var(--green)}
-.tab-pane{display:none}
-.tab-pane.active{display:block}
-
-.divider{height:1px;background:var(--border);margin:1.25rem 0}
-
-/* ═══════════════════════════════════════════
-   RESPONSIVE BREAKPOINTS
-═══════════════════════════════════════════ */
-@media(max-width:1200px){
-  :root{--sidebar-w:0px}
-  .dash-grid{grid-template-columns:1fr}
+.contact-info-block-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.contact-avatar-sm{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),#6366f1);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0;
 }
-@media(max-width:960px){
+.contact-avatar-sm.green-avatar{background:linear-gradient(135deg,var(--green),#059669)}
+.contact-info-name{font-size:.84rem;font-weight:700;color:var(--text)}
+.contact-info-role{font-size:.66rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--blue);margin-top:1px}
+.contact-info-row{
+  display:flex;align-items:center;gap:8px;padding:7px 0;
+  border-top:1px solid var(--blue-border);font-size:.79rem;color:var(--text-secondary);
+}
+.contact-info-icon{font-size:.85rem;flex-shrink:0;opacity:.75}
+.driver-contact-block{
+  margin-top:14px;background:var(--green-light);
+  border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:14px 16px;
+}
+.driver-contact-block-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.driver-contact-name{font-size:.84rem;font-weight:700;color:var(--text)}
+.driver-contact-role{font-size:.66rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--green);margin-top:1px}
+.driver-contact-row{
+  display:flex;align-items:center;gap:8px;padding:7px 0;
+  border-top:1px solid var(--green-border);font-size:.79rem;color:var(--text-secondary);
+}
+a.phone-link{color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px;border-radius:4px;padding:1px 3px;margin:-1px -3px;transition:color var(--t)}
+a.phone-link:hover{color:var(--blue)}
+
+.divider{height:1px;background:var(--border);margin:18px 0}
+.hidden{display:none!important}
+.section-label{
+  font-size:.63rem;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-muted);
+  margin-bottom:10px;display:flex;align-items:center;gap:6px;
+}
+
+/* ═══════════ RESPONSIVE ═══════════ */
+@media(max-width:1100px){.dash-grid{grid-template-columns:1fr}}
+@media(max-width:900px){
   .dash-hero{grid-template-columns:repeat(2,1fr)}
   .detail-grid{grid-template-columns:1fr}
-  .profile-header{grid-template-columns:auto 1fr;gap:1rem}
+  .profile-header{grid-template-columns:auto 1fr;gap:14px}
   .profile-stats{grid-column:1/-1;grid-template-columns:repeat(3,1fr);text-align:left}
   .rdc-grid{grid-template-columns:1fr 1fr}
 }
 @media(max-width:768px){
   :root{--topbar-h:56px}
-  .topbar{padding:0 1rem}
+  .topbar{padding:0 16px}
   .topbar-nav{display:none}
   .hamburger{display:flex}
-  .global-search{width:160px}
-  .global-search:focus{width:190px}
-  .search-results-drop{width:calc(100vw - 2rem);right:0}
+  .global-search{width:130px}
+  .global-search:focus{width:160px}
   .rt-status{display:none}
-  .page,.detail-view{padding:1rem}
-  .page-title{font-size:1.25rem}
-  .dash-hero{grid-template-columns:repeat(2,1fr);gap:.75rem}
-  .kpi-val{font-size:1.7rem}
+  .admin-badge{display:none}
+  .page,.detail-view{padding:16px 16px 60px}
+  .dash-hero{grid-template-columns:repeat(2,1fr);gap:10px}
+  .kpi-val{font-size:1.6rem}
   .profile-header{grid-template-columns:1fr}
-  .profile-stats{grid-template-columns:repeat(3,1fr)}
-  .route-vis{grid-template-columns:1fr;gap:.5rem}
-  .route-arrow{transform:rotate(90deg);justify-self:center}
   .rdc-grid{grid-template-columns:1fr}
-  .detail-grid{grid-template-columns:1fr}
+  .route-vis{grid-template-columns:1fr;gap:8px}
+  .route-arrow{transform:rotate(90deg);justify-self:center}
 }
-@media(max-width:540px){
+@media(max-width:500px){
   .dash-hero{grid-template-columns:1fr 1fr}
-  .kpi{padding:.875rem 1rem}
-  .kpi-val{font-size:1.5rem}
-  .kpi-accent{font-size:1.1rem}
+  .kpi{padding:14px 16px}
+  .kpi-val{font-size:1.4rem}
   .profile-stats{grid-template-columns:repeat(3,1fr)}
   .ps-val{font-size:1.1rem}
-  .filter-panel.open{grid-template-columns:1fr 1fr}
-  table{font-size:.72rem}
-  th,td{padding:.6rem .75rem}
-  .toast-wrap{bottom:.75rem;right:.75rem;left:.75rem}
+  .toast-wrap{bottom:12px;right:12px;left:12px}
   .toast{max-width:100%}
-  .topbar-right{gap:.4rem}
-  .admin-badge{display:none}
-  .global-search{width:130px}
-  .global-search:focus{width:155px}
-}
-@media(max-width:380px){
-  .dash-hero{grid-template-columns:1fr}
-  .profile-stats{grid-template-columns:1fr 1fr 1fr}
-  .rdc-header{flex-direction:column}
 }
 </style>
 </head>
 <body>
 
-<!-- ═══════════════ LOGIN ═══════════════ -->
+<!-- ═══════════ LOGIN ═══════════ -->
 <div id="login">
   <div class="login-box">
     <div class="login-logo">
-      <span>RideBid</span>
-      <span class="login-logo-dot"></span>
+      <div class="login-logo-mark">🚗</div>
+      Ride<em>Bid</em>
     </div>
-    <div class="login-sub">// command_center v3.0</div>
+    <div class="login-sub">Admin Command Center</div>
     <div class="field">
       <label>Username</label>
       <input type="text" id="l-user" placeholder="superadmin" autocomplete="username"/>
@@ -883,18 +706,18 @@ tbody tr:hover td{color:var(--text)}
       <label>Password</label>
       <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"/>
     </div>
-    <button class="btn btn-accent" onclick="doLogin()">Access Command Center →</button>
+    <button class="btn-login" onclick="doLogin()">Access Command Center →</button>
     <div class="err-msg" id="l-err"></div>
   </div>
 </div>
 
-<!-- ═══════════════ APP ═══════════════ -->
+<!-- ═══════════ APP ═══════════ -->
 <div id="app">
 
-  <!-- Topbar -->
   <header class="topbar">
     <div class="topbar-logo">
-      <span class="logo-pip"></span>RideBid
+      <div class="topbar-logo-mark">🚗</div>
+      Ride<em style="font-style:normal;color:var(--blue)">Bid</em>
     </div>
     <div class="topbar-sep"></div>
     <nav class="topbar-nav">
@@ -923,7 +746,6 @@ tbody tr:hover td{color:var(--text)}
     </div>
   </header>
 
-  <!-- Mobile nav drawer -->
   <nav class="mobile-nav" id="mobile-nav">
     <button class="mobile-nav-pill active" onclick="showPage('dashboard');toggleMobileNav()">Dashboard</button>
     <button class="mobile-nav-pill" onclick="showPage('drivers');toggleMobileNav()">Drivers</button>
@@ -936,15 +758,12 @@ tbody tr:hover td{color:var(--text)}
 
   <!-- ── DASHBOARD ── -->
   <div class="page active" id="pg-dashboard">
-    <div class="page-title">
-      Command <span class="accent">Center</span>
-      <span class="title-badge">LIVE</span>
-    </div>
+    <div class="page-title">Command <span class="accent">Center</span> <span class="title-badge">LIVE</span></div>
     <div class="dash-hero">
-      <div class="kpi"><div class="kpi-label">Total Drivers</div><div class="kpi-val" id="k-drivers">—</div><div class="kpi-delta neutral" id="k-drivers-sub"></div><div class="kpi-accent">🚗</div></div>
-      <div class="kpi"><div class="kpi-label">Total Rides</div><div class="kpi-val" id="k-rides">—</div><div class="kpi-delta" id="k-rides-sub"></div><div class="kpi-accent">📍</div></div>
-      <div class="kpi"><div class="kpi-label">Active Rides</div><div class="kpi-val" id="k-active">—</div><div class="kpi-delta" id="k-active-sub"></div><div class="kpi-accent">⚡</div></div>
-      <div class="kpi"><div class="kpi-label">Online Drivers</div><div class="kpi-val" id="k-online">—</div><div class="kpi-delta" id="k-online-sub"></div><div class="kpi-accent">🟢</div></div>
+      <div class="kpi"><div class="kpi-label">Total Drivers</div><div class="kpi-val" id="k-drivers">—</div><div class="kpi-delta" id="k-drivers-sub"></div><div class="kpi-accent">🚗</div></div>
+      <div class="kpi"><div class="kpi-label">Total Rides</div><div class="kpi-val blue" id="k-rides">—</div><div class="kpi-delta" id="k-rides-sub"></div><div class="kpi-accent">📍</div></div>
+      <div class="kpi"><div class="kpi-label">Active Now</div><div class="kpi-val" id="k-active">—</div><div class="kpi-delta" id="k-active-sub"></div><div class="kpi-accent">⚡</div></div>
+      <div class="kpi"><div class="kpi-label">Online Drivers</div><div class="kpi-val green" id="k-online">—</div><div class="kpi-delta" id="k-online-sub"></div><div class="kpi-accent">🟢</div></div>
     </div>
     <div class="dash-grid">
       <div class="card">
@@ -954,7 +773,7 @@ tbody tr:hover td{color:var(--text)}
       <div class="card">
         <div class="card-title"><span>Status Breakdown</span></div>
         <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
-        <div style="margin-top:1rem" id="status-legend"></div>
+        <div style="margin-top:14px" id="status-legend"></div>
       </div>
     </div>
     <div class="dash-grid">
@@ -979,18 +798,14 @@ tbody tr:hover td{color:var(--text)}
         <option value="online">Online</option>
         <option value="offline">Offline</option>
       </select>
-      <div style="margin-left:auto;display:flex;gap:.5rem;align-items:center">
-        <span style="font-size:.72rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace" id="drivers-count"></span>
-      </div>
+      <div style="margin-left:auto"><span style="font-size:.72rem;color:var(--text-muted)" id="drivers-count"></span></div>
     </div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
           <th onclick="sortTable('drivers','id')">ID <span class="sort-icon">↕</span></th>
           <th onclick="sortTable('drivers','name')">Name <span class="sort-icon">↕</span></th>
-          <th>Username</th>
-          <th>Contact</th>
-          <th>Vehicle</th>
+          <th>Username</th><th>Contact</th><th>Vehicle</th>
           <th onclick="sortTable('drivers','is_online')">Status <span class="sort-icon">↕</span></th>
           <th onclick="sortTable('drivers','created_at')">Joined <span class="sort-icon">↕</span></th>
           <th></th>
@@ -1006,7 +821,7 @@ tbody tr:hover td{color:var(--text)}
     <div class="page-title">Passenger <span class="accent">Directory</span></div>
     <div class="toolbar">
       <div class="toolbar-search"><span class="ts-icon">🔍</span><input placeholder="Name or phone…" oninput="filterPassengers(this.value)" id="passenger-search"/></div>
-      <div style="margin-left:auto"><span style="font-size:.72rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace" id="passengers-count"></span></div>
+      <div style="margin-left:auto"><span style="font-size:.72rem;color:var(--text-muted)" id="passengers-count"></span></div>
     </div>
     <div class="tbl-wrap">
       <table>
@@ -1038,7 +853,7 @@ tbody tr:hover td{color:var(--text)}
         <option value="expired">Expired</option>
       </select>
       <button class="filter-btn" id="rides-filter-toggle" onclick="toggleRideFilters()">⚙ Filters</button>
-      <div style="margin-left:auto"><span style="font-size:.72rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace" id="rides-count"></span></div>
+      <div style="margin-left:auto"><span style="font-size:.72rem;color:var(--text-muted)" id="rides-count"></span></div>
     </div>
     <div class="filter-panel" id="rides-filter-panel">
       <div class="fp-field"><label>Fare Min ($)</label><input type="number" id="fare-min" placeholder="0" oninput="applyRideFilters()"/></div>
@@ -1053,8 +868,7 @@ tbody tr:hover td{color:var(--text)}
         <thead><tr>
           <th>ID</th>
           <th onclick="sortTable('rides','passenger_name')">Passenger <span class="sort-icon">↕</span></th>
-          <th>Pickup</th>
-          <th>Dropoff</th>
+          <th>Pickup</th><th>Dropoff</th>
           <th onclick="sortTable('rides','offered_fare')">Fare <span class="sort-icon">↕</span></th>
           <th onclick="sortTable('rides','status')">Status <span class="sort-icon">↕</span></th>
           <th>Driver</th>
@@ -1069,8 +883,8 @@ tbody tr:hover td{color:var(--text)}
   <!-- ── ANALYTICS ── -->
   <div class="page" id="pg-analytics">
     <div class="page-title">Analytics <span class="accent">&amp; Insights</span></div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.25rem" id="analytics-kpis"></div>
-    <div class="dash-grid" style="margin-bottom:1rem">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px" id="analytics-kpis"></div>
+    <div class="dash-grid" style="margin-bottom:14px">
       <div class="card">
         <div class="card-title"><span>Fare Distribution</span></div>
         <div class="chart-wrap"><canvas id="fareChart"></canvas></div>
@@ -1080,14 +894,14 @@ tbody tr:hover td{color:var(--text)}
         <div class="chart-wrap"><canvas id="completionChart"></canvas></div>
       </div>
     </div>
-    <div class="card" style="margin-bottom:1rem">
+    <div class="card" style="margin-bottom:14px">
       <div class="card-title"><span>Relationship Flow — Drivers ↔ Rides ↔ Passengers</span></div>
       <div class="graph-wrap">
         <canvas id="graphCanvas"></canvas>
         <div class="graph-legend">
-          <div class="gl-item"><div class="gl-dot" style="background:#00e5a0"></div>Driver</div>
-          <div class="gl-item"><div class="gl-dot" style="background:#e8ff47"></div>Ride</div>
-          <div class="gl-item"><div class="gl-dot" style="background:#4d9fff"></div>Passenger</div>
+          <div class="gl-item"><div class="gl-dot" style="background:#16a34a"></div>Driver</div>
+          <div class="gl-item"><div class="gl-dot" style="background:#d97706"></div>Ride</div>
+          <div class="gl-item"><div class="gl-dot" style="background:#2563eb"></div>Passenger</div>
         </div>
       </div>
     </div>
@@ -1124,12 +938,11 @@ tbody tr:hover td{color:var(--text)}
   </div>
 
 </div><!-- /app -->
-
 <div class="toast-wrap" id="toasts"></div>
 
-<!-- ═══════════════════════════════════════════════════════════
+<!-- ═══════════════════════════════════════════
      SCRIPT
-═══════════════════════════════════════════════════════════ -->
+═══════════════════════════════════════════ -->
 <script>
 // ── Credentials ──
 const CREDS=[['superadmin','admin123'],['admin1','password123'],['testadmin','test123']];
@@ -1201,16 +1014,58 @@ async function bootApp(){
   renderRidesTable();
   renderAnalytics();
   if(sb) subscribeRealtime();
-  else    setRealtimeStatus('mock');
+  else   setRealtimeStatus('mock');
 }
 
-// ── Data tables ──
+// ─────────────────────────────────────────────
+// BUG FIX: resolveDriverForRide
+// Uses String() coercion for ALL UUID comparisons to avoid type mismatch.
+// Priority: accepted_by → countered_by → history driver_id
+// ─────────────────────────────────────────────
+function resolveDriverForRide(r) {
+  // Try accepted_by first (direct accept or accept-counter)
+  if (r.accepted_by != null) {
+    const d = state.drivers.find(d => String(d.id) === String(r.accepted_by));
+    if (d) return d;
+  }
+  // Fall back to countered_by (driver who sent the counter)
+  if (r.countered_by != null) {
+    const d = state.drivers.find(d => String(d.id) === String(r.countered_by));
+    if (d) return d;
+  }
+  // Last resort: check ride_history for driver_id
+  if (r._history_driver_id != null) {
+    const d = state.drivers.find(d => String(d.id) === String(r._history_driver_id));
+    if (d) return d;
+  }
+  return null;
+}
+
+// ─────────────────────────────────────────────
+// BUG FIX: getFinalFare
+// For completed rides: use final_fare from history if available,
+// then counter_fare (agreed negotiated amount), then offered_fare.
+// ─────────────────────────────────────────────
+function getFinalFare(r) {
+  if (r.status === 'completed' || r.status === 'confirmed') {
+    if (r.final_fare != null && r.final_fare !== '') return r.final_fare;
+    if (r.counter_fare != null && r.counter_fare !== '') return r.counter_fare;
+  }
+  return r.offered_fare;
+}
+
+// ─────────────────────────────────────────────
+// BUG FIX: loadAllData
+// - Correctly propagates driver_id from ride_history → _history_driver_id
+// - Keeps status='confirmed' if no history yet (not forced to 'completed')
+// - Merges accepted_by from history when missing on the ride_request row
+// - Uses String() for all ID comparisons
+// ─────────────────────────────────────────────
 const TABLE_DRIVERS='drivers';
 const TABLE_PASSENGERS='passengers';
 const TABLE_REQUESTS='ride_requests';
 const TABLE_HISTORY='ride_history';
 
-// ── Load all data ──
 async function loadAllData(){
   if(!sb){loadMockData();return;}
   try{
@@ -1229,28 +1084,51 @@ async function loadAllData(){
     state.passengers=paRes.data||[];
     state.history=histRes.data||[];
 
+    // Build a lookup map: request_id → history record
     const histByReqId={};
-    state.history.forEach(h=>{histByReqId[String(h.request_id)]=h;});
+    state.history.forEach(h=>{ histByReqId[String(h.request_id)]=h; });
 
+    // FIX: Enrich each ride_request with history data where available
     const requests=(reqRes.data||[]).map(r=>{
       const hist=histByReqId[String(r.id)];
       if(hist){
-        return{...r,final_fare:hist.final_fare,completed_at:hist.completed_at,
-          accepted_by:r.accepted_by||hist.driver_id,
-          status:r.status==='confirmed'?'completed':(r.status||'completed'),
-          _has_history:true};
+        return {
+          ...r,
+          // Use history's final_fare (most authoritative)
+          final_fare: hist.final_fare,
+          completed_at: hist.completed_at,
+          // FIX: propagate driver_id from history so resolveDriverForRide works
+          _history_driver_id: hist.driver_id,
+          // FIX: set accepted_by from history if missing on the ride row
+          accepted_by: r.accepted_by || hist.driver_id,
+          // FIX: mark as completed only when history exists (means ride truly done)
+          status: 'completed',
+          _has_history: true
+        };
       }
-      return r;
+      return { ...r, _history_driver_id: null };
     });
 
+    // Also add history-only records (orphaned history without a ride_request)
     const requestIds=new Set(requests.map(r=>String(r.id)));
     state.history.forEach(h=>{
       if(!requestIds.has(String(h.request_id))){
-        requests.push({id:h.request_id,passenger_name:h.passenger_name,passenger_phone:'—',
-          pickup_location:h.pickup_location,dropoff_location:h.dropoff_location,
-          offered_fare:h.final_fare,final_fare:h.final_fare,status:'completed',
-          accepted_by:h.driver_id,created_at:h.completed_at,completed_at:h.completed_at,
-          _has_history:true,_history_only:true});
+        requests.push({
+          id: h.request_id,
+          passenger_name: h.passenger_name,
+          passenger_phone: '—',
+          pickup_location: h.pickup_location,
+          dropoff_location: h.dropoff_location,
+          offered_fare: h.final_fare,
+          final_fare: h.final_fare,
+          status: 'completed',
+          accepted_by: h.driver_id,
+          _history_driver_id: h.driver_id,
+          created_at: h.completed_at,
+          completed_at: h.completed_at,
+          _has_history: true,
+          _history_only: true
+        });
       }
     });
 
@@ -1272,7 +1150,7 @@ function subscribeRealtime(){
     const idx=arr.findIndex(x=>String(x.id)===String(record.id));
     if(idx>=0)arr.splice(idx,1);
   }
-  function refreshAll(src,eventType,rec){
+  function refreshAll(){
     renderDashboard();renderDriversTable();renderPassengersTable();renderRidesTable();
     if(document.getElementById('pg-analytics').classList.contains('active')) renderAnalytics();
   }
@@ -1281,14 +1159,14 @@ function subscribeRealtime(){
     .on('postgres_changes',{event:'*',schema:'public',table:TABLE_DRIVERS},(payload)=>{
       const{eventType,new:rec,old}=payload;
       if(eventType==='DELETE')removeFrom(state.drivers,old);else upsertInto(state.drivers,rec);
-      refreshAll(TABLE_DRIVERS,eventType,rec||old);
+      refreshAll();
     }).subscribe(s=>handleChannelStatus('drivers',s));
 
   sb.channel('admin-passengers')
     .on('postgres_changes',{event:'*',schema:'public',table:TABLE_PASSENGERS},(payload)=>{
       const{eventType,new:rec,old}=payload;
       if(eventType==='DELETE')removeFrom(state.passengers,old);else upsertInto(state.passengers,rec);
-      refreshAll(TABLE_PASSENGERS,eventType,rec||old);
+      refreshAll();
       if(eventType==='INSERT')toast(`New passenger: ${rec.name||rec.phone}`,'info');
     }).subscribe(s=>handleChannelStatus('passengers',s));
 
@@ -1297,21 +1175,33 @@ function subscribeRealtime(){
       let{eventType,new:rec,old}=payload;
       if(eventType==='DELETE'){removeFrom(state.rides,old);}
       else{
+        // FIX: Merge history data if already in state
         const hist=state.history.find(h=>String(h.request_id)===String(rec.id));
-        if(hist){rec.final_fare=hist.final_fare;rec.completed_at=hist.completed_at;rec.accepted_by=rec.accepted_by||hist.driver_id;rec.status='completed';rec._has_history=true;}
+        if(hist){
+          rec={
+            ...rec,
+            final_fare: hist.final_fare,
+            completed_at: hist.completed_at,
+            _history_driver_id: hist.driver_id,
+            accepted_by: rec.accepted_by || hist.driver_id,
+            status: 'completed',
+            _has_history: true
+          };
+        }
         const existing=state.rides.find(x=>String(x.id)===String(rec.id));
         if(existing){
-          rec={...existing,...rec,
-            final_fare:rec.final_fare??existing.final_fare,
-            completed_at:rec.completed_at??existing.completed_at,
-            pickup_time:rec.pickup_time??existing.pickup_time,
-            passenger_countered:rec.passenger_countered??existing.passenger_countered,
-            previous_counter_fare:rec.previous_counter_fare??existing.previous_counter_fare,
-            status:rec.status==='confirmed'&&existing.status==='completed'?'completed':rec.status};
+          rec={
+            ...existing,...rec,
+            final_fare: rec.final_fare ?? existing.final_fare,
+            completed_at: rec.completed_at ?? existing.completed_at,
+            _history_driver_id: rec._history_driver_id ?? existing._history_driver_id,
+            accepted_by: rec.accepted_by ?? existing.accepted_by,
+            pickup_time: rec.pickup_time ?? existing.pickup_time,
+          };
         }
         upsertInto(state.rides,rec);
       }
-      refreshAll(TABLE_REQUESTS,eventType,rec||old);
+      refreshAll();
       if(eventType==='INSERT')toast(`New ride from ${rec.passenger_name}`,'info');
       else if(eventType==='UPDATE'&&rec?.status){
         const em={confirmed:'✅',completed:'🏁',rejected:'❌',expired:'⏰',countered:'💬'}[rec.status]||'🔄';
@@ -1325,16 +1215,35 @@ function subscribeRealtime(){
       state.history.unshift(hist);
       const rideIdx=state.rides.findIndex(r=>String(r.id)===String(hist.request_id));
       if(rideIdx>=0){
-        state.rides[rideIdx]={...state.rides[rideIdx],status:'completed',final_fare:hist.final_fare,
-          completed_at:hist.completed_at,accepted_by:state.rides[rideIdx].accepted_by||hist.driver_id,_has_history:true};
+        // FIX: Full merge including _history_driver_id and accepted_by fallback
+        state.rides[rideIdx]={
+          ...state.rides[rideIdx],
+          status: 'completed',
+          final_fare: hist.final_fare,
+          completed_at: hist.completed_at,
+          _history_driver_id: hist.driver_id,
+          accepted_by: state.rides[rideIdx].accepted_by || hist.driver_id,
+          _has_history: true
+        };
       }else{
-        state.rides.unshift({id:hist.request_id,passenger_name:hist.passenger_name,passenger_phone:'—',
-          pickup_location:hist.pickup_location,dropoff_location:hist.dropoff_location,
-          offered_fare:hist.final_fare,final_fare:hist.final_fare,status:'completed',
-          accepted_by:hist.driver_id,created_at:hist.completed_at,completed_at:hist.completed_at,
-          _has_history:true,_history_only:true});
+        state.rides.unshift({
+          id: hist.request_id,
+          passenger_name: hist.passenger_name,
+          passenger_phone: '—',
+          pickup_location: hist.pickup_location,
+          dropoff_location: hist.dropoff_location,
+          offered_fare: hist.final_fare,
+          final_fare: hist.final_fare,
+          status: 'completed',
+          accepted_by: hist.driver_id,
+          _history_driver_id: hist.driver_id,
+          created_at: hist.completed_at,
+          completed_at: hist.completed_at,
+          _has_history: true,
+          _history_only: true
+        });
       }
-      refreshAll(TABLE_HISTORY,'INSERT',hist);
+      refreshAll();
       toast(`🏁 Ride completed — $${hist.final_fare}`,'success');
     }).subscribe(s=>handleChannelStatus('ride_history',s));
 }
@@ -1370,8 +1279,22 @@ function loadMockData(){
     const p=state.passengers[i%state.passengers.length];
     const d=state.drivers[i%state.drivers.length];
     const status=statuses[Math.floor(Math.random()*statuses.length)];
-    const fare=(80+Math.random()*400).toFixed(0);
-    return{id:i+1,passenger_id:p.id,passenger_name:p.name,passenger_phone:p.phone,pickup_location:places[Math.floor(Math.random()*places.length)],dropoff_location:places[Math.floor(Math.random()*places.length)],offered_fare:fare,counter_fare:status==='countered'?(+fare-20).toFixed(0):null,status,accepted_by:['confirmed','completed'].includes(status)?d.id:null,countered_by:status==='countered'?d.id:null,created_at:new Date(Date.now()-Math.random()*60*864e5).toISOString(),pickup_time:new Date(Date.now()+Math.random()*3600000).toISOString()};
+    const fare=+(80+Math.random()*400).toFixed(0);
+    const finalFare=status==='completed'?+(fare*(0.85+Math.random()*0.2)).toFixed(0):null;
+    return{
+      id:i+1,passenger_id:p.id,passenger_name:p.name,passenger_phone:p.phone,
+      pickup_location:places[Math.floor(Math.random()*places.length)],
+      dropoff_location:places[Math.floor(Math.random()*places.length)],
+      offered_fare:fare,
+      counter_fare:['countered','confirmed','completed'].includes(status)?+(fare*1.15).toFixed(0):null,
+      final_fare:finalFare,
+      status,
+      accepted_by:['confirmed','completed'].includes(status)?d.id:null,
+      countered_by:status==='countered'?d.id:null,
+      _history_driver_id:status==='completed'?d.id:null,
+      created_at:new Date(Date.now()-Math.random()*60*864e5).toISOString(),
+      pickup_time:new Date(Date.now()+Math.random()*3600000).toISOString()
+    };
   });
 }
 
@@ -1385,13 +1308,9 @@ function showPage(name,btn){
   else{
     const desktopBtn=document.getElementById('nav-'+name);
     if(desktopBtn)desktopBtn.classList.add('active');
-    document.querySelectorAll('.mobile-nav-pill').forEach(p=>{
-      if(p.getAttribute('onclick')&&p.getAttribute('onclick').includes("'"+name+"'"))p.classList.add('active');
-    });
   }
   state.currentPage=name;
 }
-
 function showDetailView(viewId){
   document.querySelectorAll('.page,.detail-view').forEach(p=>p.classList.remove('active'));
   document.getElementById(viewId).classList.add('active');
@@ -1419,40 +1338,59 @@ function renderDashboard(){
       ${recent.map(r=>`<tr onclick="openRideDetail('${r.id}')">
         <td><span class="link">${r.passenger_name}</span></td>
         <td style="max-width:180px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.73rem;color:var(--text-muted)">${r.pickup_location} → ${r.dropoff_location}</div></td>
-        <td class="fare">${r.status==='completed'&&r.final_fare?r.final_fare:r.offered_fare}</td>
+        <td class="fare-cell">$${getFinalFare(r)}</td>
         <td><span class="badge b-${r.status}">${r.status}</span></td>
       </tr>`).join('')}
     </tbody></table></div>`;
 
   const statusCounts={};
   ri.forEach(r=>{statusCounts[r.status]=(statusCounts[r.status]||0)+1;});
+  const COLORS={'pending':'#d97706','confirmed':'#16a34a','completed':'#2563eb','countered':'#7c3aed','rejected':'#9ca3af','expired':'#d1d5db'};
   const sc=document.getElementById('statusChart');
   if(sc._chart)sc._chart.destroy();
-  sc._chart=new Chart(sc,{type:'doughnut',data:{labels:Object.keys(statusCounts),datasets:[{data:Object.values(statusCounts),backgroundColor:['#ffb930','#00e5a0','#4d9fff','#a78bfa','#ff5c7a','#22d3ee'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'68%'}});
-
-  document.getElementById('status-legend').innerHTML=Object.entries(statusCounts).map(([s,c])=>`<div style="display:flex;justify-content:space-between;align-items:center;font-size:.73rem;padding:.3rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--text-secondary)">${s}</span><span class="mono" style="color:var(--text)">${c}</span></div>`).join('');
+  sc._chart=new Chart(sc,{
+    type:'doughnut',
+    data:{
+      labels:Object.keys(statusCounts),
+      datasets:[{data:Object.values(statusCounts),backgroundColor:Object.keys(statusCounts).map(s=>COLORS[s]||'#ccc'),borderWidth:0,hoverOffset:4}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'68%'}
+  });
+  document.getElementById('status-legend').innerHTML=Object.entries(statusCounts).map(([s,c])=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:.73rem;padding:5px 0;border-bottom:1px solid var(--border)">
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:${COLORS[s]||'#ccc'};display:inline-block"></span>${s}</span>
+      <span class="mono" style="color:var(--text)">${c}</span>
+    </div>`).join('');
 
   const days=[],rideCounts=[];
   for(let i=6;i>=0;i--){
     const d=new Date(Date.now()-i*864e5);
     days.push(d.toLocaleDateString('en',{weekday:'short'}));
-    const start=new Date(d.setHours(0,0,0,0)).toISOString();
-    const end=new Date(d.setHours(23,59,59,999)).toISOString();
-    rideCounts.push(ri.filter(r=>r.created_at>=start&&r.created_at<=end).length);
+    const start=new Date(d);start.setHours(0,0,0,0);
+    const end=new Date(d);end.setHours(23,59,59,999);
+    rideCounts.push(ri.filter(r=>r.created_at>=start.toISOString()&&r.created_at<=end.toISOString()).length);
   }
   const ac=document.getElementById('activityChart');
   if(ac._chart)ac._chart.destroy();
-  ac._chart=new Chart(ac,{type:'bar',data:{labels:days,datasets:[{data:rideCounts,backgroundColor:'rgba(0,229,160,0.12)',borderColor:'var(--green)',borderWidth:2,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#5a6070',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#5a6070',font:{size:10}}}}}});
+  ac._chart=new Chart(ac,{
+    type:'bar',
+    data:{labels:days,datasets:[{data:rideCounts,backgroundColor:'rgba(37,99,235,0.1)',borderColor:'#2563eb',borderWidth:2,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#9ca3af',font:{size:10}}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#9ca3af',font:{size:10}}}}}
+  });
 
   const driverRideCounts={};
-  ri.filter(r=>r.accepted_by).forEach(r=>{driverRideCounts[r.accepted_by]=(driverRideCounts[r.accepted_by]||0)+1;});
+  // FIX: use String() for safe ID comparison
+  ri.filter(r=>r.accepted_by!=null||r._history_driver_id!=null).forEach(r=>{
+    const id=String(r.accepted_by||r._history_driver_id);
+    driverRideCounts[id]=(driverRideCounts[id]||0)+1;
+  });
   const topDrivers=Object.entries(driverRideCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
   document.getElementById('top-drivers-list').innerHTML=topDrivers.map(([id,cnt])=>{
-    const d=state.drivers.find(x=>x.id==id);if(!d)return'';
-    return`<div style="display:flex;align-items:center;gap:.75rem;padding:.6rem 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openDriverDetail('${d.id}')">
-      <div style="width:32px;height:32px;border-radius:6px;background:var(--green-light);color:var(--green);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.82rem;font-family:'Syne',sans-serif;flex-shrink:0">${d.name[0]}</div>
-      <div style="flex:1;min-width:0"><div style="font-size:.82rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.name}</div><div style="font-size:.7rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.vehicle_info||'No vehicle'}</div></div>
-      <div style="text-align:right;flex-shrink:0"><div class="fare">×${cnt}</div><div style="font-size:.65rem;color:var(--text-muted)">rides</div></div>
+    const d=state.drivers.find(x=>String(x.id)===id);if(!d)return'';
+    return`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openDriverDetail('${d.id}')">
+      <div style="width:32px;height:32px;border-radius:8px;background:var(--green-light);color:var(--green);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.82rem;flex-shrink:0">${d.name[0]}</div>
+      <div style="flex:1;min-width:0"><div style="font-size:.82rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.name}</div><div style="font-size:.7rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.vehicle_info||'No vehicle'}</div></div>
+      <div style="text-align:right;flex-shrink:0"><div class="fare-cell">×${cnt}</div><div style="font-size:.63rem;color:var(--text-muted)">rides</div></div>
     </div>`;
   }).join('')||'<div class="empty"><div class="empty-sub">No ride data yet</div></div>';
 }
@@ -1473,7 +1411,7 @@ function renderDriversTable(){
   document.getElementById('drivers-tbody').innerHTML=page.length?page.map(d=>`
     <tr onclick="openDriverDetail('${d.id}')">
       <td class="mono" style="color:var(--text-muted)">#${d.id}</td>
-      <td><div style="font-weight:500;color:var(--text)">${d.name}</div></td>
+      <td><div style="font-weight:600;color:var(--text)">${d.name}</div></td>
       <td class="mono">${d.username}</td>
       <td style="font-size:.76rem">${d.contact_no}</td>
       <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.74rem;color:var(--text-muted)">${d.vehicle_info||'—'}</td>
@@ -1500,7 +1438,7 @@ function renderPassengersTable(){
   document.getElementById('passengers-tbody').innerHTML=page.length?page.map(p=>`
     <tr onclick="openPassengerDetail('${p.id}')">
       <td class="mono" style="color:var(--text-muted)">#${p.id}</td>
-      <td><div style="font-weight:500;color:var(--text)">${p.name}</div></td>
+      <td><div style="font-weight:600;color:var(--text)">${p.name}</div></td>
       <td class="mono">${p.phone}</td>
       <td class="mono">${fmtDate(p.created_at)}</td>
       <td><button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();openPassengerDetail('${p.id}')">View →</button></td>
@@ -1514,11 +1452,12 @@ function getFilteredRides(){
   let list=[...state.rides];
   if(state.ridesFilter){const q=state.ridesFilter.toLowerCase();list=list.filter(r=>(r.passenger_name||'').toLowerCase().includes(q)||(r.pickup_location||'').toLowerCase().includes(q)||(r.dropoff_location||'').toLowerCase().includes(q)||(String(r.id)).includes(q));}
   if(state.ridesStatus)list=list.filter(r=>r.status===state.ridesStatus);
-  if(state.ridesFareMin)list=list.filter(r=>+r.offered_fare>=+state.ridesFareMin);
-  if(state.ridesFareMax)list=list.filter(r=>+r.offered_fare<=+state.ridesFareMax);
+  if(state.ridesFareMin)list=list.filter(r=>+getFinalFare(r)>=+state.ridesFareMin);
+  if(state.ridesFareMax)list=list.filter(r=>+getFinalFare(r)<=+state.ridesFareMax);
   if(state.ridesDateFrom)list=list.filter(r=>r.created_at>=state.ridesDateFrom);
   if(state.ridesDateTo)list=list.filter(r=>r.created_at<=state.ridesDateTo+'T23:59:59');
-  if(state.ridesDriverId)list=list.filter(r=>String(r.accepted_by||r.countered_by||'').includes(state.ridesDriverId));
+  // FIX: compare as String for driver ID filter
+  if(state.ridesDriverId)list=list.filter(r=>String(r.accepted_by||r._history_driver_id||r.countered_by||'').includes(state.ridesDriverId));
   list.sort((a,b)=>{const c=state.ridesSort.col,dir=state.ridesSort.dir,av=a[c]||'',bv=b[c]||'';return(isNaN(+av)?String(av).localeCompare(String(bv)):(+av)-(+bv))*dir;});
   return list;
 }
@@ -1527,13 +1466,21 @@ function renderRidesTable(){
   document.getElementById('rides-count').textContent=`${list.length} rides`;
   const pg=state.ridesPg,total=Math.ceil(list.length/PER_PAGE),page=list.slice((pg-1)*PER_PAGE,pg*PER_PAGE);
   document.getElementById('rides-tbody').innerHTML=page.length?page.map(r=>{
-    const drv=state.drivers.find(d=>d.id==r.accepted_by||d.id==r.countered_by);
+    // FIX: use resolveDriverForRide for consistent driver lookup
+    const drv=resolveDriverForRide(r);
+    const displayFare=getFinalFare(r);
     return`<tr onclick="openRideDetail('${r.id}')">
       <td class="mono" style="color:var(--text-muted)">#${r.id}</td>
-      <td><span class="link" onclick="event.stopPropagation();openPassengerDetailByPhone('${r.passenger_phone}')">${r.passenger_name}</span><div style="font-size:.68rem;color:var(--text-muted)">${r.passenger_phone}</div></td>
+      <td>
+        <span class="link" onclick="event.stopPropagation();openPassengerDetailByPhone('${r.passenger_phone}')">${r.passenger_name}</span>
+        <div style="font-size:.68rem;color:var(--text-muted)">${r.passenger_phone}</div>
+      </td>
       <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.74rem">${r.pickup_location}</td>
       <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.74rem">${r.dropoff_location}</td>
-      <td><span class="fare">${r.status==='completed'&&r.final_fare?r.final_fare:r.offered_fare}</span>${r.counter_fare?`<span class="counter-fare">$${r.counter_fare}</span>`:''}</td>
+      <td>
+        <span class="fare-cell">$${displayFare}</span>
+        ${r.counter_fare&&String(r.counter_fare)!==String(displayFare)?`<span class="counter-fare">$${r.offered_fare}</span>`:''}
+      </td>
       <td><span class="badge b-${r.status}">${r.status}</span></td>
       <td>${drv?`<span class="link" onclick="event.stopPropagation();openDriverDetail('${drv.id}')">${drv.name}</span>`:`<span style="color:var(--text-muted)">—</span>`}</td>
       <td class="mono">${fmtDate(r.created_at)}</td>
@@ -1576,23 +1523,23 @@ function sortTable(entity,col){
   if(entity==='rides')renderRidesTable();
 }
 
-// ═══════════════════════════════════════════════════════════
-// RIDE DETAIL — async, fetches ride_negotiations for timeline
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// RIDE DETAIL — with full bug fixes for completed rides
+// ═══════════════════════════════════════════════════════
 async function openRideDetail(id){
-  const r=state.rides.find(x=>x.id==id);
+  const r=state.rides.find(x=>String(x.id)===String(id));
   if(!r){toast('Ride not found','error');return;}
 
-  // ── Fetch full negotiation history from ride_negotiations table ──
   let negotiations=[];
   try{
     const res=await fetch(`/api/rides/${id}/negotiations`);
     if(res.ok){const d=await res.json();negotiations=d.negotiations||[];}
   }catch(e){
-    console.warn('[admin] Could not fetch negotiations, falling back to column timeline');
+    console.warn('[admin] Could not fetch negotiations, using column fallback');
   }
 
-  const drv=state.drivers.find(d=>d.id==r.accepted_by||d.id==r.countered_by);
+  // FIX: use resolveDriverForRide (String-safe)
+  const drv=resolveDriverForRide(r);
   document.getElementById('dv-ride-bc').textContent=`Ride #${r.id}`;
   document.getElementById('dv-ride-content').innerHTML=buildRideDetailHTML(r,drv,negotiations);
   showDetailView('dv-ride');
@@ -1600,9 +1547,36 @@ async function openRideDetail(id){
 }
 
 function buildRideDetailHTML(r,drv,negotiations=[]){
-  const displayFare=r.status==='completed'&&r.final_fare?r.final_fare:r.counter_fare||r.offered_fare;
+  const finalFare=getFinalFare(r);
   const timelineSteps=buildFareTimeline(r,negotiations);
   const isLiveData=negotiations.length>0;
+
+  // FIX: Correct phone link helper
+  function phoneLink(phone){
+    if(!phone||phone==='—'||phone==='N/A')return`<span style="color:var(--text-muted)">${phone||'N/A'}</span>`;
+    const dialable=phone.replace(/\s+/g,'');
+    return `<a href="tel:${dialable}" style="color:var(--blue);text-decoration:none;font-weight:500">📞 ${phone}</a>`;
+  }
+
+  // FIX: Driver contact block for confirmed/completed rides
+  const driverBlock = drv
+    ? `<div class="driver-contact-block">
+        <div class="driver-contact-block-header">
+          <div class="contact-avatar-sm green-avatar">${(drv.name||'D')[0].toUpperCase()}</div>
+          <div>
+            <div class="driver-contact-name">${drv.name}</div>
+            <div class="driver-contact-role">${r.status==='completed'?'Driver · Ride Completed':'Driver · En Route'}</div>
+          </div>
+        </div>
+        <div class="driver-contact-row">
+          <span class="contact-info-icon">📞</span>
+          ${phoneLink(drv.contact_no)}
+        </div>
+        ${drv.vehicle_info?`<div class="driver-contact-row"><span class="contact-info-icon">🚘</span><span>${drv.vehicle_info}</span></div>`:''}
+      </div>`
+    : (r.accepted_by||r._history_driver_id||r.countered_by)
+      ? `<div style="padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);font-size:.8rem;color:var(--text-muted);border:1px solid var(--border)">⏳ Driver details unavailable</div>`
+      : `<div style="padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);font-size:.8rem;color:var(--text-muted);border:1px solid var(--border)">No driver assigned yet</div>`;
 
   return`
     <div class="ride-detail-card">
@@ -1610,14 +1584,14 @@ function buildRideDetailHTML(r,drv,negotiations=[]){
         <div>
           <div class="rdc-title">
             Ride Request
-            <span class="badge b-${r.status}" style="margin-left:.625rem">${r.status}</span>
+            <span class="badge b-${r.status}" style="margin-left:10px">${r.status}</span>
           </div>
           <div class="rdc-id">ID: #${r.id} · Created ${fmtDateTime(r.created_at)}</div>
         </div>
         <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.25rem;font-family:'JetBrains Mono',monospace">${r.status==='completed'?'Final Fare':'Current Fare'}</div>
-          <div class="fare" style="font-size:1.75rem">${displayFare}</div>
-          ${r.status!=='completed'&&r.offered_fare?`<div style="font-size:.72rem;color:var(--text-muted);margin-top:.2rem">Initial offer: $${r.offered_fare}</div>`:''}
+          <div style="font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px">${r.status==='completed'?'Final Fare':'Current Fare'}</div>
+          <div class="fare-cell" style="font-size:1.75rem;font-weight:800;letter-spacing:-0.04em">$${finalFare}</div>
+          ${r.offered_fare&&String(r.offered_fare)!==String(finalFare)?`<div style="font-size:.72rem;color:var(--text-muted);margin-top:2px;text-decoration:line-through">Initial offer: $${r.offered_fare}</div>`:''}
         </div>
       </div>
 
@@ -1633,30 +1607,32 @@ function buildRideDetailHTML(r,drv,negotiations=[]){
         </div>
       </div>
 
-      <!-- Fare Negotiation Timeline -->
-      <div style="margin-bottom:1.25rem">
-        <div style="font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.75rem;font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+      <!-- Fare Timeline -->
+      <div style="margin-bottom:20px">
+        <div class="section-label">
           💬 Fare Negotiation Timeline
-          <span class="data-source-pill ${isLiveData?'ds-live':'ds-fallback'}">${isLiveData?`${negotiations.length} steps · live data`:'reconstructed from columns'}</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;font-size:.62rem;font-weight:600;padding:2px 7px;border-radius:20px;letter-spacing:.04em;background:${isLiveData?'var(--green-light)':'var(--surface3)'};color:${isLiveData?'var(--green)':'var(--text-muted)'};border:1px solid ${isLiveData?'var(--green-border)':'var(--border)'}">
+            ${isLiveData?`✓ ${negotiations.length} steps · live data`:'reconstructed'}
+          </span>
         </div>
-        <div style="display:flex;flex-direction:column;gap:0">
+        <div>
           ${timelineSteps.length
             ? timelineSteps.map((step,i,arr)=>{
                 const isFirst=i===0,isLast=i===arr.length-1;
-                const borderR=isFirst?'var(--radius) var(--radius) 0 0':isLast?'0 0 var(--radius) var(--radius)':'0';
+                const borderR=isFirst?'var(--radius-sm) var(--radius-sm) 0 0':isLast?'0 0 var(--radius-sm) var(--radius-sm)':'0';
                 return`<div class="fare-timeline-step${step.isFinal?' is-final':''}" style="border-radius:${borderR}">
-                  <div class="fare-step-icon" style="background:${step.isFinal?'var(--green-light)':step.color+'18'};border:1.5px solid ${step.isFinal?'var(--green-border)':step.color+'40'}">
+                  <div class="fare-step-icon" style="background:${step.isFinal?'var(--green-light)':step.bgColor};border:1.5px solid ${step.isFinal?'var(--green-border)':step.borderColor}">
                     ${step.icon}
                   </div>
                   <div style="flex:1;min-width:0">
                     <div class="fare-step-actor" style="color:${step.isFinal?'var(--green)':step.color}">${step.actor} · ${step.action}</div>
-                    <div class="fare-step-amount ${step.isFinal?'final-amount':''}">${step.fare}</div>
-                    ${step.roundLabel?`<div class="fare-step-ts">${step.roundLabel}</div>`:''}
+                    <div class="fare-step-amount ${step.isFinal?'final-amount':''}">$${step.fare}</div>
+                    ${step.ts?`<div class="fare-step-ts">${step.ts}</div>`:''}
                   </div>
                   ${step.isFinal?`<span class="final-pill">FINAL</span>`:(i<arr.length-1?`<div style="font-size:.75rem;color:var(--text-dim);align-self:center;flex-shrink:0">→</div>`:'')}
                 </div>`;
               }).join('')
-            : `<div style="padding:1rem;background:var(--surface2);border-radius:var(--radius);color:var(--text-muted);font-size:.8rem;border:1px solid var(--border)">No fare data available</div>`}
+            : `<div style="padding:12px;background:var(--surface2);border-radius:var(--radius-sm);color:var(--text-muted);font-size:.8rem;border:1px solid var(--border)">No fare data available</div>`}
         </div>
       </div>
 
@@ -1664,93 +1640,160 @@ function buildRideDetailHTML(r,drv,negotiations=[]){
         <div class="rdc-field"><label>Pickup Time</label><div class="val mono">${r.pickup_time?fmtDateTime(r.pickup_time):'Not set'}</div></div>
         <div class="rdc-field"><label>Status</label><div class="val"><span class="badge b-${r.status}">${r.status}</span></div></div>
         <div class="rdc-field"><label>Created</label><div class="val mono">${fmtDateTime(r.created_at)}</div></div>
+        ${r.completed_at?`<div class="rdc-field"><label>Completed</label><div class="val mono">${fmtDateTime(r.completed_at)}</div></div>`:''}
+        ${r.final_fare?`<div class="rdc-field"><label>Final Fare</label><div class="val fare-cell">$${r.final_fare}</div></div>`:''}
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.25rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px">
         <div>
-          <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:.5rem;font-family:'JetBrains Mono',monospace">Passenger</div>
+          <div class="section-label" style="margin-bottom:8px">Passenger</div>
           <div class="entity-chip" onclick="openPassengerDetailByPhone('${r.passenger_phone}')">
             <div class="entity-chip-icon" style="background:var(--blue-light);color:var(--blue)">👤</div>
-            <div><span class="entity-chip-label">Passenger</span><span class="entity-chip-name">${r.passenger_name}</span><div style="font-size:.68rem;color:var(--text-muted);margin-top:1px">${r.passenger_phone}</div></div>
-            <span style="margin-left:auto;color:var(--text-muted);font-size:.85rem">→</span>
+            <div>
+              <span class="entity-chip-label">Passenger</span>
+              <span class="entity-chip-name">${r.passenger_name}</span>
+              <div style="font-size:.68rem;color:var(--text-muted);margin-top:1px">${r.passenger_phone}</div>
+            </div>
+            <span style="margin-left:auto;color:var(--text-muted)">→</span>
           </div>
         </div>
         <div>
-          <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:.5rem;font-family:'JetBrains Mono',monospace">Driver</div>
-          ${drv?`<div class="entity-chip" onclick="openDriverDetail('${drv.id}')">
-            <div class="entity-chip-icon" style="background:var(--green-light);color:var(--green)">🚗</div>
-            <div><span class="entity-chip-label">Driver</span><span class="entity-chip-name">${drv.name}</span><div style="font-size:.68rem;color:var(--text-muted);margin-top:1px">${drv.vehicle_info||drv.contact_no}</div></div>
-            <span style="margin-left:auto;color:var(--text-muted);font-size:.85rem">→</span>
-          </div>`:`<div style="padding:.75rem;background:var(--surface2);border-radius:var(--radius-sm);font-size:.8rem;color:var(--text-muted);border:1px solid var(--border)">No driver assigned yet</div>`}
+          <div class="section-label" style="margin-bottom:8px">Driver</div>
+          ${drv
+            ? `<div class="entity-chip" onclick="openDriverDetail('${drv.id}')">
+                <div class="entity-chip-icon" style="background:var(--green-light);color:var(--green)">🚗</div>
+                <div>
+                  <span class="entity-chip-label">Driver</span>
+                  <span class="entity-chip-name">${drv.name}</span>
+                  <div style="font-size:.68rem;color:var(--text-muted);margin-top:1px">${drv.vehicle_info||drv.contact_no}</div>
+                </div>
+                <span style="margin-left:auto;color:var(--text-muted)">→</span>
+              </div>`
+            : `<div style="padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);font-size:.8rem;color:var(--text-muted);border:1px solid var(--border)">No driver assigned yet</div>`}
         </div>
       </div>
+
+      ${(r.status==='confirmed'||r.status==='completed')?`
+        <div class="divider" style="margin:18px 0"></div>
+        <div class="section-label" style="margin-bottom:8px">
+          ${r.status==='completed'?'🏁 Ride Completed':'✅ Ride Confirmed — Driver Contact'}
+        </div>
+        ${driverBlock}
+      `:''}
     </div>`;
 }
 
-// ═══════════════════════════════════════════════════════════
-// FARE TIMELINE — prefers ride_negotiations, falls back to columns
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// FARE TIMELINE — prefers live negotiations data
+// ═══════════════════════════════════════════════════════
 function buildFareTimeline(r, negotiations=[]) {
-  // ── Path A: real data from ride_negotiations table ──
   if(negotiations.length>0){
-    return negotiations.map((n)=>{
+    return negotiations.map(n=>{
+      const isDriver=n.proposed_by==='driver';
       const isAccepted=n.status==='accepted';
       const isRejected=n.status==='rejected';
-      const isDriver=n.proposed_by==='driver';
       let action;
-      if(isAccepted)       action='Accepted';
-      else if(isRejected)  action='Declined & Closed';
-      else                 action=`Counter · Round ${n.round}`;
+      if(isAccepted)      action='Accepted';
+      else if(isRejected) action='Declined & Closed';
+      else                action=`Counter · Round ${n.round}`;
       return{
-        actor:      isDriver?'Driver':'Passenger',
+        actor: isDriver?'Driver':'Passenger',
         action,
-        fare:       `$${n.fare}`,
-        icon:       isAccepted?'✅':isRejected?'❌':isDriver?'🚗':'👤',
-        color:      isDriver?'var(--green)':'var(--blue)',
-        isFinal:    isAccepted,
-        roundLabel: n.created_at?fmtDateTime(n.created_at):null
+        fare: n.fare,
+        icon: isAccepted?'✅':isRejected?'❌':isDriver?'🚗':'👤',
+        color: isDriver?'var(--green)':'var(--blue)',
+        bgColor: isDriver?'var(--green-light)':'var(--blue-light)',
+        borderColor: isDriver?'var(--green-border)':'var(--blue-border)',
+        isFinal: isAccepted,
+        ts: n.created_at?fmtDateTime(n.created_at):null
       };
     });
   }
-  // ── Path B: reconstruct from ride_requests columns ──
   return buildFareTimelineFromColumns(r);
 }
 
-// Column-based fallback (original logic, unchanged)
+// FIX: Column-based fallback — cleaner logic, handles all flow variants
 function buildFareTimelineFromColumns(r){
   const steps=[];
-  const fmt=v=>v!=null&&v!==''?`$${v}`:null;
+
+  // Step 1: Passenger's original offer
   if(r.offered_fare!=null){
-    steps.push({actor:'Passenger',action:'Offered',fare:fmt(r.offered_fare),icon:'👤',color:'var(--blue)'});
+    steps.push({
+      actor:'Passenger',action:'Initial Offer',
+      fare:r.offered_fare,icon:'👤',
+      color:'var(--blue)',bgColor:'var(--blue-light)',borderColor:'var(--blue-border)'
+    });
   }
-  if(r.previous_counter_fare!=null&&String(r.previous_counter_fare)!==String(r.offered_fare)){
-    const firstActor=r.passenger_countered?'Driver':'Passenger';
-    steps.push({actor:firstActor,action:'Countered',fare:fmt(r.previous_counter_fare),icon:firstActor==='Driver'?'🚗':'👤',color:firstActor==='Driver'?'var(--green)':'var(--blue)'});
-  }
-  if(r.counter_fare!=null&&String(r.counter_fare)!==String(r.previous_counter_fare)&&String(r.counter_fare)!==String(r.offered_fare)){
+
+  // Step 2: If counter exists and differs from offered_fare, show negotiation
+  if(r.counter_fare!=null&&String(r.counter_fare)!==String(r.offered_fare)){
+    // previous_counter_fare helps reconstruct multi-round negotiation
+    if(r.previous_counter_fare!=null&&String(r.previous_counter_fare)!==String(r.offered_fare)&&String(r.previous_counter_fare)!==String(r.counter_fare)){
+      const firstActor=r.passenger_countered?'Driver':'Passenger';
+      const isDriver=firstActor==='Driver';
+      steps.push({
+        actor:firstActor,action:'Counter Offered',
+        fare:r.previous_counter_fare,icon:isDriver?'🚗':'👤',
+        color:isDriver?'var(--green)':'var(--blue)',
+        bgColor:isDriver?'var(--green-light)':'var(--blue-light)',
+        borderColor:isDriver?'var(--green-border)':'var(--blue-border)'
+      });
+    }
+    // Latest counter
     const lastActor=r.passenger_countered?'Passenger':'Driver';
-    steps.push({actor:lastActor,action:'Countered',fare:fmt(r.counter_fare),icon:lastActor==='Driver'?'🚗':'👤',color:lastActor==='Driver'?'var(--green)':'var(--blue)'});
+    const isDriverLast=lastActor==='Driver';
+    steps.push({
+      actor:lastActor,action:'Counter Offered',
+      fare:r.counter_fare,icon:isDriverLast?'🚗':'👤',
+      color:isDriverLast?'var(--green)':'var(--blue)',
+      bgColor:isDriverLast?'var(--green-light)':'var(--blue-light)',
+      borderColor:isDriverLast?'var(--green-border)':'var(--blue-border)'
+    });
   }
-  if(r.status==='completed'&&r.final_fare!=null){
-    const acceptedFare=fmt(r.final_fare);
+
+  // Step 3: Final accepted step for completed/confirmed rides
+  if(r.status==='completed'||r.status==='confirmed'){
+    const finalFare=getFinalFare(r);
     const lastStep=steps[steps.length-1];
-    if(!lastStep||String(r.final_fare)!==String(r.counter_fare||r.offered_fare)){
-      steps.push({actor:r.accepted_by?'Driver':'Both',action:'Accepted',fare:acceptedFare,icon:'✅',color:'var(--green)',isFinal:true});
+    // Only add if not already represented as the final counter
+    if(!lastStep||String(finalFare)!==String(lastStep.fare)){
+      steps.push({
+        actor:'Both',action:'Agreed & Accepted',
+        fare:finalFare,icon:'✅',
+        color:'var(--green)',bgColor:'var(--green-light)',borderColor:'var(--green-border)',
+        isFinal:true
+      });
     }else if(lastStep){
-      lastStep.action='Countered → Accepted';
+      lastStep.action='Counter → Accepted';
       lastStep.isFinal=true;
     }
   }
+
+  // Step 4: Rejected rides
+  if(r.status==='rejected'){
+    steps.push({
+      actor:'Passenger',action:'Declined & Closed',
+      fare:r.counter_fare||r.offered_fare,icon:'❌',
+      color:'var(--text-muted)',bgColor:'var(--surface3)',borderColor:'var(--border)'
+    });
+  }
+
   return steps;
 }
 
 // ── Driver detail ──
 function openDriverDetail(id){
-  const d=state.drivers.find(x=>x.id==id);
+  // FIX: String comparison for UUID-safe lookup
+  const d=state.drivers.find(x=>String(x.id)===String(id));
   if(!d){toast('Driver not found','error');return;}
-  const rides=state.rides.filter(r=>r.accepted_by==id||r.countered_by==id);
+  // FIX: use resolveDriverForRide-compatible logic for ride filtering
+  const rides=state.rides.filter(r=>
+    String(r.accepted_by)===String(d.id)||
+    String(r.countered_by)===String(d.id)||
+    String(r._history_driver_id)===String(d.id)
+  );
   const completed=rides.filter(r=>r.status==='completed');
-  const totalRev=completed.reduce((s,r)=>s+(+(r.final_fare||r.offered_fare)||0),0);
+  const totalRev=completed.reduce((s,r)=>s+(+getFinalFare(r)||0),0);
   document.getElementById('dv-driver-bc').textContent=d.name;
   document.getElementById('dv-driver-content').innerHTML=`
     <div class="profile-header">
@@ -1768,12 +1811,12 @@ function openDriverDetail(id){
       <div class="profile-stats">
         <div><div class="ps-val">${rides.length}</div><div class="ps-label">Rides</div></div>
         <div><div class="ps-val">${completed.length}</div><div class="ps-label">Done</div></div>
-        <div><div class="ps-val fare" style="font-size:1.15rem">$${totalRev.toFixed(0)}</div><div class="ps-label">Revenue</div></div>
+        <div><div class="ps-val fare-cell" style="font-size:1.1rem">$${totalRev.toFixed(0)}</div><div class="ps-label">Revenue</div></div>
       </div>
     </div>
     <div class="detail-grid">
       <div>
-        <div class="card" style="margin-bottom:1rem">
+        <div class="card" style="margin-bottom:14px">
           <div class="card-title"><span>Driver Info</span></div>
           <div class="info-list">
             <div class="info-row"><span class="info-row-label">ID</span><span class="info-row-val mono">#${d.id}</span></div>
@@ -1787,9 +1830,10 @@ function openDriverDetail(id){
         <div class="card">
           <div class="card-title"><span>Performance</span></div>
           <div class="info-list">
-            <div class="info-row"><span class="info-row-label">Avg Fare</span><span class="info-row-val fare">${completed.length?'$'+(totalRev/completed.length).toFixed(0):'—'}</span></div>
+            <div class="info-row"><span class="info-row-label">Avg Fare</span><span class="info-row-val fare-cell">${completed.length?'$'+(totalRev/completed.length).toFixed(0):'—'}</span></div>
             <div class="info-row"><span class="info-row-label">Completion %</span><span class="info-row-val">${rides.length?((completed.length/rides.length)*100).toFixed(0)+'%':'—'}</span></div>
             <div class="info-row"><span class="info-row-label">Pending</span><span class="info-row-val">${rides.filter(r=>r.status==='pending').length}</span></div>
+            <div class="info-row"><span class="info-row-label">Confirmed</span><span class="info-row-val">${rides.filter(r=>r.status==='confirmed').length}</span></div>
           </div>
         </div>
       </div>
@@ -1800,7 +1844,7 @@ function openDriverDetail(id){
             <td class="mono" style="color:var(--text-muted)">#${r.id}</td>
             <td>${r.passenger_name}</td>
             <td style="font-size:.72rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.pickup_location} → ${r.dropoff_location}</td>
-            <td class="fare">${r.status==='completed'&&r.final_fare?r.final_fare:r.offered_fare}</td>
+            <td class="fare-cell">$${getFinalFare(r)}</td>
             <td><span class="badge b-${r.status}">${r.status}</span></td>
             <td class="mono">${fmtDate(r.created_at)}</td>
           </tr>`).join('')}
@@ -1813,7 +1857,7 @@ function openDriverDetail(id){
 
 // ── Passenger detail ──
 function openPassengerDetail(id){
-  const p=state.passengers.find(x=>x.id==id);
+  const p=state.passengers.find(x=>String(x.id)===String(id));
   if(!p){toast('Passenger not found','error');return;}
   renderPassengerProfile(p);
 }
@@ -1827,9 +1871,9 @@ function openPassengerDetailByPhone(phone){
   renderPassengerProfile(p);
 }
 function renderPassengerProfile(p){
-  const rides=state.rides.filter(r=>r.passenger_phone===p.phone||r.passenger_id==p.id);
+  const rides=state.rides.filter(r=>r.passenger_phone===p.phone||String(r.passenger_id)===String(p.id));
   const completed=rides.filter(r=>r.status==='completed');
-  const totalSpent=completed.reduce((s,r)=>s+(+(r.final_fare||r.offered_fare)||0),0);
+  const totalSpent=completed.reduce((s,r)=>s+(+getFinalFare(r)||0),0);
   document.getElementById('dv-passenger-bc').textContent=p.name;
   document.getElementById('dv-passenger-content').innerHTML=`
     <div class="profile-header">
@@ -1844,12 +1888,12 @@ function renderPassengerProfile(p){
       <div class="profile-stats">
         <div><div class="ps-val">${rides.length}</div><div class="ps-label">Rides</div></div>
         <div><div class="ps-val">${completed.length}</div><div class="ps-label">Done</div></div>
-        <div><div class="ps-val fare" style="font-size:1.15rem">$${totalSpent.toFixed(0)}</div><div class="ps-label">Spent</div></div>
+        <div><div class="ps-val fare-cell" style="font-size:1.1rem">$${totalSpent.toFixed(0)}</div><div class="ps-label">Spent</div></div>
       </div>
     </div>
     <div class="detail-grid">
       <div>
-        <div class="card" style="margin-bottom:1rem">
+        <div class="card" style="margin-bottom:14px">
           <div class="card-title"><span>Info</span></div>
           <div class="info-list">
             <div class="info-row"><span class="info-row-label">ID</span><span class="info-row-val mono">#${p.id}</span></div>
@@ -1858,10 +1902,10 @@ function renderPassengerProfile(p){
             <div class="info-row"><span class="info-row-label">Joined</span><span class="info-row-val mono">${fmtDateTime(p.created_at)}</span></div>
           </div>
         </div>
-        <div class="card" style="margin-bottom:1rem">
+        <div class="card" style="margin-bottom:14px">
           <div class="card-title"><span>Activity</span></div>
           <div class="info-list">
-            <div class="info-row"><span class="info-row-label">Avg Fare</span><span class="info-row-val fare">${completed.length?'$'+(totalSpent/completed.length).toFixed(0):'—'}</span></div>
+            <div class="info-row"><span class="info-row-label">Avg Fare</span><span class="info-row-val fare-cell">${completed.length?'$'+(totalSpent/completed.length).toFixed(0):'—'}</span></div>
             <div class="info-row"><span class="info-row-label">Completion %</span><span class="info-row-val">${rides.length?((completed.length/rides.length)*100).toFixed(0)+'%':'—'}</span></div>
             <div class="info-row"><span class="info-row-label">Last Ride</span><span class="info-row-val mono">${rides.length?fmtDate(rides[0].created_at):'Never'}</span></div>
           </div>
@@ -1873,7 +1917,7 @@ function renderPassengerProfile(p){
               <div class="tl-dot ${r.status==='completed'?'active':''}"></div>
               <div class="tl-date">${fmtDateTime(r.created_at)}</div>
               <div class="tl-title">${r.pickup_location} → ${r.dropoff_location}</div>
-              <div class="tl-sub">${r.status==='completed'&&r.final_fare?r.final_fare:r.offered_fare} · <span class="badge b-${r.status}">${r.status}</span></div>
+              <div class="tl-sub">$${getFinalFare(r)} · <span class="badge b-${r.status}">${r.status}</span></div>
             </div>`).join('')}
           </div>
         </div>
@@ -1881,14 +1925,17 @@ function renderPassengerProfile(p){
       <div class="card">
         <div class="card-title"><span>Ride History</span></div>
         ${rides.length?`<div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Route</th><th>Fare</th><th>Status</th><th>Driver</th><th>Date</th></tr></thead><tbody>
-          ${rides.slice(0,30).map(r=>{const drv=state.drivers.find(d=>d.id==r.accepted_by);return`<tr onclick="openRideDetail('${r.id}')">
-            <td class="mono" style="color:var(--text-muted)">#${r.id}</td>
-            <td style="font-size:.72rem;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.pickup_location} → ${r.dropoff_location}</td>
-            <td class="fare">${r.status==='completed'&&r.final_fare?r.final_fare:r.offered_fare}</td>
-            <td><span class="badge b-${r.status}">${r.status}</span></td>
-            <td>${drv?`<span class="link" onclick="event.stopPropagation();openDriverDetail('${drv.id}')">${drv.name}</span>`:'—'}</td>
-            <td class="mono">${fmtDate(r.created_at)}</td>
-          </tr>`;}).join('')}
+          ${rides.slice(0,30).map(r=>{
+            const drv=resolveDriverForRide(r);
+            return`<tr onclick="openRideDetail('${r.id}')">
+              <td class="mono" style="color:var(--text-muted)">#${r.id}</td>
+              <td style="font-size:.72rem;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.pickup_location} → ${r.dropoff_location}</td>
+              <td class="fare-cell">$${getFinalFare(r)}</td>
+              <td><span class="badge b-${r.status}">${r.status}</span></td>
+              <td>${drv?`<span class="link" onclick="event.stopPropagation();openDriverDetail('${drv.id}')">${drv.name}</span>`:'—'}</td>
+              <td class="mono">${fmtDate(r.created_at)}</td>
+            </tr>`;
+          }).join('')}
         </tbody></table></div>`:`<div class="empty"><div class="empty-icon">📍</div><div class="empty-title">No rides yet</div></div>`}
       </div>
     </div>`;
@@ -1900,31 +1947,31 @@ function renderPassengerProfile(p){
 function renderAnalytics(){
   const ri=state.rides;
   const completed=ri.filter(r=>r.status==='completed');
-  const rev=completed.reduce((s,r)=>s+(+(r.final_fare||r.offered_fare)||0),0);
+  const rev=completed.reduce((s,r)=>s+(+getFinalFare(r)||0),0);
   document.getElementById('analytics-kpis').innerHTML=`
     <div class="kpi"><div class="kpi-label">Completion Rate</div><div class="kpi-val">${ri.length?((completed.length/ri.length)*100).toFixed(1)+'%':'—'}</div><div class="kpi-accent">📊</div></div>
-    <div class="kpi"><div class="kpi-label">Total Revenue</div><div class="kpi-val fare" style="font-size:1.5rem">$${rev.toFixed(0)}</div><div class="kpi-accent">💰</div></div>
-    <div class="kpi"><div class="kpi-label">Avg Fare</div><div class="kpi-val fare" style="font-size:1.5rem">${completed.length?'$'+(rev/completed.length).toFixed(0):'—'}</div><div class="kpi-accent">🎯</div></div>`;
+    <div class="kpi"><div class="kpi-label">Total Revenue</div><div class="kpi-val fare-cell" style="font-size:1.5rem">$${rev.toFixed(0)}</div><div class="kpi-accent">💰</div></div>
+    <div class="kpi"><div class="kpi-label">Avg Fare</div><div class="kpi-val fare-cell" style="font-size:1.5rem">${completed.length?'$'+(rev/completed.length).toFixed(0):'—'}</div><div class="kpi-accent">🎯</div></div>`;
 
   const buckets=[0,100,200,300,400,500,600];
-  const fareData=buckets.slice(0,-1).map((_,i)=>ri.filter(r=>+r.offered_fare>=buckets[i]&&+r.offered_fare<buckets[i+1]).length);
+  const fareData=buckets.slice(0,-1).map((_,i)=>ri.filter(r=>+getFinalFare(r)>=buckets[i]&&+getFinalFare(r)<buckets[i+1]).length);
   const fc=document.getElementById('fareChart');
   if(fc._chart)fc._chart.destroy();
-  fc._chart=new Chart(fc,{type:'bar',data:{labels:buckets.slice(0,-1).map((v,i)=>`$${v}-${buckets[i+1]}`),datasets:[{data:fareData,backgroundColor:'rgba(0,229,160,0.12)',borderColor:'var(--green)',borderWidth:2,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#5a6070',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#5a6070',font:{size:10}}}}}});
+  fc._chart=new Chart(fc,{type:'bar',data:{labels:buckets.slice(0,-1).map((v,i)=>`$${v}–${buckets[i+1]}`),datasets:[{data:fareData,backgroundColor:'rgba(22,163,74,0.1)',borderColor:'#16a34a',borderWidth:2,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#9ca3af',font:{size:10}}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#9ca3af',font:{size:10}}}}}});
 
   const compData=[],labels=[];
   for(let i=6;i>=0;i--){
     const d=new Date(Date.now()-i*864e5);
     labels.push(d.toLocaleDateString('en',{weekday:'short'}));
-    const start=new Date(d.setHours(0,0,0,0)).toISOString();
-    const end=new Date(d.setHours(23,59,59,999)).toISOString();
-    const dayRides=ri.filter(r=>r.created_at>=start&&r.created_at<=end);
+    const start=new Date(d);start.setHours(0,0,0,0);
+    const end=new Date(d);end.setHours(23,59,59,999);
+    const dayRides=ri.filter(r=>r.created_at>=start.toISOString()&&r.created_at<=end.toISOString());
     const dayComp=dayRides.filter(r=>r.status==='completed').length;
     compData.push(dayRides.length?((dayComp/dayRides.length)*100).toFixed(0):0);
   }
   const cc=document.getElementById('completionChart');
   if(cc._chart)cc._chart.destroy();
-  cc._chart=new Chart(cc,{type:'line',data:{labels,datasets:[{data:compData,borderColor:'var(--green)',backgroundColor:'rgba(0,229,160,0.06)',fill:true,tension:.4,pointBackgroundColor:'var(--green)',pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#5a6070',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#5a6070',font:{size:10},callback:v=>v+'%'},max:100,min:0}}}});
+  cc._chart=new Chart(cc,{type:'line',data:{labels,datasets:[{data:compData,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.06)',fill:true,tension:.4,pointBackgroundColor:'#2563eb',pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#9ca3af',font:{size:10}}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#9ca3af',font:{size:10},callback:v=>v+'%'},max:100,min:0}}}});
 
   drawRelationshipGraph();
 }
@@ -1932,37 +1979,33 @@ function renderAnalytics(){
 function drawRelationshipGraph(){
   const canvas=document.getElementById('graphCanvas');
   const ctx=canvas.getContext('2d');
-  canvas.width=canvas.offsetWidth;
-  canvas.height=canvas.offsetHeight;
+  canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight;
   const W=canvas.width,H=canvas.height;
   const sampleDrivers=state.drivers.slice(0,6);
   const samplePassengers=state.passengers.slice(0,6);
-  const sampleRides=state.rides.filter(r=>r.accepted_by).slice(0,12);
+  const sampleRides=state.rides.filter(r=>r.accepted_by||r._history_driver_id).slice(0,12);
   const nodes=[],links=[];
   const cx=W/2,cy=H/2;
-  sampleDrivers.forEach((d,i)=>{const angle=(i/sampleDrivers.length)*Math.PI*2;nodes.push({id:'d'+d.id,x:cx+Math.cos(angle)*120,y:cy+Math.sin(angle)*100,label:d.name.split(' ')[0],color:'#00e5a0',type:'driver',ref:d.id});});
-  samplePassengers.forEach((p,i)=>{const angle=(i/samplePassengers.length)*Math.PI*2+Math.PI/6;nodes.push({id:'p'+p.id,x:cx+Math.cos(angle)*220,y:cy+Math.sin(angle)*160,label:p.name.split(' ')[0],color:'#4d9fff',type:'passenger',ref:p.id});});
+  sampleDrivers.forEach((d,i)=>{const angle=(i/sampleDrivers.length)*Math.PI*2;nodes.push({id:'d'+d.id,x:cx+Math.cos(angle)*120,y:cy+Math.sin(angle)*100,label:d.name.split(' ')[0],color:'#16a34a',type:'driver',ref:d.id});});
+  samplePassengers.forEach((p,i)=>{const angle=(i/samplePassengers.length)*Math.PI*2+Math.PI/6;nodes.push({id:'p'+p.id,x:cx+Math.cos(angle)*220,y:cy+Math.sin(angle)*160,label:p.name.split(' ')[0],color:'#2563eb',type:'passenger',ref:p.id});});
   sampleRides.forEach((r,i)=>{
     const angle=(i/sampleRides.length)*Math.PI*2+Math.PI/12;
-    const rad=60+Math.random()*30;
-    nodes.push({id:'r'+r.id,x:cx+Math.cos(angle)*rad,y:cy+Math.sin(angle)*rad*0.8,label:'#'+r.id,color:'#e8ff47',type:'ride',ref:r.id});
-    const dn=nodes.find(n=>n.id==='d'+r.accepted_by);
-    const pn=nodes.find(n=>n.id==='p'+r.passenger_id);
+    const rad=55+Math.random()*30;
+    nodes.push({id:'r'+r.id,x:cx+Math.cos(angle)*rad,y:cy+Math.sin(angle)*rad*0.8,label:'#'+r.id,color:'#d97706',type:'ride',ref:r.id});
+    const dId=r.accepted_by||r._history_driver_id;
+    const dn=nodes.find(n=>String(n.ref)===String(dId)&&n.type==='driver');
+    const pn=nodes.find(n=>String(n.ref)===String(r.passenger_id)&&n.type==='passenger');
     if(dn)links.push({from:dn,to:nodes[nodes.length-1]});
     if(pn)links.push({from:pn,to:nodes[nodes.length-1]});
   });
   ctx.clearRect(0,0,W,H);
-  links.forEach(l=>{
-    ctx.beginPath();ctx.moveTo(l.from.x,l.from.y);ctx.lineTo(l.to.x,l.to.y);
-    ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=1;ctx.stroke();
-  });
+  links.forEach(l=>{ctx.beginPath();ctx.moveTo(l.from.x,l.from.y);ctx.lineTo(l.to.x,l.to.y);ctx.strokeStyle='rgba(0,0,0,0.06)';ctx.lineWidth=1;ctx.stroke();});
   nodes.forEach(n=>{
     const r=n.type==='ride'?6:10;
     ctx.beginPath();ctx.arc(n.x,n.y,r,0,Math.PI*2);
-    ctx.fillStyle=n.color+'22';ctx.fill();
+    ctx.fillStyle=n.color+'18';ctx.fill();
     ctx.strokeStyle=n.color;ctx.lineWidth=1.5;ctx.stroke();
-    ctx.fillStyle=n.color;
-    ctx.font=`${n.type==='ride'?9:10}px JetBrains Mono`;
+    ctx.fillStyle=n.color;ctx.font=`${n.type==='ride'?9:10}px 'Inter',sans-serif`;
     ctx.textAlign='center';ctx.fillText(n.label,n.x,n.y-r-4);
   });
   canvas.onclick=(e)=>{
@@ -1996,7 +2039,7 @@ function globalSearchFn(q){
     if(drivers.length){html+=`<div class="search-group-title">Drivers</div>`;html+=drivers.map(d=>`<div class="search-item" onclick="openDriverDetail('${d.id}');closeGSearch()"><div class="search-item-icon si-driver">🚗</div><div><div class="search-item-name">${d.name}</div><div class="search-item-sub">@${d.username} · ${d.contact_no}</div></div><span class="badge b-${d.is_online?'online':'offline'}" style="margin-left:auto">${d.is_online?'Online':'Offline'}</span></div>`).join('');}
     if(passengers.length){html+=`<div class="search-group-title">Passengers</div>`;html+=passengers.map(p=>`<div class="search-item" onclick="openPassengerDetail('${p.id}');closeGSearch()"><div class="search-item-icon si-passenger">👤</div><div><div class="search-item-name">${p.name}</div><div class="search-item-sub">${p.phone}</div></div></div>`).join('');}
     if(rides.length){html+=`<div class="search-group-title">Rides</div>`;html+=rides.map(r=>`<div class="search-item" onclick="openRideDetail('${r.id}');closeGSearch()"><div class="search-item-icon si-ride">📍</div><div><div class="search-item-name">Ride #${r.id} — ${r.passenger_name}</div><div class="search-item-sub">${r.pickup_location} → ${r.dropoff_location}</div></div><span class="badge b-${r.status}" style="margin-left:auto">${r.status}</span></div>`).join('');}
-    if(!html)html=`<div style="padding:1.5rem;text-align:center;color:var(--text-muted);font-size:.8rem">No results for "${q}"</div>`;
+    if(!html)html=`<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.8rem">No results for "${q}"</div>`;
     const drop=document.getElementById('searchDrop');
     drop.innerHTML=html;drop.classList.add('open');
   },200);
@@ -2049,7 +2092,7 @@ window.addEventListener('resize',()=>{
   if(document.getElementById('pg-analytics').classList.contains('active')) drawRelationshipGraph();
 });
 
-// Close mobile nav on outside click
+// ── Close mobile nav on outside click ──
 document.addEventListener('click',(e)=>{
   const nav=document.getElementById('mobile-nav');
   const btn=document.getElementById('hamburger');
