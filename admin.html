@@ -10,218 +10,82 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-/* ── Design tokens — matched to ridenegotiate.html ── */
 :root{
-  --bg:           #f4f5f7;
-  --surface:      #ffffff;
-  --surface2:     #f8f9fb;
-  --surface3:     #f0f2f5;
-  --border:       #e4e7ec;
-  --border-mid:   #d0d5dd;
-  --border-focus: #2563eb;
-
-  --text:           #111827;
-  --text-secondary: #374151;
-  --text-muted:     #9ca3af;
-  --text-dim:       #d1d5db;
-
-  --green:        #16a34a;
-  --green-mid:    #22c55e;
-  --green-light:  #f0fdf4;
-  --green-border: #bbf7d0;
-
-  --blue:         #2563eb;
-  --blue-mid:     #3b82f6;
-  --blue-light:   #eff6ff;
-  --blue-border:  #bfdbfe;
-
-  --amber:        #d97706;
-  --amber-light:  #fffbeb;
-  --amber-border: #fde68a;
-
-  --red:          #dc2626;
-  --red-light:    #fef2f2;
-  --red-border:   #fecaca;
-
-  --violet:       #7c3aed;
-  --violet-light: #f5f3ff;
-  --violet-border:#ddd6fe;
-
-  --radius:    16px;
-  --radius-sm: 10px;
-  --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.04);
-  --shadow-lg: 0 10px 28px rgba(0,0,0,0.09);
-  --t: 0.18s cubic-bezier(0.4,0,0.2,1);
-
-  --topbar-h: 62px;
+  --bg:#f4f5f7;--surface:#ffffff;--surface2:#f8f9fb;--surface3:#f0f2f5;
+  --border:#e4e7ec;--border-mid:#d0d5dd;--border-focus:#2563eb;
+  --text:#111827;--text-secondary:#374151;--text-muted:#9ca3af;--text-dim:#d1d5db;
+  --green:#16a34a;--green-mid:#22c55e;--green-light:#f0fdf4;--green-border:#bbf7d0;
+  --blue:#2563eb;--blue-mid:#3b82f6;--blue-light:#eff6ff;--blue-border:#bfdbfe;
+  --amber:#d97706;--amber-light:#fffbeb;--amber-border:#fde68a;
+  --red:#dc2626;--red-light:#fef2f2;--red-border:#fecaca;
+  --violet:#7c3aed;--violet-light:#f5f3ff;--violet-border:#ddd6fe;
+  --radius:16px;--radius-sm:10px;
+  --shadow-xs:0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.07),0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,0.07),0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg:0 10px 28px rgba(0,0,0,0.09);
+  --t:0.18s cubic-bezier(0.4,0,0.2,1);
+  --topbar-h:62px;
 }
 
 html{scroll-behavior:smooth}
-body{
-  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
-  background:var(--bg);color:var(--text);
-  min-height:100vh;-webkit-font-smoothing:antialiased;
-}
-
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border-mid);border-radius:4px}
 
-/* ═══════════ LOGIN ═══════════ */
-#login{
-  position:fixed;inset:0;z-index:999;
-  display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%);
-}
-.login-box{
-  width:420px;max-width:92vw;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:2.5rem;
-  box-shadow:var(--shadow-lg);
-  animation:fadeUp .4s ease forwards;
-}
+/* LOGIN */
+#login{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%)}
+.login-box{width:420px;max-width:92vw;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem;box-shadow:var(--shadow-lg);animation:fadeUp .4s ease forwards}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.login-logo{
-  display:flex;align-items:center;gap:10px;
-  font-size:1.4rem;font-weight:800;
-  letter-spacing:-0.03em;margin-bottom:4px;
-}
-.login-logo-mark{
-  width:36px;height:36px;border-radius:10px;
-  background:linear-gradient(135deg,#2563eb,#16a34a);
-  display:flex;align-items:center;justify-content:center;
-  font-size:16px;box-shadow:0 2px 8px rgba(37,99,235,0.22);
-}
+.login-logo{display:flex;align-items:center;gap:10px;font-size:1.4rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:4px}
+.login-logo-mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#2563eb,#16a34a);display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(37,99,235,0.22)}
 .login-logo em{font-style:normal;color:var(--blue)}
 .login-sub{font-size:.78rem;color:var(--text-muted);margin-bottom:1.75rem}
 .field{margin-bottom:1rem}
-.field label{
-  display:block;font-size:.71rem;font-weight:600;
-  color:var(--text-secondary);letter-spacing:.01em;margin-bottom:6px;
-}
-.field input{
-  width:100%;padding:10px 13px;
-  background:var(--surface2);border:1.5px solid var(--border);
-  border-radius:var(--radius-sm);color:var(--text);
-  font-family:'Inter',sans-serif;font-size:.875rem;
-  outline:none;transition:all var(--t);
-}
+.field label{display:block;font-size:.71rem;font-weight:600;color:var(--text-secondary);letter-spacing:.01em;margin-bottom:6px}
+.field input{width:100%;padding:10px 13px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'Inter',sans-serif;font-size:.875rem;outline:none;transition:all var(--t)}
 .field input:focus{border-color:var(--border-focus);background:var(--surface);box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
 .field input::placeholder{color:var(--text-dim)}
-.btn-login{
-  width:100%;padding:11px;
-  background:var(--blue);color:#fff;
-  border:1.5px solid var(--blue);
-  border-radius:var(--radius-sm);
-  font-family:'Inter',sans-serif;font-size:.85rem;font-weight:600;
-  cursor:pointer;transition:all var(--t);
-  box-shadow:0 2px 8px rgba(37,99,235,0.2);
-}
+.btn-login{width:100%;padding:11px;background:var(--blue);color:#fff;border:1.5px solid var(--blue);border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:all var(--t);box-shadow:0 2px 8px rgba(37,99,235,0.2)}
 .btn-login:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 4px 14px rgba(37,99,235,0.28)}
-.err-msg{
-  margin-top:.75rem;padding:.65rem 1rem;
-  border-radius:var(--radius-sm);
-  background:var(--red-light);color:var(--red);
-  border:1px solid var(--red-border);
-  font-size:.78rem;display:none;
-}
+.err-msg{margin-top:.75rem;padding:.65rem 1rem;border-radius:var(--radius-sm);background:var(--red-light);color:var(--red);border:1px solid var(--red-border);font-size:.78rem;display:none}
 
-/* ═══════════ APP SHELL ═══════════ */
+/* APP */
 #app{display:none;min-height:100vh}
 
-/* ── Topbar ── */
-.topbar{
-  height:var(--topbar-h);
-  position:sticky;top:0;z-index:100;
-  display:flex;align-items:center;padding:0 28px;gap:10px;
-  background:rgba(255,255,255,0.94);
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--border);
-  box-shadow:var(--shadow-xs);
-}
-.topbar-logo{
-  display:flex;align-items:center;gap:9px;
-  font-size:1.1rem;font-weight:800;letter-spacing:-0.03em;color:var(--text);
-  flex-shrink:0;
-}
-.topbar-logo-mark{
-  width:30px;height:30px;border-radius:8px;
-  background:linear-gradient(135deg,#2563eb,#16a34a);
-  display:flex;align-items:center;justify-content:center;
-  font-size:14px;box-shadow:0 2px 6px rgba(37,99,235,0.2);
-}
+/* TOPBAR */
+.topbar{height:var(--topbar-h);position:sticky;top:0;z-index:100;display:flex;align-items:center;padding:0 28px;gap:10px;background:rgba(255,255,255,0.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);box-shadow:var(--shadow-xs)}
+.topbar-logo{display:flex;align-items:center;gap:9px;font-size:1.1rem;font-weight:800;letter-spacing:-0.03em;color:var(--text);flex-shrink:0}
+.topbar-logo-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#2563eb,#16a34a);display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(37,99,235,0.2)}
 .topbar-logo em{font-style:normal;color:var(--blue)}
 .topbar-sep{width:1px;height:20px;background:var(--border);flex-shrink:0;margin:0 4px}
 .topbar-nav{display:flex;gap:2px}
-.nav-pill{
-  padding:7px 14px;border-radius:50px;
-  font-size:.8rem;font-weight:600;
-  cursor:pointer;border:none;
-  background:transparent;color:var(--text-muted);
-  transition:all var(--t);font-family:'Inter',sans-serif;
-  letter-spacing:-0.01em;
-}
+.nav-pill{padding:7px 14px;border-radius:50px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--text-muted);transition:all var(--t);font-family:'Inter',sans-serif;letter-spacing:-0.01em}
 .nav-pill:hover{color:var(--text-secondary);background:var(--surface3)}
-.nav-pill.active{color:var(--blue);background:var(--blue-light);font-weight:600}
+.nav-pill.active{color:var(--blue);background:var(--blue-light)}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0}
-.rt-status{
-  display:flex;align-items:center;gap:5px;
-  font-size:.7rem;color:var(--text-muted);font-family:'Inter',monospace;
-  padding:4px 10px;border-radius:20px;
-  background:var(--surface3);border:1px solid var(--border);
-}
+.rt-status{display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--text-muted);font-family:'Inter',monospace;padding:4px 10px;border-radius:20px;background:var(--surface3);border:1px solid var(--border)}
 .rt-dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);transition:all .3s}
 .rt-dot.connected{background:var(--green-mid);box-shadow:0 0 0 3px rgba(34,197,94,0.2);animation:breathe 2.2s ease infinite}
 .rt-dot.error{background:var(--red)}
 @keyframes breathe{0%,100%{box-shadow:0 0 0 3px rgba(34,197,94,0.2)}50%{box-shadow:0 0 0 6px rgba(34,197,94,0.05)}}
-.admin-badge{
-  padding:4px 11px;background:var(--green-light);color:var(--green);
-  border-radius:20px;font-size:.65rem;font-weight:700;
-  border:1px solid var(--green-border);letter-spacing:.06em;
-}
+.admin-badge{padding:4px 11px;background:var(--green-light);color:var(--green);border-radius:20px;font-size:.65rem;font-weight:700;border:1px solid var(--green-border);letter-spacing:.06em}
 .global-search-wrap{position:relative}
-.global-search{
-  width:200px;padding:7px 12px 7px 30px;
-  background:var(--surface2);border:1.5px solid var(--border);
-  border-radius:20px;color:var(--text);
-  font-family:'Inter',sans-serif;font-size:.8rem;
-  transition:all var(--t);outline:none;
-}
+.global-search{width:200px;padding:7px 12px 7px 30px;background:var(--surface2);border:1.5px solid var(--border);border-radius:20px;color:var(--text);font-family:'Inter',sans-serif;font-size:.8rem;transition:all var(--t);outline:none}
 .global-search:focus{border-color:var(--border-focus);width:250px;background:var(--surface);box-shadow:0 0 0 3px rgba(37,99,235,0.08)}
 .global-search::placeholder{color:var(--text-dim)}
 .gsearch-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.78rem;pointer-events:none}
-.search-results-drop{
-  position:absolute;top:calc(100% + 8px);right:0;width:360px;
-  background:var(--surface);border:1px solid var(--border-mid);
-  border-radius:var(--radius);box-shadow:var(--shadow-lg);
-  display:none;z-index:200;max-height:420px;overflow-y:auto;
-}
+.search-results-drop{position:absolute;top:calc(100% + 8px);right:0;width:360px;background:var(--surface);border:1px solid var(--border-mid);border-radius:var(--radius);box-shadow:var(--shadow-lg);display:none;z-index:200;max-height:420px;overflow-y:auto}
 .search-results-drop.open{display:block}
-.search-group-title{
-  padding:6px 14px;font-size:.63rem;font-weight:700;
-  letter-spacing:.1em;text-transform:uppercase;
-  color:var(--text-muted);background:var(--surface2);
-  border-bottom:1px solid var(--border);
-}
-.search-item{
-  display:flex;align-items:center;gap:10px;
-  padding:9px 14px;cursor:pointer;transition:background .12s;
-  border-bottom:1px solid var(--border);
-}
+.search-group-title{padding:6px 14px;font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);background:var(--surface2);border-bottom:1px solid var(--border)}
+.search-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;transition:background .12s;border-bottom:1px solid var(--border)}
 .search-item:last-child{border-bottom:none}
 .search-item:hover{background:var(--surface2)}
-.search-item-icon{
-  width:28px;height:28px;border-radius:7px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.82rem;flex-shrink:0;
-}
-.si-driver{background:var(--green-light);color:var(--green)}
-.si-passenger{background:var(--blue-light);color:var(--blue)}
-.si-ride{background:var(--amber-light);color:var(--amber)}
+.search-item-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.82rem;flex-shrink:0}
+.si-driver{background:var(--green-light)}
+.si-passenger{background:var(--blue-light)}
+.si-ride{background:var(--amber-light)}
 .search-item-name{font-size:.8rem;font-weight:600;color:var(--text)}
 .search-item-sub{font-size:.7rem;color:var(--text-muted);margin-top:1px}
 .hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:.4rem;background:none;border:none}
@@ -229,95 +93,45 @@ body{
 .hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
 .hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0)}
 .hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-.mobile-nav{
-  display:none;position:fixed;top:var(--topbar-h);left:0;right:0;
-  background:var(--surface);border-bottom:1px solid var(--border);
-  z-index:99;padding:.75rem 1rem;flex-direction:column;gap:2px;
-  box-shadow:var(--shadow-md);animation:slideDown .2s ease;
-}
+.mobile-nav{display:none;position:fixed;top:var(--topbar-h);left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);z-index:99;padding:.75rem 1rem;flex-direction:column;gap:2px;box-shadow:var(--shadow-md);animation:slideDown .2s ease}
 .mobile-nav.open{display:flex}
 @keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-.mobile-nav-pill{
-  padding:.6rem 1rem;border-radius:10px;font-size:.875rem;font-weight:500;
-  cursor:pointer;border:none;background:transparent;color:var(--text-secondary);
-  transition:all .15s;font-family:'Inter',sans-serif;text-align:left;
-}
+.mobile-nav-pill{padding:.6rem 1rem;border-radius:10px;font-size:.875rem;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--text-secondary);transition:all .15s;font-family:'Inter',sans-serif;text-align:left}
 .mobile-nav-pill:hover{color:var(--text);background:var(--surface2)}
 .mobile-nav-pill.active{color:var(--blue);background:var(--blue-light);font-weight:600}
 
-/* ═══════════ PAGES ═══════════ */
+/* PAGES */
 .page{display:none;padding:28px 28px 80px;max-width:1400px;margin:0 auto;width:100%;animation:rise .22s ease}
 .page.active{display:block}
 .detail-view{display:none;padding:28px 28px 80px;max-width:1300px;margin:0 auto;width:100%;animation:rise .22s ease}
 .detail-view.active{display:block}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.page-title{
-  font-size:1.2rem;font-weight:800;letter-spacing:-0.035em;
-  color:var(--text);margin-bottom:20px;
-  display:flex;align-items:center;gap:8px;
-}
+.page-title{font-size:1.2rem;font-weight:800;letter-spacing:-0.035em;color:var(--text);margin-bottom:20px;display:flex;align-items:center;gap:8px}
 .page-title .accent{color:var(--blue)}
-.title-badge{
-  font-size:.63rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
-  color:var(--green);background:var(--green-light);
-  border:1px solid var(--green-border);padding:3px 9px;border-radius:20px;
-}
+.title-badge{font-size:.63rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);background:var(--green-light);border:1px solid var(--green-border);padding:3px 9px;border-radius:20px}
 
-/* ═══════════ CARDS & KPIs ═══════════ */
-.card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:20px;
-  box-shadow:var(--shadow-sm);transition:box-shadow var(--t),border-color var(--t);
-}
+/* CARDS & KPIs */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm);transition:box-shadow var(--t),border-color var(--t)}
 .card:hover{box-shadow:var(--shadow-md);border-color:var(--border-mid)}
-.card-title{
-  font-size:.9rem;font-weight:700;letter-spacing:-0.02em;
-  color:var(--text);margin-bottom:16px;
-  display:flex;align-items:center;gap:6px;
-}
+.card-title{font-size:.9rem;font-weight:700;letter-spacing:-0.02em;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:6px}
 .card-title span{flex:1}
-.card-title .card-action{
-  font-size:.74rem;font-weight:400;color:var(--text-muted);
-  cursor:pointer;transition:color var(--t);
-}
+.card-title .card-action{font-size:.74rem;font-weight:400;color:var(--text-muted);cursor:pointer;transition:color var(--t)}
 .card-title .card-action:hover{color:var(--blue)}
-
 .dash-hero{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
-.kpi{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:18px 20px;
-  position:relative;overflow:hidden;
-  transition:border-color var(--t),transform var(--t),box-shadow var(--t);
-  box-shadow:var(--shadow-sm);cursor:default;
-}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden;transition:border-color var(--t),transform var(--t),box-shadow var(--t);box-shadow:var(--shadow-sm)}
 .kpi:hover{border-color:var(--border-mid);transform:translateY(-2px);box-shadow:var(--shadow-md)}
-.kpi-label{
-  font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--text-muted);margin-bottom:10px;
-}
-.kpi-val{
-  font-size:2rem;font-weight:800;letter-spacing:-0.04em;
-  line-height:1;color:var(--text);margin-bottom:5px;
-}
+.kpi-label{font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px}
+.kpi-val{font-size:2rem;font-weight:800;letter-spacing:-0.04em;line-height:1;color:var(--text);margin-bottom:5px}
 .kpi-delta{font-size:.73rem;color:var(--text-muted)}
 .kpi-accent{position:absolute;top:14px;right:16px;font-size:1.3rem;opacity:.18}
 .kpi-val.blue{color:var(--blue)}
 .kpi-val.green{color:var(--green)}
-
 .dash-grid{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}
 .chart-wrap{position:relative;height:200px}
 
-/* ═══════════ BADGES ═══════════ */
-.badge{
-  display:inline-flex;align-items:center;
-  padding:3px 9px;border-radius:20px;
-  font-size:.64rem;font-weight:700;
-  letter-spacing:.06em;border:1px solid;text-transform:uppercase;
-}
-.badge::before{
-  content:'';width:5px;height:5px;border-radius:50%;
-  background:currentColor;margin-right:4px;flex-shrink:0;
-}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:.64rem;font-weight:700;letter-spacing:.06em;border:1px solid;text-transform:uppercase}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;margin-right:4px;flex-shrink:0}
 .b-pending{background:var(--amber-light);color:var(--amber);border-color:var(--amber-border)}
 .b-confirmed{background:var(--green-light);color:var(--green);border-color:var(--green-border)}
 .b-completed{background:var(--blue-light);color:var(--blue);border-color:var(--blue-border)}
@@ -326,23 +140,14 @@ body{
 .b-online{background:var(--green-light);color:var(--green);border-color:var(--green-border)}
 .b-offline{background:var(--surface3);color:var(--text-muted);border-color:var(--border)}
 
-/* ═══════════ TABLES ═══════════ */
+/* TABLES */
 .tbl-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
 table{width:100%;border-collapse:collapse;font-size:.8rem;min-width:580px}
 thead tr{background:var(--surface2)}
-th{
-  padding:10px 14px;text-align:left;
-  font-size:.63rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--text-muted);border-bottom:1px solid var(--border);
-  white-space:nowrap;cursor:pointer;user-select:none;
-}
+th{padding:10px 14px;text-align:left;font-size:.63rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
 th:hover{color:var(--text-secondary)}
 th .sort-icon{margin-left:3px;opacity:.35}
-th.sorted .sort-icon{opacity:1;color:var(--blue)}
-td{
-  padding:10px 14px;border-bottom:1px solid var(--border);
-  color:var(--text-secondary);vertical-align:middle;
-}
+td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-secondary);vertical-align:middle}
 tbody tr:last-child td{border-bottom:none}
 tbody tr{transition:background .1s;cursor:pointer}
 tbody tr:hover{background:var(--surface2)}
@@ -353,217 +158,98 @@ tbody tr:hover td{color:var(--text)}
 .fare-cell{color:var(--green);font-weight:700;font-family:'SF Mono','JetBrains Mono',monospace}
 .counter-fare{color:var(--text-muted);font-size:.69rem;text-decoration:line-through;margin-left:4px;font-family:monospace}
 
-/* ═══════════ TOOLBAR & FILTERS ═══════════ */
+/* TOOLBAR */
 .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .toolbar-search{position:relative;flex:1;min-width:160px;max-width:280px}
-.toolbar-search input{
-  width:100%;padding:8px 12px 8px 30px;
-  background:var(--surface);border:1.5px solid var(--border);
-  border-radius:var(--radius-sm);color:var(--text);
-  font-family:'Inter',sans-serif;font-size:.8rem;
-  transition:border-color var(--t);outline:none;
-}
+.toolbar-search input{width:100%;padding:8px 12px 8px 30px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'Inter',sans-serif;font-size:.8rem;transition:border-color var(--t);outline:none}
 .toolbar-search input:focus{border-color:var(--border-focus)}
 .toolbar-search input::placeholder{color:var(--text-dim)}
 .toolbar-search .ts-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.78rem}
-.filter-select{
-  padding:8px 12px;background:var(--surface);border:1.5px solid var(--border);
-  border-radius:var(--radius-sm);color:var(--text-secondary);
-  font-size:.8rem;cursor:pointer;font-family:'Inter',sans-serif;
-  transition:border-color var(--t);outline:none;
-}
+.filter-select{padding:8px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text-secondary);font-size:.8rem;cursor:pointer;font-family:'Inter',sans-serif;transition:border-color var(--t);outline:none}
 .filter-select:focus{border-color:var(--border-focus)}
-.filter-btn{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:8px 13px;background:var(--surface);border:1.5px solid var(--border);
-  border-radius:var(--radius-sm);color:var(--text-secondary);
-  font-size:.8rem;cursor:pointer;transition:all var(--t);
-  font-family:'Inter',sans-serif;white-space:nowrap;
-}
+.filter-btn{display:inline-flex;align-items:center;gap:5px;padding:8px 13px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text-secondary);font-size:.8rem;cursor:pointer;transition:all var(--t);font-family:'Inter',sans-serif;white-space:nowrap}
 .filter-btn:hover,.filter-btn.active{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
-.filter-panel{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:16px;
-  margin-bottom:14px;display:none;box-shadow:var(--shadow-sm);
-}
+.filter-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;display:none;box-shadow:var(--shadow-sm)}
 .filter-panel.open{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-.fp-field label{
-  font-size:.63rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--text-muted);display:block;margin-bottom:5px;
-}
-.fp-field input,.fp-field select{
-  width:100%;padding:7px 11px;background:var(--surface2);border:1.5px solid var(--border);
-  border-radius:var(--radius-sm);color:var(--text);
-  font-family:'Inter',sans-serif;font-size:.8rem;outline:none;transition:border-color var(--t);
-}
+.fp-field label{font-size:.63rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:5px}
+.fp-field input,.fp-field select{width:100%;padding:7px 11px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'Inter',sans-serif;font-size:.8rem;outline:none;transition:border-color var(--t)}
 .fp-field input:focus,.fp-field select:focus{border-color:var(--border-focus)}
 .filter-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
-.f-tag{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:3px 9px;background:var(--blue-light);color:var(--blue);
-  border-radius:20px;font-size:.7rem;font-weight:500;border:1px solid var(--blue-border);
-}
+.f-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;background:var(--blue-light);color:var(--blue);border-radius:20px;font-size:.7rem;font-weight:500;border:1px solid var(--blue-border)}
 .f-tag button{background:none;border:none;color:var(--blue);cursor:pointer;font-size:.78rem;padding:0 0 0 3px}
 
-/* ═══════════ BUTTONS ═══════════ */
-.btn{
-  font-family:'Inter',sans-serif;font-weight:600;font-size:.79rem;
-  padding:8px 14px;border-radius:var(--radius-sm);
-  border:1.5px solid transparent;cursor:pointer;
-  transition:all var(--t);display:inline-flex;align-items:center;gap:5px;
-  white-space:nowrap;letter-spacing:-0.01em;
-}
+/* BUTTONS */
+.btn{font-family:'Inter',sans-serif;font-weight:600;font-size:.79rem;padding:8px 14px;border-radius:var(--radius-sm);border:1.5px solid transparent;cursor:pointer;transition:all var(--t);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;letter-spacing:-0.01em}
 .btn:active{transform:scale(0.97)}
-.btn-ghost{
-  background:var(--surface);color:var(--text-secondary);
-  border-color:var(--border);box-shadow:var(--shadow-xs);
-}
+.btn-ghost{background:var(--surface);color:var(--text-secondary);border-color:var(--border);box-shadow:var(--shadow-xs)}
 .btn-ghost:hover{border-color:var(--border-mid);color:var(--text);background:var(--surface2)}
-.btn-blue{
-  background:var(--blue);color:#fff;border-color:var(--blue);
-  box-shadow:0 2px 8px rgba(37,99,235,0.18);
-}
-.btn-blue:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,0.26)}
-.btn-red{background:var(--red-light);color:var(--red);border-color:var(--red-border)}
-.btn-red:hover{background:#fee2e2}
+.btn-blue{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 2px 8px rgba(37,99,235,0.18)}
+.btn-blue:hover{background:#1d4ed8;transform:translateY(-1px)}
 .btn-sm{padding:6px 11px;font-size:.74rem}
 .btn-xs{padding:4px 9px;font-size:.69rem}
 
-/* ═══════════ PAGINATION ═══════════ */
+/* PAGINATION */
 .pagination{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:14px;flex-wrap:wrap}
 .pg-info{font-size:.71rem;color:var(--text-muted);margin-right:auto;font-family:monospace}
-.pg-btn{
-  padding:5px 10px;background:var(--surface);border:1.5px solid var(--border);
-  border-radius:var(--radius-sm);color:var(--text-secondary);
-  font-size:.74rem;cursor:pointer;transition:all var(--t);font-family:'Inter',sans-serif;
-}
+.pg-btn{padding:5px 10px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text-secondary);font-size:.74rem;cursor:pointer;transition:all var(--t);font-family:'Inter',sans-serif}
 .pg-btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}
 .pg-btn:disabled{opacity:.3;cursor:default}
 .pg-btn.active{background:var(--blue-light);border-color:var(--blue);color:var(--blue);font-weight:600}
 
-/* ═══════════ DETAIL VIEWS ═══════════ */
-.breadcrumb{
-  display:flex;align-items:center;gap:6px;
-  font-size:.75rem;color:var(--text-muted);margin-bottom:18px;flex-wrap:wrap;
-}
+/* DETAIL VIEWS */
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--text-muted);margin-bottom:18px;flex-wrap:wrap}
 .breadcrumb a{color:var(--text-muted);cursor:pointer;transition:color var(--t)}
 .breadcrumb a:hover{color:var(--blue)}
 .breadcrumb span{color:var(--text-secondary)}
 .bc-sep{color:var(--border-mid)}
-
-.profile-header{
-  display:grid;grid-template-columns:auto 1fr auto;
-  gap:20px;align-items:start;
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:22px;
-  margin-bottom:16px;box-shadow:var(--shadow-sm);
-}
-.avatar{
-  width:60px;height:60px;border-radius:14px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.5rem;font-weight:800;flex-shrink:0;letter-spacing:-0.02em;
-}
+.profile-header{display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:start;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:16px;box-shadow:var(--shadow-sm)}
+.avatar{width:60px;height:60px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;flex-shrink:0}
 .av-driver{background:var(--green-light);color:var(--green);border:1px solid var(--green-border)}
 .av-passenger{background:var(--blue-light);color:var(--blue);border:1px solid var(--blue-border)}
 .profile-name{font-size:1.3rem;font-weight:800;letter-spacing:-0.03em;color:var(--text);margin-bottom:4px}
-.profile-meta{
-  font-size:.78rem;color:var(--text-muted);
-  display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px;
-}
-.profile-meta span{display:flex;align-items:center;gap:4px}
+.profile-meta{font-size:.78rem;color:var(--text-muted);display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px}
 .profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;text-align:right}
 .ps-val{font-size:1.4rem;font-weight:800;letter-spacing:-0.03em;color:var(--text)}
 .ps-label{font-size:.63rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em}
-
 .detail-grid{display:grid;grid-template-columns:1fr 2fr;gap:14px}
 .info-list{display:flex;flex-direction:column;gap:5px}
-.info-row{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:8px 12px;background:var(--surface2);
-  border-radius:var(--radius-sm);font-size:.8rem;border:1px solid var(--border);
-}
+.info-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border-radius:var(--radius-sm);font-size:.8rem;border:1px solid var(--border)}
 .info-row-label{color:var(--text-muted);font-weight:600;text-transform:uppercase;font-size:.62rem;letter-spacing:.07em}
 .info-row-val{color:var(--text);text-align:right;font-weight:500}
 
-/* ═══════════ RIDE DETAIL ═══════════ */
-.ride-detail-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:22px;
-  margin-bottom:14px;box-shadow:var(--shadow-sm);
-}
+/* RIDE DETAIL */
+.ride-detail-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
 .rdc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:14px;flex-wrap:wrap}
 .rdc-title{font-size:1.15rem;font-weight:800;letter-spacing:-0.025em;color:var(--text)}
 .rdc-id{font-size:.7rem;color:var(--text-muted);margin-top:3px;font-family:monospace}
-
-/* Route visualizer */
-.route-vis{
-  display:grid;grid-template-columns:1fr auto 1fr;
-  gap:12px;align-items:center;
-  background:var(--surface2);border-radius:var(--radius-sm);
-  padding:14px 18px;margin-bottom:20px;border:1px solid var(--border);
-}
+.route-vis{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;background:var(--surface2);border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:20px;border:1px solid var(--border)}
 .route-point{text-align:center}
 .route-point-label{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px}
 .route-point-loc{font-size:.875rem;font-weight:600;color:var(--text)}
 .route-arrow{color:var(--text-muted);font-size:1.2rem;text-align:center;opacity:.5}
-
 .rdc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
-.rdc-field label{
-  font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--text-muted);display:block;margin-bottom:4px;
-}
+.rdc-field label{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px}
 .rdc-field .val{font-size:.875rem;font-weight:500;color:var(--text)}
-
-/* Entity chips */
-.entity-chip{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:10px 14px;background:var(--surface2);border:1px solid var(--border);
-  border-radius:var(--radius-sm);cursor:pointer;transition:all var(--t);width:100%;
-}
+.entity-chip{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all var(--t);width:100%}
 .entity-chip:hover{border-color:var(--blue);background:var(--blue-light)}
-.entity-chip-icon{
-  width:26px;height:26px;border-radius:6px;
-  display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;
-}
+.entity-chip-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0}
 .entity-chip-label{font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;display:block}
 .entity-chip-name{font-size:.84rem;font-weight:600;color:var(--text)}
 
-/* Fare timeline */
-.fare-timeline-step{
-  display:flex;align-items:flex-start;gap:12px;
-  padding:12px 14px;border:1px solid var(--border);
-  margin-top:-1px;position:relative;transition:background .15s;
-}
+/* FARE TIMELINE */
+.fare-timeline-step{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:1px solid var(--border);margin-top:-1px;position:relative;transition:background .15s}
 .fare-timeline-step:first-child{border-radius:var(--radius-sm) var(--radius-sm) 0 0}
 .fare-timeline-step:last-child{border-radius:0 0 var(--radius-sm) var(--radius-sm)}
 .fare-timeline-step.is-final{background:var(--green-light);border-color:var(--green-border);z-index:2}
 .fare-timeline-step:not(.is-final){background:var(--surface2)}
-.fare-step-icon{
-  width:28px;height:28px;border-radius:7px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.8rem;flex-shrink:0;
-}
-.fare-step-actor{
-  font-size:.66rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
-  font-family:monospace;margin-bottom:2px;
-}
+.fare-step-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0}
+.fare-step-actor{font-size:.66rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;font-family:monospace;margin-bottom:2px}
 .fare-step-amount{font-size:1.05rem;font-weight:800;letter-spacing:-0.025em;color:var(--text)}
 .fare-step-amount.final-amount{color:var(--green)}
 .fare-step-ts{font-size:.62rem;color:var(--text-muted);margin-top:2px}
-.final-pill{
-  font-size:.63rem;font-weight:700;color:var(--green);align-self:center;
-  padding:3px 9px;background:var(--green-light);border:1px solid var(--green-border);
-  border-radius:20px;margin-left:auto;flex-shrink:0;letter-spacing:.05em;text-transform:uppercase;
-}
-.data-source-pill{
-  display:inline-flex;align-items:center;gap:4px;
-  font-size:.62rem;font-weight:600;padding:2px 7px;border-radius:20px;
-  margin-left:8px;letter-spacing:.04em;vertical-align:middle;
-}
-.ds-live{background:var(--green-light);color:var(--green);border:1px solid var(--green-border)}
-.ds-fallback{background:var(--surface3);color:var(--text-muted);border:1px solid var(--border)}
+.final-pill{font-size:.63rem;font-weight:700;color:var(--green);align-self:center;padding:3px 9px;background:var(--green-light);border:1px solid var(--green-border);border-radius:20px;margin-left:auto;flex-shrink:0;letter-spacing:.05em;text-transform:uppercase}
 
-/* Timeline */
+/* TIMELINE */
 .timeline{position:relative;padding-left:20px}
 .timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:1px;background:var(--border)}
 .tl-item{position:relative;margin-bottom:14px;padding-left:10px;cursor:pointer}
@@ -573,17 +259,14 @@ tbody tr:hover td{color:var(--text)}
 .tl-title{font-size:.8rem;font-weight:600;color:var(--text)}
 .tl-sub{font-size:.73rem;color:var(--text-muted);margin-top:2px}
 
-/* Analytics */
-.graph-wrap{
-  position:relative;height:340px;background:var(--surface2);
-  border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border);
-}
+/* ANALYTICS */
+.graph-wrap{position:relative;height:340px;background:var(--surface2);border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border)}
 #graphCanvas{width:100%;height:100%}
 .graph-legend{position:absolute;bottom:14px;left:14px;display:flex;gap:10px;flex-wrap:wrap}
 .gl-item{display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--text-muted)}
 .gl-dot{width:7px;height:7px;border-radius:50%}
 
-/* Empty & loader */
+/* MISC */
 .empty{padding:40px;text-align:center;color:var(--text-muted)}
 .empty-icon{font-size:2rem;margin-bottom:10px;opacity:.5}
 .empty-title{font-size:.875rem;font-weight:600;color:var(--text-secondary);margin-bottom:4px}
@@ -591,16 +274,8 @@ tbody tr:hover td{color:var(--text)}
 .loader{display:flex;align-items:center;justify-content:center;padding:32px;color:var(--text-muted)}
 .spin{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin-right:10px}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* Toasts */
 .toast-wrap{position:fixed;bottom:20px;right:20px;z-index:1000;display:flex;flex-direction:column-reverse;gap:8px}
-.toast{
-  padding:10px 14px;border-radius:var(--radius);
-  font-size:.8rem;font-weight:500;border:1px solid;
-  min-width:200px;max-width:300px;
-  animation:toastIn .3s cubic-bezier(0.34,1.56,0.64,1) forwards;
-  box-shadow:var(--shadow-lg);font-family:'Inter',sans-serif;
-}
+.toast{padding:10px 14px;border-radius:var(--radius);font-size:.8rem;font-weight:500;border:1px solid;min-width:200px;max-width:300px;animation:toastIn .3s cubic-bezier(0.34,1.56,0.64,1) forwards;box-shadow:var(--shadow-lg);font-family:'Inter',sans-serif}
 .toast.removing{animation:toastOut .22s ease forwards}
 @keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
 @keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(8px)}}
@@ -608,50 +283,18 @@ tbody tr:hover td{color:var(--text)}
 .toast-success{background:var(--green-light);color:var(--green);border-color:var(--green-border)}
 .toast-error{background:var(--red-light);color:var(--red);border-color:var(--red-border)}
 .toast-amber{background:var(--amber-light);color:var(--amber);border-color:var(--amber-border)}
-
-/* Driver confirmed card */
-.contact-info-block{
-  margin-top:14px;background:var(--blue-light);
-  border:1px solid var(--blue-border);border-radius:var(--radius-sm);padding:14px 16px;
-}
-.contact-info-block-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.contact-avatar-sm{
-  width:32px;height:32px;border-radius:50%;
-  background:linear-gradient(135deg,var(--blue),#6366f1);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0;
-}
-.contact-avatar-sm.green-avatar{background:linear-gradient(135deg,var(--green),#059669)}
-.contact-info-name{font-size:.84rem;font-weight:700;color:var(--text)}
-.contact-info-role{font-size:.66rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--blue);margin-top:1px}
-.contact-info-row{
-  display:flex;align-items:center;gap:8px;padding:7px 0;
-  border-top:1px solid var(--blue-border);font-size:.79rem;color:var(--text-secondary);
-}
-.contact-info-icon{font-size:.85rem;flex-shrink:0;opacity:.75}
-.driver-contact-block{
-  margin-top:14px;background:var(--green-light);
-  border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:14px 16px;
-}
+.driver-contact-block{margin-top:14px;background:var(--green-light);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:14px 16px}
 .driver-contact-block-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.contact-avatar-sm{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#6366f1);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0}
+.contact-avatar-sm.green-avatar{background:linear-gradient(135deg,var(--green),#059669)}
 .driver-contact-name{font-size:.84rem;font-weight:700;color:var(--text)}
 .driver-contact-role{font-size:.66rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--green);margin-top:1px}
-.driver-contact-row{
-  display:flex;align-items:center;gap:8px;padding:7px 0;
-  border-top:1px solid var(--green-border);font-size:.79rem;color:var(--text-secondary);
-}
-a.phone-link{color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px;border-radius:4px;padding:1px 3px;margin:-1px -3px;transition:color var(--t)}
-a.phone-link:hover{color:var(--blue)}
-
+.driver-contact-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--green-border);font-size:.79rem;color:var(--text-secondary)}
+.contact-info-icon{font-size:.85rem;flex-shrink:0;opacity:.75}
 .divider{height:1px;background:var(--border);margin:18px 0}
-.hidden{display:none!important}
-.section-label{
-  font-size:.63rem;font-weight:700;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--text-muted);
-  margin-bottom:10px;display:flex;align-items:center;gap:6px;
-}
+.section-label{font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;gap:6px}
 
-/* ═══════════ RESPONSIVE ═══════════ */
+/* RESPONSIVE */
 @media(max-width:1100px){.dash-grid{grid-template-columns:1fr}}
 @media(max-width:900px){
   .dash-hero{grid-template-columns:repeat(2,1fr)}
@@ -667,8 +310,7 @@ a.phone-link:hover{color:var(--blue)}
   .hamburger{display:flex}
   .global-search{width:130px}
   .global-search:focus{width:160px}
-  .rt-status{display:none}
-  .admin-badge{display:none}
+  .rt-status,.admin-badge{display:none}
   .page,.detail-view{padding:16px 16px 60px}
   .dash-hero{grid-template-columns:repeat(2,1fr);gap:10px}
   .kpi-val{font-size:1.6rem}
@@ -690,35 +332,22 @@ a.phone-link:hover{color:var(--blue)}
 </head>
 <body>
 
-<!-- ═══════════ LOGIN ═══════════ -->
+<!-- LOGIN -->
 <div id="login">
   <div class="login-box">
-    <div class="login-logo">
-      <div class="login-logo-mark">🚗</div>
-      Ride<em>Bid</em>
-    </div>
+    <div class="login-logo"><div class="login-logo-mark">🚗</div>Ride<em>Bid</em></div>
     <div class="login-sub">Admin Command Center</div>
-    <div class="field">
-      <label>Username</label>
-      <input type="text" id="l-user" placeholder="superadmin" autocomplete="username"/>
-    </div>
-    <div class="field">
-      <label>Password</label>
-      <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"/>
-    </div>
+    <div class="field"><label>Username</label><input type="text" id="l-user" placeholder="superadmin" autocomplete="username"/></div>
+    <div class="field"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"/></div>
     <button class="btn-login" onclick="doLogin()">Access Command Center →</button>
     <div class="err-msg" id="l-err"></div>
   </div>
 </div>
 
-<!-- ═══════════ APP ═══════════ -->
+<!-- APP -->
 <div id="app">
-
   <header class="topbar">
-    <div class="topbar-logo">
-      <div class="topbar-logo-mark">🚗</div>
-      Ride<em style="font-style:normal;color:var(--blue)">Bid</em>
-    </div>
+    <div class="topbar-logo"><div class="topbar-logo-mark">🚗</div>Ride<em style="font-style:normal;color:var(--blue)">Bid</em></div>
     <div class="topbar-sep"></div>
     <nav class="topbar-nav">
       <button class="nav-pill active" id="nav-dashboard"  onclick="showPage('dashboard',this)">Dashboard</button>
@@ -728,7 +357,7 @@ a.phone-link:hover{color:var(--blue)}
       <button class="nav-pill"        id="nav-analytics"  onclick="showPage('analytics',this)">Analytics</button>
     </nav>
     <div class="topbar-right">
-      <div class="rt-status" id="rt-status-wrap" title="Live connection">
+      <div class="rt-status" id="rt-status-wrap">
         <span class="rt-dot" id="rt-dot"></span>
         <span id="rt-label">connecting…</span>
       </div>
@@ -740,9 +369,7 @@ a.phone-link:hover{color:var(--blue)}
       </div>
       <span class="admin-badge">ADMIN</span>
       <button class="btn btn-ghost btn-sm" onclick="doLogout()">Sign Out</button>
-      <button class="hamburger" id="hamburger" onclick="toggleMobileNav()">
-        <span></span><span></span><span></span>
-      </button>
+      <button class="hamburger" id="hamburger" onclick="toggleMobileNav()"><span></span><span></span><span></span></button>
     </div>
   </header>
 
@@ -756,7 +383,7 @@ a.phone-link:hover{color:var(--blue)}
     <button class="mobile-nav-pill" style="color:var(--red)" onclick="doLogout()">Sign Out</button>
   </nav>
 
-  <!-- ── DASHBOARD ── -->
+  <!-- DASHBOARD -->
   <div class="page active" id="pg-dashboard">
     <div class="page-title">Command <span class="accent">Center</span> <span class="title-badge">LIVE</span></div>
     <div class="dash-hero">
@@ -788,7 +415,7 @@ a.phone-link:hover{color:var(--blue)}
     </div>
   </div>
 
-  <!-- ── DRIVERS ── -->
+  <!-- DRIVERS -->
   <div class="page" id="pg-drivers">
     <div class="page-title">Driver <span class="accent">Registry</span></div>
     <div class="toolbar">
@@ -816,7 +443,7 @@ a.phone-link:hover{color:var(--blue)}
     <div class="pagination" id="drivers-pg"></div>
   </div>
 
-  <!-- ── PASSENGERS ── -->
+  <!-- PASSENGERS -->
   <div class="page" id="pg-passengers">
     <div class="page-title">Passenger <span class="accent">Directory</span></div>
     <div class="toolbar">
@@ -838,7 +465,7 @@ a.phone-link:hover{color:var(--blue)}
     <div class="pagination" id="passengers-pg"></div>
   </div>
 
-  <!-- ── RIDES ── -->
+  <!-- RIDES -->
   <div class="page" id="pg-rides">
     <div class="page-title">Rides <span class="accent">Ledger</span></div>
     <div class="toolbar">
@@ -880,19 +507,13 @@ a.phone-link:hover{color:var(--blue)}
     <div class="pagination" id="rides-pg"></div>
   </div>
 
-  <!-- ── ANALYTICS ── -->
+  <!-- ANALYTICS -->
   <div class="page" id="pg-analytics">
     <div class="page-title">Analytics <span class="accent">&amp; Insights</span></div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px" id="analytics-kpis"></div>
     <div class="dash-grid" style="margin-bottom:14px">
-      <div class="card">
-        <div class="card-title"><span>Fare Distribution</span></div>
-        <div class="chart-wrap"><canvas id="fareChart"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-title"><span>Completion Rate Trend</span></div>
-        <div class="chart-wrap"><canvas id="completionChart"></canvas></div>
-      </div>
+      <div class="card"><div class="card-title"><span>Fare Distribution</span></div><div class="chart-wrap"><canvas id="fareChart"></canvas></div></div>
+      <div class="card"><div class="card-title"><span>Completion Rate Trend</span></div><div class="chart-wrap"><canvas id="completionChart"></canvas></div></div>
     </div>
     <div class="card" style="margin-bottom:14px">
       <div class="card-title"><span>Relationship Flow — Drivers ↔ Rides ↔ Passengers</span></div>
@@ -907,49 +528,36 @@ a.phone-link:hover{color:var(--blue)}
     </div>
   </div>
 
-  <!-- ── DRIVER DETAIL ── -->
+  <!-- DRIVER DETAIL -->
   <div class="detail-view" id="dv-driver">
-    <div class="breadcrumb">
-      <a onclick="showPage('drivers')">Drivers</a>
-      <span class="bc-sep">›</span>
-      <span id="dv-driver-bc">Driver Profile</span>
-    </div>
+    <div class="breadcrumb"><a onclick="showPage('drivers')">Drivers</a><span class="bc-sep">›</span><span id="dv-driver-bc">Driver Profile</span></div>
     <div id="dv-driver-content"></div>
   </div>
 
-  <!-- ── PASSENGER DETAIL ── -->
+  <!-- PASSENGER DETAIL -->
   <div class="detail-view" id="dv-passenger">
-    <div class="breadcrumb">
-      <a onclick="showPage('passengers')">Passengers</a>
-      <span class="bc-sep">›</span>
-      <span id="dv-passenger-bc">Passenger Profile</span>
-    </div>
+    <div class="breadcrumb"><a onclick="showPage('passengers')">Passengers</a><span class="bc-sep">›</span><span id="dv-passenger-bc">Passenger Profile</span></div>
     <div id="dv-passenger-content"></div>
   </div>
 
-  <!-- ── RIDE DETAIL ── -->
+  <!-- RIDE DETAIL -->
   <div class="detail-view" id="dv-ride">
-    <div class="breadcrumb" id="dv-ride-bc-wrap">
-      <a onclick="showPage('rides')">Rides</a>
-      <span class="bc-sep">›</span>
-      <span id="dv-ride-bc">Ride Details</span>
-    </div>
+    <div class="breadcrumb" id="dv-ride-bc-wrap"><a onclick="showPage('rides')">Rides</a><span class="bc-sep">›</span><span id="dv-ride-bc">Ride Details</span></div>
     <div id="dv-ride-content"></div>
   </div>
+</div>
 
-</div><!-- /app -->
 <div class="toast-wrap" id="toasts"></div>
 
-<!-- ═══════════════════════════════════════════
-     SCRIPT
-═══════════════════════════════════════════ -->
 <script>
-// ── Credentials ──
+// ─────────────────────────────────────────────
+// CREDENTIALS
+// ─────────────────────────────────────────────
 const CREDS=[['superadmin','admin123'],['admin1','password123'],['testadmin','test123']];
 
 let sb=null;
 let state={
-  drivers:[],passengers:[],rides:[],history:[],
+  drivers:[],passengers:[],rides:[],history:[],negotiations:{},
   driversPg:1,passengersPg:1,ridesPg:1,
   driversSort:{col:'created_at',dir:-1},
   passengersSort:{col:'created_at',dir:-1},
@@ -962,7 +570,9 @@ let state={
 };
 const PER_PAGE=25;
 
-// ── Init ──
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
 (async()=>{
   try{
     const r=await fetch('/api/config');
@@ -972,7 +582,9 @@ const PER_PAGE=25;
   if(tok){document.getElementById('login').style.display='none';bootApp();}
 })();
 
-// ── Auth ──
+// ─────────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────────
 function doLogin(){
   const u=document.getElementById('l-user').value.trim();
   const p=document.getElementById('l-pass').value;
@@ -980,22 +592,20 @@ function doLogin(){
     localStorage.setItem('rb_admin','1');
     document.getElementById('login').style.display='none';
     bootApp();
-  } else {
+  }else{
     const e=document.getElementById('l-err');
     e.textContent='Invalid credentials. Try superadmin / admin123';
     e.style.display='block';
   }
 }
 document.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&document.getElementById('login').style.display!=='none') doLogin();
+  if(e.key==='Enter'&&document.getElementById('login').style.display!=='none')doLogin();
 });
 function doLogout(){
-  if(sb) sb.removeAllChannels();
+  if(sb)sb.removeAllChannels();
   localStorage.removeItem('rb_admin');
   location.reload();
 }
-
-// ── Mobile nav ──
 function toggleMobileNav(){
   const nav=document.getElementById('mobile-nav');
   const btn=document.getElementById('hamburger');
@@ -1003,7 +613,9 @@ function toggleMobileNav(){
   btn.classList.toggle('open',open);
 }
 
-// ── Boot ──
+// ─────────────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────────────
 async function bootApp(){
   document.getElementById('app').style.display='block';
   setRealtimeStatus('connecting');
@@ -1013,121 +625,122 @@ async function bootApp(){
   renderPassengersTable();
   renderRidesTable();
   renderAnalytics();
-  if(sb) subscribeRealtime();
-  else   setRealtimeStatus('mock');
+  if(sb)subscribeRealtime();
+  else setRealtimeStatus('mock');
 }
 
 // ─────────────────────────────────────────────
-// BUG FIX: resolveDriverForRide
-// Uses String() coercion for ALL UUID comparisons to avoid type mismatch.
-// Priority: accepted_by → countered_by → history driver_id
+// DRIVER RESOLUTION
+// Priority: accepted_by → countered_by (for accept-counter flow where
+// accepted_by is NOT set by backend) → _history_driver_id
+// All comparisons use String() to handle UUID vs integer safely.
 // ─────────────────────────────────────────────
-function resolveDriverForRide(r) {
-  // Try accepted_by first (direct accept or accept-counter)
-  if (r.accepted_by != null) {
-    const d = state.drivers.find(d => String(d.id) === String(r.accepted_by));
-    if (d) return d;
-  }
-  // Fall back to countered_by (driver who sent the counter)
-  if (r.countered_by != null) {
-    const d = state.drivers.find(d => String(d.id) === String(r.countered_by));
-    if (d) return d;
-  }
-  // Last resort: check ride_history for driver_id
-  if (r._history_driver_id != null) {
-    const d = state.drivers.find(d => String(d.id) === String(r._history_driver_id));
-    if (d) return d;
+function resolveDriverForRide(r){
+  const candidates=[r.accepted_by, r.countered_by, r._history_driver_id];
+  for(const id of candidates){
+    if(id==null)continue;
+    const d=state.drivers.find(d=>String(d.id)===String(id));
+    if(d)return d;
   }
   return null;
 }
 
 // ─────────────────────────────────────────────
-// BUG FIX: getFinalFare
-// For completed rides: use final_fare from history if available,
-// then counter_fare (agreed negotiated amount), then offered_fare.
+// FINAL FARE RESOLUTION
+//
+// Priority for completed/confirmed:
+//   1. ride_history.final_fare  (_history_final_fare on the ride object)
+//   2. counter_fare             (negotiated amount)
+//   3. offered_fare             (original ask)
+//
+// For accept-counter flow: backend sets offered_fare = counter_fare on
+// ride_requests when passenger accepts. So offered_fare is always the
+// correct "agreed" fare on confirmed rides even without history.
 // ─────────────────────────────────────────────
-function getFinalFare(r) {
-  if (r.status === 'completed' || r.status === 'confirmed') {
-    if (r.final_fare != null && r.final_fare !== '') return r.final_fare;
-    if (r.counter_fare != null && r.counter_fare !== '') return r.counter_fare;
+function getFinalFare(r){
+  if(r.status==='completed'||r.status==='confirmed'){
+    if(r._history_final_fare!=null&&r._history_final_fare!=='')return r._history_final_fare;
+    if(r.counter_fare!=null&&r.counter_fare!=='')return r.counter_fare;
   }
   return r.offered_fare;
 }
 
 // ─────────────────────────────────────────────
-// BUG FIX: loadAllData
-// - Correctly propagates driver_id from ride_history → _history_driver_id
-// - Keeps status='confirmed' if no history yet (not forced to 'completed')
-// - Merges accepted_by from history when missing on the ride_request row
-// - Uses String() for all ID comparisons
+// LOAD ALL DATA
+//
+// KEY FIXES:
+// 1. Status is NEVER overridden — we keep ride_requests.status as source of truth.
+//    ride_history presence only adds metadata (final_fare, driver_id) but does NOT
+//    change status. The backend's complete_ride RPC already sets status='completed'
+//    on ride_requests before inserting into ride_history.
+// 2. _history_driver_id is set from ride_history so resolveDriverForRide can use it
+//    even when accepted_by is null (accept-counter flow).
+// 3. _history_final_fare stored separately so getFinalFare() can prefer it.
+// 4. accepted_by is enriched from history ONLY as a fallback (||), never overwritten.
 // ─────────────────────────────────────────────
-const TABLE_DRIVERS='drivers';
-const TABLE_PASSENGERS='passengers';
-const TABLE_REQUESTS='ride_requests';
-const TABLE_HISTORY='ride_history';
-
 async function loadAllData(){
   if(!sb){loadMockData();return;}
   try{
     const[drRes,paRes,reqRes,histRes]=await Promise.all([
-      sb.from(TABLE_DRIVERS).select('*').order('created_at',{ascending:false}),
-      sb.from(TABLE_PASSENGERS).select('*').order('created_at',{ascending:false}),
-      sb.from(TABLE_REQUESTS).select('*').order('created_at',{ascending:false}),
-      sb.from(TABLE_HISTORY).select('*').order('completed_at',{ascending:false}),
+      sb.from('drivers').select('*').order('created_at',{ascending:false}),
+      sb.from('passengers').select('*').order('created_at',{ascending:false}),
+      sb.from('ride_requests').select('*').order('created_at',{ascending:false}),
+      sb.from('ride_history').select('*').order('completed_at',{ascending:false}),
     ]);
-    if(drRes.error)  console.warn('[RideBid] drivers:',drRes.error.message);
-    if(paRes.error)  console.warn('[RideBid] passengers:',paRes.error.message);
-    if(reqRes.error) console.warn('[RideBid] ride_requests:',reqRes.error.message);
-    if(histRes.error)console.warn('[RideBid] ride_history:',histRes.error.message);
+
+    if(drRes.error)  console.warn('[admin] drivers:',drRes.error.message);
+    if(paRes.error)  console.warn('[admin] passengers:',paRes.error.message);
+    if(reqRes.error) console.warn('[admin] ride_requests:',reqRes.error.message);
+    if(histRes.error)console.warn('[admin] ride_history:',histRes.error.message);
 
     state.drivers=drRes.data||[];
     state.passengers=paRes.data||[];
     state.history=histRes.data||[];
 
-    // Build a lookup map: request_id → history record
+    // Build history lookup: request_id → history record
     const histByReqId={};
-    state.history.forEach(h=>{ histByReqId[String(h.request_id)]=h; });
+    state.history.forEach(h=>{histByReqId[String(h.request_id)]=h;});
 
-    // FIX: Enrich each ride_request with history data where available
+    // Enrich ride_requests with history metadata (never override status)
     const requests=(reqRes.data||[]).map(r=>{
       const hist=histByReqId[String(r.id)];
       if(hist){
-        return {
+        return{
           ...r,
-          // Use history's final_fare (most authoritative)
-          final_fare: hist.final_fare,
-          completed_at: hist.completed_at,
-          // FIX: propagate driver_id from history so resolveDriverForRide works
-          _history_driver_id: hist.driver_id,
-          // FIX: set accepted_by from history if missing on the ride row
+          // Stash history's final_fare separately — do NOT overwrite offered_fare
+          _history_final_fare: hist.final_fare,
+          _history_driver_id:  hist.driver_id,
+          // Only fill accepted_by from history if ride_requests doesn't have it
+          // (handles accept-counter flow where backend sets accepted_by=null)
           accepted_by: r.accepted_by || hist.driver_id,
-          // FIX: mark as completed only when history exists (means ride truly done)
-          status: 'completed',
-          _has_history: true
+          completed_at: hist.completed_at || r.completed_at,
+          _has_history: true,
+          // IMPORTANT: keep status from ride_requests — the RPC already set it to
+          // 'completed'. Do NOT force override here.
         };
       }
-      return { ...r, _history_driver_id: null };
+      return{...r, _history_driver_id:null, _history_final_fare:null};
     });
 
-    // Also add history-only records (orphaned history without a ride_request)
+    // Include orphaned history rows (history without a matching ride_request)
     const requestIds=new Set(requests.map(r=>String(r.id)));
     state.history.forEach(h=>{
       if(!requestIds.has(String(h.request_id))){
         requests.push({
-          id: h.request_id,
-          passenger_name: h.passenger_name,
-          passenger_phone: '—',
-          pickup_location: h.pickup_location,
+          id:               h.request_id,
+          passenger_name:   h.passenger_name,
+          passenger_phone:  '—',
+          pickup_location:  h.pickup_location,
           dropoff_location: h.dropoff_location,
-          offered_fare: h.final_fare,
-          final_fare: h.final_fare,
-          status: 'completed',
-          accepted_by: h.driver_id,
-          _history_driver_id: h.driver_id,
-          created_at: h.completed_at,
-          completed_at: h.completed_at,
-          _has_history: true,
-          _history_only: true
+          offered_fare:     h.final_fare,
+          _history_final_fare: h.final_fare,
+          _history_driver_id:  h.driver_id,
+          accepted_by:      h.driver_id,
+          status:           'completed',
+          created_at:       h.completed_at,
+          completed_at:     h.completed_at,
+          _has_history:     true,
+          _history_only:    true,
         });
       }
     });
@@ -1135,12 +748,14 @@ async function loadAllData(){
     requests.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
     state.rides=requests;
   }catch(e){
-    console.error('[RideBid] loadAllData:',e);
+    console.error('[admin] loadAllData exception:',e);
     loadMockData();
   }
 }
 
-// ── Realtime ──
+// ─────────────────────────────────────────────
+// REALTIME
+// ─────────────────────────────────────────────
 function subscribeRealtime(){
   function upsertInto(arr,record){
     const idx=arr.findIndex(x=>String(x.id)===String(record.id));
@@ -1152,100 +767,99 @@ function subscribeRealtime(){
   }
   function refreshAll(){
     renderDashboard();renderDriversTable();renderPassengersTable();renderRidesTable();
-    if(document.getElementById('pg-analytics').classList.contains('active')) renderAnalytics();
+    if(document.getElementById('pg-analytics').classList.contains('active'))renderAnalytics();
   }
 
   sb.channel('admin-drivers')
-    .on('postgres_changes',{event:'*',schema:'public',table:TABLE_DRIVERS},(payload)=>{
-      const{eventType,new:rec,old}=payload;
-      if(eventType==='DELETE')removeFrom(state.drivers,old);else upsertInto(state.drivers,rec);
+    .on('postgres_changes',{event:'*',schema:'public',table:'drivers'},(p)=>{
+      if(p.eventType==='DELETE')removeFrom(state.drivers,p.old);
+      else upsertInto(state.drivers,p.new);
       refreshAll();
     }).subscribe(s=>handleChannelStatus('drivers',s));
 
   sb.channel('admin-passengers')
-    .on('postgres_changes',{event:'*',schema:'public',table:TABLE_PASSENGERS},(payload)=>{
-      const{eventType,new:rec,old}=payload;
-      if(eventType==='DELETE')removeFrom(state.passengers,old);else upsertInto(state.passengers,rec);
+    .on('postgres_changes',{event:'*',schema:'public',table:'passengers'},(p)=>{
+      if(p.eventType==='DELETE')removeFrom(state.passengers,p.old);
+      else upsertInto(state.passengers,p.new);
       refreshAll();
-      if(eventType==='INSERT')toast(`New passenger: ${rec.name||rec.phone}`,'info');
+      if(p.eventType==='INSERT')toast(`New passenger: ${p.new.name||p.new.phone}`,'info');
     }).subscribe(s=>handleChannelStatus('passengers',s));
 
   sb.channel('admin-ride-requests')
-    .on('postgres_changes',{event:'*',schema:'public',table:TABLE_REQUESTS},(payload)=>{
-      let{eventType,new:rec,old}=payload;
+    .on('postgres_changes',{event:'*',schema:'public',table:'ride_requests'},(p)=>{
+      let{eventType,new:rec,old}=p;
       if(eventType==='DELETE'){removeFrom(state.rides,old);}
       else{
-        // FIX: Merge history data if already in state
-        const hist=state.history.find(h=>String(h.request_id)===String(rec.id));
-        if(hist){
-          rec={
-            ...rec,
-            final_fare: hist.final_fare,
-            completed_at: hist.completed_at,
-            _history_driver_id: hist.driver_id,
-            accepted_by: rec.accepted_by || hist.driver_id,
-            status: 'completed',
-            _has_history: true
-          };
-        }
+        // Merge with existing enrichment (don't lose _history_* fields)
         const existing=state.rides.find(x=>String(x.id)===String(rec.id));
         if(existing){
           rec={
-            ...existing,...rec,
-            final_fare: rec.final_fare ?? existing.final_fare,
-            completed_at: rec.completed_at ?? existing.completed_at,
-            _history_driver_id: rec._history_driver_id ?? existing._history_driver_id,
-            accepted_by: rec.accepted_by ?? existing.accepted_by,
-            pickup_time: rec.pickup_time ?? existing.pickup_time,
+            ...existing,
+            ...rec,
+            // Preserve history-derived fields
+            _history_final_fare: rec._history_final_fare ?? existing._history_final_fare,
+            _history_driver_id:  rec._history_driver_id  ?? existing._history_driver_id,
+            accepted_by:         rec.accepted_by          ?? existing.accepted_by,
+            completed_at:        rec.completed_at         ?? existing.completed_at,
           };
         }
         upsertInto(state.rides,rec);
+        if(eventType==='INSERT')toast(`New ride from ${rec.passenger_name}`,'info');
+        else if(eventType==='UPDATE'&&rec?.status){
+          const em={confirmed:'✅',completed:'🏁',rejected:'❌',expired:'⏰',countered:'💬'}[rec.status]||'🔄';
+          toast(`${em} Ride ${rec.status}: ${rec.passenger_name}`,'success');
+        }
       }
       refreshAll();
-      if(eventType==='INSERT')toast(`New ride from ${rec.passenger_name}`,'info');
-      else if(eventType==='UPDATE'&&rec?.status){
-        const em={confirmed:'✅',completed:'🏁',rejected:'❌',expired:'⏰',countered:'💬'}[rec.status]||'🔄';
-        toast(`${em} Ride ${rec.status}: ${rec.passenger_name}`,'success');
-      }
     }).subscribe(s=>handleChannelStatus('ride_requests',s));
 
   sb.channel('admin-ride-history')
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:TABLE_HISTORY},(payload)=>{
-      const hist=payload.new;
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'ride_history'},(p)=>{
+      const hist=p.new;
       state.history.unshift(hist);
-      const rideIdx=state.rides.findIndex(r=>String(r.id)===String(hist.request_id));
-      if(rideIdx>=0){
-        // FIX: Full merge including _history_driver_id and accepted_by fallback
-        state.rides[rideIdx]={
-          ...state.rides[rideIdx],
-          status: 'completed',
-          final_fare: hist.final_fare,
-          completed_at: hist.completed_at,
-          _history_driver_id: hist.driver_id,
-          accepted_by: state.rides[rideIdx].accepted_by || hist.driver_id,
-          _has_history: true
+      const idx=state.rides.findIndex(r=>String(r.id)===String(hist.request_id));
+      if(idx>=0){
+        state.rides[idx]={
+          ...state.rides[idx],
+          _history_final_fare: hist.final_fare,
+          _history_driver_id:  hist.driver_id,
+          // Only fill accepted_by if missing
+          accepted_by: state.rides[idx].accepted_by||hist.driver_id,
+          completed_at: hist.completed_at||state.rides[idx].completed_at,
+          _has_history: true,
+          // status is already 'completed' from ride_requests update
         };
       }else{
         state.rides.unshift({
-          id: hist.request_id,
-          passenger_name: hist.passenger_name,
-          passenger_phone: '—',
-          pickup_location: hist.pickup_location,
+          id:               hist.request_id,
+          passenger_name:   hist.passenger_name,
+          passenger_phone:  '—',
+          pickup_location:  hist.pickup_location,
           dropoff_location: hist.dropoff_location,
-          offered_fare: hist.final_fare,
-          final_fare: hist.final_fare,
-          status: 'completed',
-          accepted_by: hist.driver_id,
-          _history_driver_id: hist.driver_id,
-          created_at: hist.completed_at,
-          completed_at: hist.completed_at,
-          _has_history: true,
-          _history_only: true
+          offered_fare:     hist.final_fare,
+          _history_final_fare: hist.final_fare,
+          _history_driver_id:  hist.driver_id,
+          accepted_by:      hist.driver_id,
+          status:           'completed',
+          created_at:       hist.completed_at,
+          completed_at:     hist.completed_at,
+          _has_history:     true,
+          _history_only:    true,
         });
       }
       refreshAll();
       toast(`🏁 Ride completed — $${hist.final_fare}`,'success');
     }).subscribe(s=>handleChannelStatus('ride_history',s));
+
+  // NEW: subscribe to ride_negotiations for real-time fare timeline updates
+  sb.channel('admin-negotiations')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'ride_negotiations'},(p)=>{
+      const neg=p.new;
+      const rid=String(neg.request_id);
+      if(!state.negotiations[rid])state.negotiations[rid]=[];
+      state.negotiations[rid].push(neg);
+      state.negotiations[rid].sort((a,b)=>a.round-b.round);
+    }).subscribe(s=>handleChannelStatus('negotiations',s));
 }
 
 const _channelStatus={};
@@ -1267,7 +881,9 @@ function setRealtimeStatus(st){
   label.textContent=s.text;
 }
 
-// ── Mock data ──
+// ─────────────────────────────────────────────
+// MOCK DATA (used when Supabase not configured)
+// ─────────────────────────────────────────────
 function loadMockData(){
   const names=['Arjun Sharma','Priya Patel','Rahul Verma','Deepika Singh','Amit Kumar','Sneha Reddy','Vikram Nair','Kavya Menon','Rohit Gupta','Ananya Das'];
   const vehicles=['Honda City KA01AB1234','Maruti Swift KA03CD5678','Toyota Innova KA05EF9012','Hyundai i20 KA07GH3456','Tata Nexon KA09IJ7890'];
@@ -1280,35 +896,35 @@ function loadMockData(){
     const d=state.drivers[i%state.drivers.length];
     const status=statuses[Math.floor(Math.random()*statuses.length)];
     const fare=+(80+Math.random()*400).toFixed(0);
-    const finalFare=status==='completed'?+(fare*(0.85+Math.random()*0.2)).toFixed(0):null;
+    const counterFare=+(fare*1.15).toFixed(0);
+    const histFare=+(fare*(0.85+Math.random()*0.2)).toFixed(0);
     return{
       id:i+1,passenger_id:p.id,passenger_name:p.name,passenger_phone:p.phone,
       pickup_location:places[Math.floor(Math.random()*places.length)],
       dropoff_location:places[Math.floor(Math.random()*places.length)],
       offered_fare:fare,
-      counter_fare:['countered','confirmed','completed'].includes(status)?+(fare*1.15).toFixed(0):null,
-      final_fare:finalFare,
+      counter_fare:['countered','confirmed','completed'].includes(status)?counterFare:null,
+      _history_final_fare:status==='completed'?histFare:null,
+      _history_driver_id:status==='completed'?d.id:null,
       status,
       accepted_by:['confirmed','completed'].includes(status)?d.id:null,
       countered_by:status==='countered'?d.id:null,
-      _history_driver_id:status==='completed'?d.id:null,
       created_at:new Date(Date.now()-Math.random()*60*864e5).toISOString(),
       pickup_time:new Date(Date.now()+Math.random()*3600000).toISOString()
     };
   });
 }
 
-// ── Page routing ──
+// ─────────────────────────────────────────────
+// PAGE ROUTING
+// ─────────────────────────────────────────────
 function showPage(name,btn){
   document.querySelectorAll('.page,.detail-view').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-pill,.mobile-nav-pill').forEach(p=>p.classList.remove('active'));
   const pg=document.getElementById('pg-'+name);
   if(pg)pg.classList.add('active');
   if(btn)btn.classList.add('active');
-  else{
-    const desktopBtn=document.getElementById('nav-'+name);
-    if(desktopBtn)desktopBtn.classList.add('active');
-  }
+  else{const b=document.getElementById('nav-'+name);if(b)b.classList.add('active');}
   state.currentPage=name;
 }
 function showDetailView(viewId){
@@ -1316,7 +932,9 @@ function showDetailView(viewId){
   document.getElementById(viewId).classList.add('active');
 }
 
-// ── Dashboard ──
+// ─────────────────────────────────────────────
+// DASHBOARD
+// ─────────────────────────────────────────────
 function renderDashboard(){
   const dr=state.drivers,ri=state.rides;
   const online=dr.filter(d=>d.is_online).length;
@@ -1335,27 +953,20 @@ function renderDashboard(){
   const recent=[...ri].slice(0,8);
   document.getElementById('dash-recent-rides').innerHTML=`
     <div class="tbl-wrap"><table><thead><tr><th>Passenger</th><th>Route</th><th>Fare</th><th>Status</th></tr></thead><tbody>
-      ${recent.map(r=>`<tr onclick="openRideDetail('${r.id}')">
-        <td><span class="link">${r.passenger_name}</span></td>
-        <td style="max-width:180px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.73rem;color:var(--text-muted)">${r.pickup_location} → ${r.dropoff_location}</div></td>
-        <td class="fare-cell">$${getFinalFare(r)}</td>
-        <td><span class="badge b-${r.status}">${r.status}</span></td>
-      </tr>`).join('')}
+    ${recent.map(r=>`<tr onclick="openRideDetail('${r.id}')">
+      <td><span class="link">${r.passenger_name}</span></td>
+      <td style="max-width:180px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.73rem;color:var(--text-muted)">${r.pickup_location} → ${r.dropoff_location}</div></td>
+      <td class="fare-cell">$${getFinalFare(r)}</td>
+      <td><span class="badge b-${r.status}">${r.status}</span></td>
+    </tr>`).join('')}
     </tbody></table></div>`;
 
   const statusCounts={};
   ri.forEach(r=>{statusCounts[r.status]=(statusCounts[r.status]||0)+1;});
-  const COLORS={'pending':'#d97706','confirmed':'#16a34a','completed':'#2563eb','countered':'#7c3aed','rejected':'#9ca3af','expired':'#d1d5db'};
+  const COLORS={pending:'#d97706',confirmed:'#16a34a',completed:'#2563eb',countered:'#7c3aed',rejected:'#9ca3af',expired:'#d1d5db'};
   const sc=document.getElementById('statusChart');
   if(sc._chart)sc._chart.destroy();
-  sc._chart=new Chart(sc,{
-    type:'doughnut',
-    data:{
-      labels:Object.keys(statusCounts),
-      datasets:[{data:Object.values(statusCounts),backgroundColor:Object.keys(statusCounts).map(s=>COLORS[s]||'#ccc'),borderWidth:0,hoverOffset:4}]
-    },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'68%'}
-  });
+  sc._chart=new Chart(sc,{type:'doughnut',data:{labels:Object.keys(statusCounts),datasets:[{data:Object.values(statusCounts),backgroundColor:Object.keys(statusCounts).map(s=>COLORS[s]||'#ccc'),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'68%'}});
   document.getElementById('status-legend').innerHTML=Object.entries(statusCounts).map(([s,c])=>`
     <div style="display:flex;justify-content:space-between;align-items:center;font-size:.73rem;padding:5px 0;border-bottom:1px solid var(--border)">
       <span style="display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:${COLORS[s]||'#ccc'};display:inline-block"></span>${s}</span>
@@ -1372,17 +983,13 @@ function renderDashboard(){
   }
   const ac=document.getElementById('activityChart');
   if(ac._chart)ac._chart.destroy();
-  ac._chart=new Chart(ac,{
-    type:'bar',
-    data:{labels:days,datasets:[{data:rideCounts,backgroundColor:'rgba(37,99,235,0.1)',borderColor:'#2563eb',borderWidth:2,borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#9ca3af',font:{size:10}}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#9ca3af',font:{size:10}}}}}
-  });
+  ac._chart=new Chart(ac,{type:'bar',data:{labels:days,datasets:[{data:rideCounts,backgroundColor:'rgba(37,99,235,0.1)',borderColor:'#2563eb',borderWidth:2,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#9ca3af',font:{size:10}}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#9ca3af',font:{size:10}}}}}});
 
+  // Top drivers: count by all driver ID sources
   const driverRideCounts={};
-  // FIX: use String() for safe ID comparison
-  ri.filter(r=>r.accepted_by!=null||r._history_driver_id!=null).forEach(r=>{
-    const id=String(r.accepted_by||r._history_driver_id);
-    driverRideCounts[id]=(driverRideCounts[id]||0)+1;
+  ri.forEach(r=>{
+    const id=String(r.accepted_by||r._history_driver_id||r.countered_by||'');
+    if(id&&id!=='null'&&id!=='undefined')driverRideCounts[id]=(driverRideCounts[id]||0)+1;
   });
   const topDrivers=Object.entries(driverRideCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
   document.getElementById('top-drivers-list').innerHTML=topDrivers.map(([id,cnt])=>{
@@ -1395,7 +1002,9 @@ function renderDashboard(){
   }).join('')||'<div class="empty"><div class="empty-sub">No ride data yet</div></div>';
 }
 
-// ── Drivers table ──
+// ─────────────────────────────────────────────
+// DRIVERS TABLE
+// ─────────────────────────────────────────────
 function getFilteredDrivers(){
   let list=[...state.drivers];
   if(state.driversFilter){const q=state.driversFilter.toLowerCase();list=list.filter(d=>(d.name||'').toLowerCase().includes(q)||(d.username||'').toLowerCase().includes(q)||(d.contact_no||'').toLowerCase().includes(q));}
@@ -1424,7 +1033,9 @@ function renderDriversTable(){
 function filterDrivers(v){state.driversFilter=v;state.driversPg=1;renderDriversTable();}
 function filterDriverStatus(v){state.driversStatus=v;state.driversPg=1;renderDriversTable();}
 
-// ── Passengers table ──
+// ─────────────────────────────────────────────
+// PASSENGERS TABLE
+// ─────────────────────────────────────────────
 function getFilteredPassengers(){
   let list=[...state.passengers];
   if(state.passengersFilter){const q=state.passengersFilter.toLowerCase();list=list.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.phone||'').toLowerCase().includes(q));}
@@ -1447,7 +1058,9 @@ function renderPassengersTable(){
 }
 function filterPassengers(v){state.passengersFilter=v;state.passengersPg=1;renderPassengersTable();}
 
-// ── Rides table ──
+// ─────────────────────────────────────────────
+// RIDES TABLE
+// ─────────────────────────────────────────────
 function getFilteredRides(){
   let list=[...state.rides];
   if(state.ridesFilter){const q=state.ridesFilter.toLowerCase();list=list.filter(r=>(r.passenger_name||'').toLowerCase().includes(q)||(r.pickup_location||'').toLowerCase().includes(q)||(r.dropoff_location||'').toLowerCase().includes(q)||(String(r.id)).includes(q));}
@@ -1456,8 +1069,7 @@ function getFilteredRides(){
   if(state.ridesFareMax)list=list.filter(r=>+getFinalFare(r)<=+state.ridesFareMax);
   if(state.ridesDateFrom)list=list.filter(r=>r.created_at>=state.ridesDateFrom);
   if(state.ridesDateTo)list=list.filter(r=>r.created_at<=state.ridesDateTo+'T23:59:59');
-  // FIX: compare as String for driver ID filter
-  if(state.ridesDriverId)list=list.filter(r=>String(r.accepted_by||r._history_driver_id||r.countered_by||'').includes(state.ridesDriverId));
+  if(state.ridesDriverId){const q=state.ridesDriverId.toLowerCase();list=list.filter(r=>String(r.accepted_by||r._history_driver_id||r.countered_by||'').includes(q));}
   list.sort((a,b)=>{const c=state.ridesSort.col,dir=state.ridesSort.dir,av=a[c]||'',bv=b[c]||'';return(isNaN(+av)?String(av).localeCompare(String(bv)):(+av)-(+bv))*dir;});
   return list;
 }
@@ -1466,9 +1078,11 @@ function renderRidesTable(){
   document.getElementById('rides-count').textContent=`${list.length} rides`;
   const pg=state.ridesPg,total=Math.ceil(list.length/PER_PAGE),page=list.slice((pg-1)*PER_PAGE,pg*PER_PAGE);
   document.getElementById('rides-tbody').innerHTML=page.length?page.map(r=>{
-    // FIX: use resolveDriverForRide for consistent driver lookup
     const drv=resolveDriverForRide(r);
     const displayFare=getFinalFare(r);
+    const originalOffer=r._history_final_fare!=null&&r.counter_fare!=null
+      ? r.offered_fare  // show original offered if negotiation happened
+      : null;
     return`<tr onclick="openRideDetail('${r.id}')">
       <td class="mono" style="color:var(--text-muted)">#${r.id}</td>
       <td>
@@ -1479,7 +1093,7 @@ function renderRidesTable(){
       <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.74rem">${r.dropoff_location}</td>
       <td>
         <span class="fare-cell">$${displayFare}</span>
-        ${r.counter_fare&&String(r.counter_fare)!==String(displayFare)?`<span class="counter-fare">$${r.offered_fare}</span>`:''}
+        ${originalOffer&&String(originalOffer)!==String(displayFare)?`<span class="counter-fare">$${originalOffer}</span>`:''}
       </td>
       <td><span class="badge b-${r.status}">${r.status}</span></td>
       <td>${drv?`<span class="link" onclick="event.stopPropagation();openDriverDetail('${drv.id}')">${drv.name}</span>`:`<span style="color:var(--text-muted)">—</span>`}</td>
@@ -1513,7 +1127,9 @@ function updateFilterTags(){
   document.getElementById('rides-filter-tags').innerHTML=tags.map(t=>`<span class="f-tag">${t[0]}<button onclick="(${t[1].toString()})()">×</button></span>`).join('');
 }
 
-// ── Sorting ──
+// ─────────────────────────────────────────────
+// SORTING
+// ─────────────────────────────────────────────
 function sortTable(entity,col){
   const key=entity+'Sort';
   if(state[key].col===col)state[key].dir*=-1;
@@ -1523,27 +1139,38 @@ function sortTable(entity,col){
   if(entity==='rides')renderRidesTable();
 }
 
-// ═══════════════════════════════════════════════════════
-// RIDE DETAIL — with full bug fixes for completed rides
-// ═══════════════════════════════════════════════════════
+// ─────────────────────────────────────────────
+// RIDE DETAIL
+// ─────────────────────────────────────────────
 async function openRideDetail(id){
   const r=state.rides.find(x=>String(x.id)===String(id));
   if(!r){toast('Ride not found','error');return;}
 
-  let negotiations=[];
-  try{
-    const res=await fetch(`/api/rides/${id}/negotiations`);
-    if(res.ok){const d=await res.json();negotiations=d.negotiations||[];}
-  }catch(e){
-    console.warn('[admin] Could not fetch negotiations, using column fallback');
-  }
-
-  // FIX: use resolveDriverForRide (String-safe)
-  const drv=resolveDriverForRide(r);
+  // Show loading immediately
   document.getElementById('dv-ride-bc').textContent=`Ride #${r.id}`;
-  document.getElementById('dv-ride-content').innerHTML=buildRideDetailHTML(r,drv,negotiations);
+  document.getElementById('dv-ride-content').innerHTML=`<div class="loader"><div class="spin"></div>Loading ride details…</div>`;
   showDetailView('dv-ride');
   window.scrollTo(0,0);
+
+  // Fetch negotiations from ride_negotiations table via backend API
+  // (backend already has GET /api/rides/:id/negotiations wired up)
+  let negotiations=state.negotiations[String(id)]||[];
+  if(!negotiations.length&&sb){
+    try{
+      const{data,error}=await sb
+        .from('ride_negotiations')
+        .select('*')
+        .eq('request_id',id)
+        .order('round',{ascending:true});
+      if(!error&&data&&data.length){
+        negotiations=data;
+        state.negotiations[String(id)]=data;
+      }
+    }catch(e){console.warn('[admin] negotiations fetch:',e);}
+  }
+
+  const drv=resolveDriverForRide(r);
+  document.getElementById('dv-ride-content').innerHTML=buildRideDetailHTML(r,drv,negotiations);
 }
 
 function buildRideDetailHTML(r,drv,negotiations=[]){
@@ -1551,16 +1178,14 @@ function buildRideDetailHTML(r,drv,negotiations=[]){
   const timelineSteps=buildFareTimeline(r,negotiations);
   const isLiveData=negotiations.length>0;
 
-  // FIX: Correct phone link helper
   function phoneLink(phone){
     if(!phone||phone==='—'||phone==='N/A')return`<span style="color:var(--text-muted)">${phone||'N/A'}</span>`;
     const dialable=phone.replace(/\s+/g,'');
-    return `<a href="tel:${dialable}" style="color:var(--blue);text-decoration:none;font-weight:500">📞 ${phone}</a>`;
+    return`<a href="tel:${dialable}" style="color:var(--blue);text-decoration:none;font-weight:500">📞 ${phone}</a>`;
   }
 
-  // FIX: Driver contact block for confirmed/completed rides
-  const driverBlock = drv
-    ? `<div class="driver-contact-block">
+  const driverBlock=drv
+    ?`<div class="driver-contact-block">
         <div class="driver-contact-block-header">
           <div class="contact-avatar-sm green-avatar">${(drv.name||'D')[0].toUpperCase()}</div>
           <div>
@@ -1568,62 +1193,50 @@ function buildRideDetailHTML(r,drv,negotiations=[]){
             <div class="driver-contact-role">${r.status==='completed'?'Driver · Ride Completed':'Driver · En Route'}</div>
           </div>
         </div>
-        <div class="driver-contact-row">
-          <span class="contact-info-icon">📞</span>
-          ${phoneLink(drv.contact_no)}
-        </div>
+        <div class="driver-contact-row"><span class="contact-info-icon">📞</span>${phoneLink(drv.contact_no)}</div>
         ${drv.vehicle_info?`<div class="driver-contact-row"><span class="contact-info-icon">🚘</span><span>${drv.vehicle_info}</span></div>`:''}
       </div>`
-    : (r.accepted_by||r._history_driver_id||r.countered_by)
-      ? `<div style="padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);font-size:.8rem;color:var(--text-muted);border:1px solid var(--border)">⏳ Driver details unavailable</div>`
-      : `<div style="padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);font-size:.8rem;color:var(--text-muted);border:1px solid var(--border)">No driver assigned yet</div>`;
+    :(r.accepted_by||r._history_driver_id||r.countered_by)
+      ?`<div style="padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);font-size:.8rem;color:var(--text-muted);border:1px solid var(--border)">⏳ Driver details loading…</div>`
+      :`<div style="padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);font-size:.8rem;color:var(--text-muted);border:1px solid var(--border)">No driver assigned yet</div>`;
+
+  // Original offer for display (before any negotiation)
+  const originalOffer=r._history_final_fare!=null&&r.counter_fare!=null?r.offered_fare:null;
 
   return`
     <div class="ride-detail-card">
       <div class="rdc-header">
         <div>
-          <div class="rdc-title">
-            Ride Request
-            <span class="badge b-${r.status}" style="margin-left:10px">${r.status}</span>
-          </div>
+          <div class="rdc-title">Ride Request <span class="badge b-${r.status}" style="margin-left:10px">${r.status}</span></div>
           <div class="rdc-id">ID: #${r.id} · Created ${fmtDateTime(r.created_at)}</div>
         </div>
         <div style="text-align:right;flex-shrink:0">
           <div style="font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px">${r.status==='completed'?'Final Fare':'Current Fare'}</div>
           <div class="fare-cell" style="font-size:1.75rem;font-weight:800;letter-spacing:-0.04em">$${finalFare}</div>
-          ${r.offered_fare&&String(r.offered_fare)!==String(finalFare)?`<div style="font-size:.72rem;color:var(--text-muted);margin-top:2px;text-decoration:line-through">Initial offer: $${r.offered_fare}</div>`:''}
+          ${originalOffer&&String(originalOffer)!==String(finalFare)?`<div style="font-size:.72rem;color:var(--text-muted);margin-top:2px;text-decoration:line-through">Initial offer: $${originalOffer}</div>`:''}
         </div>
       </div>
 
       <div class="route-vis">
-        <div class="route-point">
-          <div class="route-point-label">📍 Pickup</div>
-          <div class="route-point-loc">${r.pickup_location}</div>
-        </div>
+        <div class="route-point"><div class="route-point-label">📍 Pickup</div><div class="route-point-loc">${r.pickup_location}</div></div>
         <div class="route-arrow">→</div>
-        <div class="route-point">
-          <div class="route-point-label">🏁 Drop-off</div>
-          <div class="route-point-loc">${r.dropoff_location}</div>
-        </div>
+        <div class="route-point"><div class="route-point-label">🏁 Drop-off</div><div class="route-point-loc">${r.dropoff_location}</div></div>
       </div>
 
-      <!-- Fare Timeline -->
       <div style="margin-bottom:20px">
         <div class="section-label">
           💬 Fare Negotiation Timeline
-          <span style="display:inline-flex;align-items:center;gap:4px;font-size:.62rem;font-weight:600;padding:2px 7px;border-radius:20px;letter-spacing:.04em;background:${isLiveData?'var(--green-light)':'var(--surface3)'};color:${isLiveData?'var(--green)':'var(--text-muted)'};border:1px solid ${isLiveData?'var(--green-border)':'var(--border)'}">
-            ${isLiveData?`✓ ${negotiations.length} steps · live data`:'reconstructed'}
+          <span style="font-size:.62rem;font-weight:600;padding:2px 7px;border-radius:20px;background:${isLiveData?'var(--green-light)':'var(--surface3)'};color:${isLiveData?'var(--green)':'var(--text-muted)'};border:1px solid ${isLiveData?'var(--green-border)':'var(--border)'}">
+            ${isLiveData?`✓ ${negotiations.length} steps · live data`:'reconstructed from columns'}
           </span>
         </div>
         <div>
           ${timelineSteps.length
-            ? timelineSteps.map((step,i,arr)=>{
+            ?timelineSteps.map((step,i,arr)=>{
                 const isFirst=i===0,isLast=i===arr.length-1;
-                const borderR=isFirst?'var(--radius-sm) var(--radius-sm) 0 0':isLast?'0 0 var(--radius-sm) var(--radius-sm)':'0';
-                return`<div class="fare-timeline-step${step.isFinal?' is-final':''}" style="border-radius:${borderR}">
-                  <div class="fare-step-icon" style="background:${step.isFinal?'var(--green-light)':step.bgColor};border:1.5px solid ${step.isFinal?'var(--green-border)':step.borderColor}">
-                    ${step.icon}
-                  </div>
+                const br=isFirst?'var(--radius-sm) var(--radius-sm) 0 0':isLast?'0 0 var(--radius-sm) var(--radius-sm)':'0';
+                return`<div class="fare-timeline-step${step.isFinal?' is-final':''}" style="border-radius:${br}">
+                  <div class="fare-step-icon" style="background:${step.isFinal?'var(--green-light)':step.bgColor};border:1.5px solid ${step.isFinal?'var(--green-border)':step.borderColor}">${step.icon}</div>
                   <div style="flex:1;min-width:0">
                     <div class="fare-step-actor" style="color:${step.isFinal?'var(--green)':step.color}">${step.actor} · ${step.action}</div>
                     <div class="fare-step-amount ${step.isFinal?'final-amount':''}">$${step.fare}</div>
@@ -1632,7 +1245,7 @@ function buildRideDetailHTML(r,drv,negotiations=[]){
                   ${step.isFinal?`<span class="final-pill">FINAL</span>`:(i<arr.length-1?`<div style="font-size:.75rem;color:var(--text-dim);align-self:center;flex-shrink:0">→</div>`:'')}
                 </div>`;
               }).join('')
-            : `<div style="padding:12px;background:var(--surface2);border-radius:var(--radius-sm);color:var(--text-muted);font-size:.8rem;border:1px solid var(--border)">No fare data available</div>`}
+            :`<div style="padding:12px;background:var(--surface2);border-radius:var(--radius-sm);color:var(--text-muted);font-size:.8rem;border:1px solid var(--border)">No negotiation data available</div>`}
         </div>
       </div>
 
@@ -1641,7 +1254,8 @@ function buildRideDetailHTML(r,drv,negotiations=[]){
         <div class="rdc-field"><label>Status</label><div class="val"><span class="badge b-${r.status}">${r.status}</span></div></div>
         <div class="rdc-field"><label>Created</label><div class="val mono">${fmtDateTime(r.created_at)}</div></div>
         ${r.completed_at?`<div class="rdc-field"><label>Completed</label><div class="val mono">${fmtDateTime(r.completed_at)}</div></div>`:''}
-        ${r.final_fare?`<div class="rdc-field"><label>Final Fare</label><div class="val fare-cell">$${r.final_fare}</div></div>`:''}
+        ${r._history_final_fare?`<div class="rdc-field"><label>Final Fare</label><div class="val fare-cell">$${r._history_final_fare}</div></div>`:''}
+        ${r.counter_fare?`<div class="rdc-field"><label>Negotiated Fare</label><div class="val fare-cell">$${r.counter_fare}</div></div>`:''}
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px">
@@ -1660,7 +1274,7 @@ function buildRideDetailHTML(r,drv,negotiations=[]){
         <div>
           <div class="section-label" style="margin-bottom:8px">Driver</div>
           ${drv
-            ? `<div class="entity-chip" onclick="openDriverDetail('${drv.id}')">
+            ?`<div class="entity-chip" onclick="openDriverDetail('${drv.id}')">
                 <div class="entity-chip-icon" style="background:var(--green-light);color:var(--green)">🚗</div>
                 <div>
                   <span class="entity-chip-label">Driver</span>
@@ -1669,124 +1283,128 @@ function buildRideDetailHTML(r,drv,negotiations=[]){
                 </div>
                 <span style="margin-left:auto;color:var(--text-muted)">→</span>
               </div>`
-            : `<div style="padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);font-size:.8rem;color:var(--text-muted);border:1px solid var(--border)">No driver assigned yet</div>`}
+            :`<div style="padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);font-size:.8rem;color:var(--text-muted);border:1px solid var(--border)">No driver assigned yet</div>`}
         </div>
       </div>
 
       ${(r.status==='confirmed'||r.status==='completed')?`
-        <div class="divider" style="margin:18px 0"></div>
-        <div class="section-label" style="margin-bottom:8px">
-          ${r.status==='completed'?'🏁 Ride Completed':'✅ Ride Confirmed — Driver Contact'}
-        </div>
+        <div class="divider"></div>
+        <div class="section-label" style="margin-bottom:8px">${r.status==='completed'?'🏁 Ride Completed':'✅ Ride Confirmed — Driver Contact'}</div>
         ${driverBlock}
       `:''}
     </div>`;
 }
 
-// ═══════════════════════════════════════════════════════
-// FARE TIMELINE — prefers live negotiations data
-// ═══════════════════════════════════════════════════════
-function buildFareTimeline(r, negotiations=[]) {
+// ─────────────────────────────────────────────
+// FARE TIMELINE BUILDER
+//
+// Priority: use ride_negotiations rows (live data) if available.
+// Falls back to column-based reconstruction for older rides.
+// ─────────────────────────────────────────────
+function buildFareTimeline(r,negotiations=[]){
   if(negotiations.length>0){
     return negotiations.map(n=>{
       const isDriver=n.proposed_by==='driver';
       const isAccepted=n.status==='accepted';
       const isRejected=n.status==='rejected';
       let action;
-      if(isAccepted)      action='Accepted';
-      else if(isRejected) action='Declined & Closed';
-      else                action=`Counter · Round ${n.round}`;
+      if(isAccepted)       action='Accepted';
+      else if(isRejected)  action='Declined';
+      else                 action=`Counter (Round ${n.round})`;
       return{
-        actor: isDriver?'Driver':'Passenger',
+        actor:     isDriver?'Driver':'Passenger',
         action,
-        fare: n.fare,
-        icon: isAccepted?'✅':isRejected?'❌':isDriver?'🚗':'👤',
-        color: isDriver?'var(--green)':'var(--blue)',
-        bgColor: isDriver?'var(--green-light)':'var(--blue-light)',
-        borderColor: isDriver?'var(--green-border)':'var(--blue-border)',
-        isFinal: isAccepted,
-        ts: n.created_at?fmtDateTime(n.created_at):null
+        fare:      n.fare,
+        icon:      isAccepted?'✅':isRejected?'❌':isDriver?'🚗':'👤',
+        color:     isDriver?'var(--green)':'var(--blue)',
+        bgColor:   isDriver?'var(--green-light)':'var(--blue-light)',
+        borderColor:isDriver?'var(--green-border)':'var(--blue-border)',
+        isFinal:   isAccepted,
+        ts:        n.created_at?fmtDateTime(n.created_at):null,
       };
     });
   }
   return buildFareTimelineFromColumns(r);
 }
 
-// FIX: Column-based fallback — cleaner logic, handles all flow variants
+// ─────────────────────────────────────────────
+// COLUMN-BASED FALLBACK TIMELINE
+//
+// Reconstructs the negotiation visually from ride_requests columns.
+// Handles all 4 flows:
+//   A. Driver accepts directly          → offered_fare is final
+//   B. Driver counters, passenger accepts→ counter_fare is final (accept-counter sets offered_fare=counter_fare)
+//   C. Passenger counters back          → passenger_countered=true
+//   D. Ride rejected                    → show rejection step
+// ─────────────────────────────────────────────
 function buildFareTimelineFromColumns(r){
   const steps=[];
 
-  // Step 1: Passenger's original offer
+  // Step 1: always show passenger's original offer
   if(r.offered_fare!=null){
     steps.push({
       actor:'Passenger',action:'Initial Offer',
       fare:r.offered_fare,icon:'👤',
-      color:'var(--blue)',bgColor:'var(--blue-light)',borderColor:'var(--blue-border)'
+      color:'var(--blue)',bgColor:'var(--blue-light)',borderColor:'var(--blue-border)',
     });
   }
 
-  // Step 2: If counter exists and differs from offered_fare, show negotiation
+  const finalFare=getFinalFare(r);
+
+  // Step 2: negotiation round(s)
   if(r.counter_fare!=null&&String(r.counter_fare)!==String(r.offered_fare)){
-    // previous_counter_fare helps reconstruct multi-round negotiation
-    if(r.previous_counter_fare!=null&&String(r.previous_counter_fare)!==String(r.offered_fare)&&String(r.previous_counter_fare)!==String(r.counter_fare)){
-      const firstActor=r.passenger_countered?'Driver':'Passenger';
-      const isDriver=firstActor==='Driver';
+    // Who made the counter?
+    if(r.passenger_countered){
+      // Passenger countered the driver's counter
       steps.push({
-        actor:firstActor,action:'Counter Offered',
-        fare:r.previous_counter_fare,icon:isDriver?'🚗':'👤',
-        color:isDriver?'var(--green)':'var(--blue)',
-        bgColor:isDriver?'var(--green-light)':'var(--blue-light)',
-        borderColor:isDriver?'var(--green-border)':'var(--blue-border)'
+        actor:'Driver',action:'Counter Offered',
+        fare:r.counter_fare,icon:'🚗',
+        color:'var(--green)',bgColor:'var(--green-light)',borderColor:'var(--green-border)',
+      });
+    }else{
+      // Driver made the original counter
+      steps.push({
+        actor:'Driver',action:'Counter Offered',
+        fare:r.counter_fare,icon:'🚗',
+        color:'var(--green)',bgColor:'var(--green-light)',borderColor:'var(--green-border)',
       });
     }
-    // Latest counter
-    const lastActor=r.passenger_countered?'Passenger':'Driver';
-    const isDriverLast=lastActor==='Driver';
-    steps.push({
-      actor:lastActor,action:'Counter Offered',
-      fare:r.counter_fare,icon:isDriverLast?'🚗':'👤',
-      color:isDriverLast?'var(--green)':'var(--blue)',
-      bgColor:isDriverLast?'var(--green-light)':'var(--blue-light)',
-      borderColor:isDriverLast?'var(--green-border)':'var(--blue-border)'
-    });
   }
 
-  // Step 3: Final accepted step for completed/confirmed rides
+  // Step 3: final resolution
   if(r.status==='completed'||r.status==='confirmed'){
-    const finalFare=getFinalFare(r);
     const lastStep=steps[steps.length-1];
-    // Only add if not already represented as the final counter
-    if(!lastStep||String(finalFare)!==String(lastStep.fare)){
+    if(lastStep&&String(finalFare)===String(lastStep.fare)){
+      // The last counter IS the final fare — mark it as final
+      lastStep.action=lastStep.action+' → Accepted';
+      lastStep.isFinal=true;
+    }else{
+      // A separate acceptance step
       steps.push({
         actor:'Both',action:'Agreed & Accepted',
         fare:finalFare,icon:'✅',
         color:'var(--green)',bgColor:'var(--green-light)',borderColor:'var(--green-border)',
-        isFinal:true
+        isFinal:true,
       });
-    }else if(lastStep){
-      lastStep.action='Counter → Accepted';
-      lastStep.isFinal=true;
     }
-  }
-
-  // Step 4: Rejected rides
-  if(r.status==='rejected'){
+  }else if(r.status==='rejected'){
     steps.push({
-      actor:'Passenger',action:'Declined & Closed',
+      actor:'Passenger',action:'Declined',
       fare:r.counter_fare||r.offered_fare,icon:'❌',
-      color:'var(--text-muted)',bgColor:'var(--surface3)',borderColor:'var(--border)'
+      color:'var(--text-muted)',bgColor:'var(--surface3)',borderColor:'var(--border)',
     });
   }
 
   return steps;
 }
 
-// ── Driver detail ──
+// ─────────────────────────────────────────────
+// DRIVER DETAIL
+// ─────────────────────────────────────────────
 function openDriverDetail(id){
-  // FIX: String comparison for UUID-safe lookup
   const d=state.drivers.find(x=>String(x.id)===String(id));
   if(!d){toast('Driver not found','error');return;}
-  // FIX: use resolveDriverForRide-compatible logic for ride filtering
+  // Match rides by all possible driver ID fields
   const rides=state.rides.filter(r=>
     String(r.accepted_by)===String(d.id)||
     String(r.countered_by)===String(d.id)||
@@ -1855,7 +1473,9 @@ function openDriverDetail(id){
   window.scrollTo(0,0);
 }
 
-// ── Passenger detail ──
+// ─────────────────────────────────────────────
+// PASSENGER DETAIL
+// ─────────────────────────────────────────────
 function openPassengerDetail(id){
   const p=state.passengers.find(x=>String(x.id)===String(id));
   if(!p){toast('Passenger not found','error');return;}
@@ -1880,10 +1500,7 @@ function renderPassengerProfile(p){
       <div class="avatar av-passenger">${p.name[0]}</div>
       <div style="min-width:0">
         <div class="profile-name">${p.name}</div>
-        <div class="profile-meta">
-          <span>📞 ${p.phone}</span>
-          <span>📅 Joined ${fmtDate(p.created_at)}</span>
-        </div>
+        <div class="profile-meta"><span>📞 ${p.phone}</span><span>📅 Joined ${fmtDate(p.created_at)}</span></div>
       </div>
       <div class="profile-stats">
         <div><div class="ps-val">${rides.length}</div><div class="ps-label">Rides</div></div>
@@ -1943,7 +1560,9 @@ function renderPassengerProfile(p){
   window.scrollTo(0,0);
 }
 
-// ── Analytics ──
+// ─────────────────────────────────────────────
+// ANALYTICS
+// ─────────────────────────────────────────────
 function renderAnalytics(){
   const ri=state.rides;
   const completed=ri.filter(r=>r.status==='completed');
@@ -2025,7 +1644,9 @@ function drawRelationshipGraph(){
   canvas.style.cursor='pointer';
 }
 
-// ── Global Search ──
+// ─────────────────────────────────────────────
+// GLOBAL SEARCH
+// ─────────────────────────────────────────────
 let gsearchTimeout;
 function globalSearchFn(q){
   clearTimeout(gsearchTimeout);
@@ -2049,7 +1670,9 @@ function closeGSearch(){
   document.getElementById('globalSearch').value='';
 }
 
-// ── Pagination ──
+// ─────────────────────────────────────────────
+// PAGINATION
+// ─────────────────────────────────────────────
 function renderPagination(containerId,current,total,onPage){
   const el=document.getElementById(containerId);
   if(total<=1){el.innerHTML='';return;}
@@ -2061,7 +1684,9 @@ function renderPagination(containerId,current,total,onPage){
   el.innerHTML=`<span class="pg-info">Showing ${start}–${end}</span>`+pages.map(p=>`<button class="pg-btn${p.active?' active':''}" onclick="(${onPage.toString()})(${p.p})">${p.label}</button>`).join('');
 }
 
-// ── Date utils ──
+// ─────────────────────────────────────────────
+// DATE UTILS
+// ─────────────────────────────────────────────
 function fmtDate(iso){
   if(!iso)return'—';
   return new Date(iso).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
@@ -2079,7 +1704,9 @@ function fmtDateTime(iso){
   return`${day} ${month} ${year}, ${hr12}:${min} ${ampm}`;
 }
 
-// ── Toast ──
+// ─────────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────────
 function toast(msg,type='info'){
   const t=document.createElement('div');
   t.className=`toast toast-${type}`;t.textContent=msg;
@@ -2087,12 +1714,12 @@ function toast(msg,type='info'){
   setTimeout(()=>{t.classList.add('removing');t.addEventListener('animationend',()=>t.remove(),{once:true});},3500);
 }
 
-// ── Resize ──
+// ─────────────────────────────────────────────
+// MISC
+// ─────────────────────────────────────────────
 window.addEventListener('resize',()=>{
-  if(document.getElementById('pg-analytics').classList.contains('active')) drawRelationshipGraph();
+  if(document.getElementById('pg-analytics').classList.contains('active'))drawRelationshipGraph();
 });
-
-// ── Close mobile nav on outside click ──
 document.addEventListener('click',(e)=>{
   const nav=document.getElementById('mobile-nav');
   const btn=document.getElementById('hamburger');
