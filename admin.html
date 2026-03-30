@@ -1255,16 +1255,33 @@ function openRideDetail(id){
           <div class="rdc-title">Ride Request <span class="badge b-${r.status}" style="margin-left:.5rem">${r.status}</span></div>
           <div class="rdc-id">ID: #${r.id} · Created ${fmtDateTime(r.created_at)}</div>
         </div>
-        <div class="fare" style="font-size:1.75rem">${r.status==="completed"&&r.final_fare ? r.final_fare : r.offered_fare}${r.counter_fare?`<span style="font-size:.9rem;color:var(--text-muted);text-decoration:line-through;margin-left:.5rem">$${r.counter_fare}</span>`:''}</div>
+        <div style="text-align:right">
+          <div style="font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.25rem">${r.status==='completed'?'Final Fare':'Current Fare'}</div>
+          <div class="fare" style="font-size:1.75rem">₹${r.status==='completed'&&r.final_fare ? r.final_fare : r.counter_fare || r.offered_fare}</div>
+          ${r.status!=='completed'&&r.offered_fare?`<div style="font-size:.75rem;color:var(--text-muted);margin-top:.2rem">Initial offer: ₹${r.offered_fare}</div>`:''}
+        </div>
       </div>
       <div class="route-vis">
         <div class="route-point"><div class="route-point-label">📍 Pickup</div><div class="route-point-loc">${r.pickup_location}</div></div>
         <div class="route-arrow">→</div>
         <div class="route-point"><div class="route-point-label">🏁 Dropoff</div><div class="route-point-loc">${r.dropoff_location}</div></div>
       </div>
+      <div style="margin-bottom:1.25rem">
+        <div style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.75rem">💬 Fare Negotiation Timeline</div>
+        <div style="display:flex;flex-direction:column;gap:0">
+          ${buildFareTimeline(r).map((step, i, arr) => `
+            <div style="display:flex;align-items:flex-start;gap:.875rem;padding:.75rem 1rem;background:${step.isFinal ? 'var(--green-light)' : 'var(--surface2)'};border:1px solid ${step.isFinal ? 'var(--green-border)' : 'var(--border)'};border-radius:${i===0?'var(--r) var(--r) 0 0':i===arr.length-1?'0 0 var(--r) var(--r)':'0'};margin-top:-1px;position:relative;z-index:${step.isFinal?2:1}">
+              <div style="width:28px;height:28px;border-radius:6px;background:${step.isFinal?'var(--green-light)':step.color+'22'};border:1.5px solid ${step.isFinal?'var(--green-border)':step.color+'55'};display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0">${step.icon}</div>
+              <div style="flex:1">
+                <div style="font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:${step.isFinal?'var(--green)':step.color};margin-bottom:.1rem">${step.actor} · ${step.action}</div>
+                <div style="font-family:var(--font-mono);font-size:1.1rem;font-weight:600;color:${step.isFinal?'var(--green)':'var(--text)'}">${step.fare}</div>
+              </div>
+              ${step.isFinal ? `<div style="font-size:.7rem;font-weight:600;color:var(--green);align-self:center;padding:.25rem .625rem;background:var(--green-light);border:1px solid var(--green-border);border-radius:99px">FINAL</div>` : (i < arr.length - 1 ? `<div style="font-size:.7rem;color:var(--text-muted);align-self:center">→</div>` : '')}
+            </div>`).join('')}
+          ${buildFareTimeline(r).length === 0 ? `<div style="padding:1rem;background:var(--surface2);border-radius:var(--r);color:var(--text-muted);font-size:.8rem;border:1px solid var(--border)">No fare data available</div>` : ''}
+        </div>
+      </div>
       <div class="rdc-grid">
-        <div class="rdc-field"><label>Offered Fare</label><div class="val fare">${r.status==="completed"&&r.final_fare ? r.final_fare : r.offered_fare}</div></div>
-        ${r.counter_fare?`<div class="rdc-field"><label>Counter Fare</label><div class="val" style="color:var(--violet)">$${r.counter_fare}</div></div>`:''}
         <div class="rdc-field"><label>Pickup Time</label><div class="val mono">${r.pickup_time?fmtDateTime(r.pickup_time):'Not set'}</div></div>
         <div class="rdc-field"><label>Status</label><div class="val"><span class="badge b-${r.status}">${r.status}</span></div></div>
         <div class="rdc-field"><label>Created</label><div class="val mono">${fmtDateTime(r.created_at)}</div></div>
@@ -1292,6 +1309,56 @@ function openRideDetail(id){
   window.scrollTo(0,0);
 }
 
+  // ═══════════════════════════════════════════════════════════════
+// FARE NEGOTIATION TIMELINE BUILDER
+// Reconstructs negotiation steps from available DB fields:
+//   offered_fare           → passenger's initial offer
+//   previous_counter_fare  → first counter (driver or passenger)
+//   counter_fare           → most recent counter
+//   passenger_countered    → true if last counter came from passenger
+//   final_fare             → accepted fare (from ride_history)
+// ═══════════════════════════════════════════════════════════════
+  
+function buildFareTimeline(r) {
+  const steps = [];
+  const fmt = v => v != null && v !== '' ? `₹${v}` : null;
+
+  // Step 1 — Passenger's initial offer (always available)
+  if (r.offered_fare != null) {
+    steps.push({ actor: 'Passenger', action: 'Offered', fare: fmt(r.offered_fare), icon: '👤', color: 'var(--blue)' });
+  }
+
+  // Step 2 — First counter (previous_counter_fare, if different from offered_fare)
+  if (r.previous_counter_fare != null && String(r.previous_counter_fare) !== String(r.offered_fare)) {
+    // If passenger_countered is true the LAST counter came from passenger,
+    // meaning previous_counter_fare was from the driver
+    const firstActor = r.passenger_countered ? 'Driver' : 'Passenger';
+    steps.push({ actor: firstActor, action: 'Countered', fare: fmt(r.previous_counter_fare), icon: firstActor === 'Driver' ? '🚗' : '👤', color: firstActor === 'Driver' ? 'var(--green)' : 'var(--blue)' });
+  }
+
+  // Step 3 — Most recent counter (counter_fare), only if it differs from previous
+  if (r.counter_fare != null && String(r.counter_fare) !== String(r.previous_counter_fare) && String(r.counter_fare) !== String(r.offered_fare)) {
+    const lastActor = r.passenger_countered ? 'Passenger' : 'Driver';
+    steps.push({ actor: lastActor, action: 'Countered', fare: fmt(r.counter_fare), icon: lastActor === 'Driver' ? '🚗' : '👤', color: lastActor === 'Driver' ? 'var(--green)' : 'var(--blue)' });
+  }
+
+  // Step 4 — Final accepted fare (from ride_history merge, only on completed rides)
+  if (r.status === 'completed' && r.final_fare != null) {
+    const acceptedFare = fmt(r.final_fare);
+    // Only add if it's meaningfully different from the last counter shown
+    const lastStep = steps[steps.length - 1];
+    if (!lastStep || String(r.final_fare) !== String(r.counter_fare || r.offered_fare)) {
+      steps.push({ actor: r.accepted_by ? 'Driver' : 'Both', action: 'Accepted', fare: acceptedFare, icon: '✅', color: 'var(--green)', isFinal: true });
+    } else if (lastStep) {
+      // Mark the last step as the accepted one without duplicating
+      lastStep.action = 'Countered → Accepted';
+      lastStep.isFinal = true;
+    }
+  }
+
+  return steps;
+}
+  
 // ═══════════════════════════════════════════════════════════════
 // ANALYTICS
 // ═══════════════════════════════════════════════════════════════
