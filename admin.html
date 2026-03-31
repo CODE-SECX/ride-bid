@@ -1191,13 +1191,14 @@ function buildRideDetailHTML(r,drv,negotiations=[]){
 function buildFareTimeline(r,negotiations=[]){
   if(negotiations.length>0){
     return negotiations.map(n=>{
-      const isAccepted=n.status==='accepted',isRejected=n.status==='rejected',isDriver=n.proposed_by==='driver';
+      const isAccepted=n.status==='accepted',isRejected=n.status==='rejected',isOffered=n.status==='offered',isDriver=n.proposed_by==='driver';
       let action;
-      if(isAccepted)action='Accepted';
-      else if(isRejected)action='Declined & Closed';
+      if(n.status==='offered') action='Initial Offer';
+      else if(isAccepted) action='Accepted';
+      else if(isRejected) action='Declined & Closed';
       else action=`Counter · Round ${n.round}`;
       return{actor:isDriver?'Driver':'Passenger',action,fare:`$${n.fare}`,
-        icon:isAccepted?'✅':isRejected?'❌':isDriver?'🚗':'👤',
+        icon:isAccepted?'✅':isRejected?'❌':isOffered?'👤':isDriver?'🚗':'👤',
         color:isDriver?'var(--green)':'var(--blue)',isFinal:isAccepted,
         roundLabel:n.created_at?fmtDateTime(n.created_at):null};
     });
