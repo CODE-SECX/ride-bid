@@ -754,31 +754,95 @@ app.get('/api/rides/history/passenger/:phone', async (req, res) => {
       return res.status(404).json({ error: 'Passenger not found' });
     }
 
-    const { data, error } = await supabase
+    const { data: rides, error } = await supabase
       .from('ride_requests')
       .select('*')
       .eq('passenger_phone', phone)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    res.json({ passenger, rides: data || [] });
+    
+    // Enrich with ride_history for final_fare
+    const rideIds = (rides || []).map(r => r.id);
+    let histMap = {};
+    if (rideIds.length > 0) {
+      const { data: histories } = await supabase
+        .from('ride_history')
+        .select('request_id, driver_id, final_fare, completed_at')
+        .in('request_id', rideIds);
+      (histories || []).forEach(h => { histMap[String(h.request_id)] = h; });
+    }
+    
+    const enriched = (rides || []).map(r => {
+      const hist = histMap[String(r.id)];
+      if (hist) {
+        return { ...r, final_fare: hist.final_fare, completed_at: hist.completed_at,
+          status: r.status === 'confirmed' ? 'completed' : r.status,
+          accepted_by: r.accepted_by || hist.driver_id };
+      }
+      return r;
+    });
+    
+    res.json({ passenger, rides: enriched });
   } catch (err) {
     console.error('Error fetching passenger history:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// Backwards-compatible alias
+// AFTER — JOINs ride_history to get final_fare + corrects completed status
 app.get('/api/rides/history/:phone', async (req, res) => {
   try {
     const { phone } = req.params;
-    const { data, error } = await supabase
+
+    // Fetch all ride_requests for this phone (all statuses)
+    const { data: rides, error: ridesError } = await supabase
       .from('ride_requests')
       .select('*')
       .eq('passenger_phone', phone)
       .order('created_at', { ascending: false });
-    if (error) throw error;
-    res.json({ rides: data || [] });
+
+    if (ridesError) throw ridesError;
+    if (!rides || rides.length === 0) {
+      return res.json({ rides: [] });
+    }
+
+    // Fetch matching ride_history rows in one query
+    const rideIds = rides.map(r => r.id);
+    const { data: histories, error: histError } = await supabase
+      .from('ride_history')
+      .select('request_id, driver_id, final_fare, completed_at')
+      .in('request_id', rideIds);
+
+    if (histError) {
+      // Non-fatal: return rides without enrichment
+      console.warn('[history] ride_history fetch failed:', histError.message);
+      return res.json({ rides });
+    }
+
+    // Build lookup: request_id → history row
+    const histMap = {};
+    (histories || []).forEach(h => { histMap[String(h.request_id)] = h; });
+
+    // Enrich ride_requests rows with data from ride_history
+    const enriched = rides.map(r => {
+      const hist = histMap[String(r.id)];
+      if (hist) {
+        return {
+          ...r,
+          // final_fare from ride_history is authoritative
+          final_fare:   hist.final_fare,
+          completed_at: hist.completed_at,
+          // If RPC didn't flip status, we correct it here
+          status:       r.status === 'confirmed' ? 'completed' : r.status,
+          // Backfill accepted_by if the RPC set it on ride_history but not ride_requests
+          accepted_by:  r.accepted_by || hist.driver_id,
+        };
+      }
+      return r;
+    });
+
+    res.json({ rides: enriched });
   } catch (err) {
     console.error('Error fetching history:', err);
     res.status(500).json({ error: err.message });
