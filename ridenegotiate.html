@@ -1984,18 +1984,19 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     const emptyEl = document.getElementById('all-rides-empty');
     if (!listEl) return;
 
-    let filtered = [...allRides];
+    let filtered;
 
-    // For driver view: only show active rides
-    if (driver && !passenger) {
+    if (passenger) {
+      // Only show THIS passenger's rides
+      filtered = allRides.filter(r => r.passenger_phone === passenger.phone);
+    } else {
+      // Guest mode: show pending/countered rides as a preview
       filtered = allRides.filter(r => r.status === 'pending' || r.status === 'countered');
     }
 
-    // Apply passenger tab filter
-    if (passenger) {
-      if (passengerRideFilter === 'pending')   filtered = filtered.filter(r => r.status === 'pending' || r.status === 'countered');
-      if (passengerRideFilter === 'confirmed') filtered = filtered.filter(r => r.status === 'confirmed' || r.status === 'completed');
-    }
+    // Apply tab filter
+    if (passengerRideFilter === 'pending')   filtered = filtered.filter(r => r.status === 'pending' || r.status === 'countered');
+    if (passengerRideFilter === 'confirmed') filtered = filtered.filter(r => r.status === 'confirmed' || r.status === 'completed');
 
     if (filtered.length === 0) {
       emptyEl.style.display = '';
