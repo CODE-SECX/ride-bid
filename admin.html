@@ -1166,7 +1166,7 @@ function buildRideDetailHTML(r,drv,negotiations=[]){
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.25rem">
         <div>
           <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:.5rem;font-family:'JetBrains Mono',monospace">Passenger</div>
-          <div class="entity-chip" onclick="openPassengerDetailByPhone('${r.passenger_phone}')">
+          <div class="entity-chip" onclick="r.passenger_phone && r.passenger_phone !== '—' ? openPassengerDetailByPhone('${r.passenger_phone}') : openPassengerDetail('${r.passenger_id}')">
             <div class="entity-chip-icon" style="background:var(--blue-light);color:var(--blue)">👤</div>
             <div><span class="entity-chip-label">Passenger</span><span class="entity-chip-name">${r.passenger_name}</span><div style="font-size:.68rem;color:var(--text-muted);margin-top:1px">${r.passenger_phone}</div></div>
             <span style="margin-left:auto;color:var(--text-muted)">→</span>
