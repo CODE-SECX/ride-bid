@@ -306,8 +306,7 @@ app.post('/api/rides', async (req, res) => {
 
     if (error) throw error;
 
-    // DUAL-WRITE: log the initial passenger offer so the admin
-    // fare timeline always has a starting step even for direct-accept flows
+    // Log the initial passenger offer
     await logNegotiationStep({
       requestId:    data.id,
       proposedBy:   'passenger',
@@ -337,7 +336,8 @@ app.get('/api/rides', async (req, res) => {
     } else if (status === 'pending' || status === 'countered') {
       query = query.in('status', ['pending', 'countered']).gt('expires_at', new Date().toISOString());
     } else {
-      query = query.in('status', ['pending', 'countered', 'confirmed', 'completed']);
+      // Return all statuses — no filter
+      // This ensures admin and frontends get the full picture
     }
 
     const { data: rides, error } = await query;
@@ -352,25 +352,17 @@ app.get('/api/rides', async (req, res) => {
 
 // ─────────────────────────────────────────────
 // HISTORY ROUTES — MUST be defined BEFORE /api/rides/:id
-// because Express matches routes top-to-bottom and ":id" would
-// greedily swallow the literal path segment "history", causing
-// the history endpoints to never be reached and returning a
-// "ride not found" error instead of the passenger's ride list.
-// This was the root cause of completed rides disappearing from
-// the passenger detail view in the admin portal.
 // ─────────────────────────────────────────────
 
 /**
  * GET /api/rides/history/passenger/:phone
- * Used by the driver-facing passenger tab to list a passenger's rides.
- * Returns ALL statuses (pending, confirmed, completed, rejected, expired).
+ * Returns ALL rides for a passenger (all statuses).
+ * No more ride_history join needed — everything is in ride_requests.
  */
 app.get('/api/rides/history/passenger/:phone', async (req, res) => {
   try {
     const { phone } = req.params;
-    console.log('[passenger-history] Request for phone:', phone);  // ADD
-    console.log('[DEBUG] /api/rides/history/passenger/:phone — phone:', phone);
-    
+
     const { data: passenger, error: passengerError } = await supabase
       .from('passengers')
       .select('id, name')
@@ -378,7 +370,6 @@ app.get('/api/rides/history/passenger/:phone', async (req, res) => {
       .single();
 
     if (passengerError || !passenger) {
-      console.warn('[DEBUG] passenger not found for phone:', phone);
       return res.status(404).json({ error: 'Passenger not found' });
     }
 
@@ -390,37 +381,7 @@ app.get('/api/rides/history/passenger/:phone', async (req, res) => {
 
     if (error) throw error;
 
-    // Enrich with ride_history for final_fare
-    const rideIds = (rides || []).map(r => r.id);
-    let histMap = {};
-    if (rideIds.length > 0) {
-      const { data: histories } = await supabase
-        .from('ride_history')
-        .select('request_id, driver_id, final_fare, completed_at, passenger_phone')
-        .in('request_id', rideIds);
-      (histories || []).forEach(h => { histMap[String(h.request_id)] = h; });
-    }
-
-    const enriched = (rides || []).map(r => {
-      const hist = histMap[String(r.id)];
-      if (hist) {
-        return {
-          ...r,
-          final_fare:   hist.final_fare,
-          completed_at: hist.completed_at,
-          status:       r.status === 'confirmed' ? 'completed' : r.status,
-          accepted_by:  r.accepted_by || hist.driver_id
-        };
-      }
-      return r;
-    });
-
-    console.log('[DEBUG] history/passenger — total rides returned:', enriched.length,
-      '| statuses:', enriched.map(r => r.status).join(', '));
-    console.log('[passenger-history] Found rides:', enriched.length);  // ADD
-    console.log('[passenger-history] Statuses:', enriched.map(r => r.status));  // ADD
-    console.log('[passenger-history] Sample ride:', JSON.stringify(enriched[0], null, 2));  // ADD
-    res.json({ passenger, rides: enriched });
+    res.json({ passenger, rides: rides || [] });
   } catch (err) {
     console.error('Error fetching passenger history:', err);
     res.status(500).json({ error: err.message });
@@ -430,63 +391,21 @@ app.get('/api/rides/history/passenger/:phone', async (req, res) => {
 /**
  * GET /api/rides/history/:phone
  * Used by the admin portal passenger detail view.
- * Returns ALL statuses enriched with final_fare from ride_history.
+ * Returns ALL rides for a phone number — single query, no joins.
  */
 app.get('/api/rides/history/:phone', async (req, res) => {
   try {
     const { phone } = req.params;
-    console.log('[DEBUG] /api/rides/history/:phone — phone:', phone);
 
-    // Fetch all ride_requests for this phone (all statuses, no filter)
-    const { data: rides, error: ridesError } = await supabase
+    const { data: rides, error } = await supabase
       .from('ride_requests')
       .select('*')
       .eq('passenger_phone', phone)
       .order('created_at', { ascending: false });
 
-    if (ridesError) throw ridesError;
+    if (error) throw error;
 
-    if (!rides || rides.length === 0) {
-      console.log('[DEBUG] history/:phone — no rides found for phone:', phone);
-      return res.json({ rides: [] });
-    }
-
-    // Fetch matching ride_history rows in one query
-    const rideIds = rides.map(r => r.id);
-    const { data: histories, error: histError } = await supabase
-      .from('ride_history')
-      .select('request_id, driver_id, final_fare, completed_at, passenger_phone')
-      .in('request_id', rideIds);
-
-    if (histError) {
-      console.warn('[history] ride_history fetch failed:', histError.message);
-      return res.json({ rides });
-    }
-
-    // Build lookup: request_id → history row
-    const histMap = {};
-    (histories || []).forEach(h => { histMap[String(h.request_id)] = h; });
-
-    // Enrich ride_requests rows with data from ride_history
-    const enriched = rides.map(r => {
-      const hist = histMap[String(r.id)];
-      if (hist) {
-        return {
-          ...r,
-          final_fare:      hist.final_fare,
-          completed_at:    hist.completed_at,
-          passenger_phone: r.passenger_phone || hist.passenger_phone,  // add this
-          status:          r.status === 'confirmed' ? 'completed' : r.status,
-          accepted_by:     r.accepted_by || hist.driver_id
-        };
-      }
-      return r;
-    });
-
-    console.log('[DEBUG] history/:phone — total rides returned:', enriched.length,
-      '| statuses:', enriched.map(r => r.status).join(', '));
-
-    res.json({ rides: enriched });
+    res.json({ rides: rides || [] });
   } catch (err) {
     console.error('Error fetching history:', err);
     res.status(500).json({ error: err.message });
@@ -500,7 +419,6 @@ app.get('/api/rides/history/:phone', async (req, res) => {
 app.get('/api/rides/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    console.log('[DEBUG] /api/rides/:id — id:', id);
 
     const { data, error } = await supabase.from('ride_requests').select('*').eq('id', id).single();
 
@@ -740,15 +658,18 @@ app.post('/api/rides/:id/accept-counter', async (req, res) => {
 
     const { data, error } = await supabase
       .from('ride_requests')
-      .update({ status: 'confirmed', offered_fare: ride.counter_fare, accepted_by: ride.countered_by })
+      .update({
+        status:       'confirmed',
+        offered_fare: ride.counter_fare,
+        accepted_by:  ride.countered_by
+      })
       .eq('id', id)
       .select()
       .single();
 
     if (error) throw error;
 
-    // DUAL-WRITE: log passenger acceptance
-    // Also store accepted_by so the admin can see which driver was confirmed
+    // Log passenger acceptance
     await logNegotiationStep({
       requestId:    id,
       proposedBy:   'passenger',
@@ -775,7 +696,8 @@ app.post('/api/rides/:id/accept-counter', async (req, res) => {
 });
 
 // ─────────────────────────────────────────────
-// COMPLETE
+// COMPLETE — now sets final_fare and completed_at
+// directly on ride_requests (no ride_history insert)
 // ─────────────────────────────────────────────
 app.post('/api/rides/:id/complete', async (req, res) => {
   try {
@@ -791,15 +713,8 @@ app.post('/api/rides/:id/complete', async (req, res) => {
       throw error;
     }
 
-    await supabase.from('ride_history').insert([{
-      request_id:       id,
-      driver_id:        driverId,
-      passenger_name:   data[0].passenger_name,
-      passenger_phone:  data[0].passenger_phone,
-      pickup_location:  data[0].pickup_location,
-      dropoff_location: data[0].dropoff_location,
-      final_fare:       data[0].offered_fare
-    }]);
+    // No more ride_history insert — the RPC now sets final_fare
+    // and completed_at directly on ride_requests
 
     broadcastRideUpdate(data[0]);
     res.json({ ride: data[0] });
@@ -859,8 +774,6 @@ app.post('/api/rides/:id/decline-counter', async (req, res) => {
 app.get('/api/rides/:id/negotiations', async (req, res) => {
   try {
     const { id } = req.params;
-    console.log('[DEBUG] /api/rides/:id/negotiations — id:', id);
-    console.log('[negotiations] Request for ride id:', id);  // ADD
 
     const { data, error } = await supabase
       .from('ride_negotiations')
@@ -869,9 +782,6 @@ app.get('/api/rides/:id/negotiations', async (req, res) => {
       .order('round', { ascending: true });
 
     if (error) throw error;
-    console.log('[DEBUG] negotiations found:', (data || []).length, 'steps');
-    console.log('[negotiations] Found steps:', data?.length);  // ADD
-    console.log('[negotiations] Data:', JSON.stringify(data, null, 2));  // ADD
     res.json({ negotiations: data || [] });
   } catch (err) {
     console.error('Error fetching negotiations:', err);
@@ -880,7 +790,7 @@ app.get('/api/rides/:id/negotiations', async (req, res) => {
 });
 
 // ─────────────────────────────────────────────
-// DRIVER HISTORY
+// DRIVER HISTORY — now queries ride_requests only
 // ─────────────────────────────────────────────
 
 app.get('/api/drivers/:id/history', async (req, res) => {
@@ -897,23 +807,16 @@ app.get('/api/drivers/:id/history', async (req, res) => {
       return res.status(404).json({ error: 'Driver not found' });
     }
 
-    const { data: historyRows, error: histError } = await supabase
-      .from('ride_history')
-      .select('*')
-      .eq('driver_id', id)
-      .order('created_at', { ascending: false });
-
-    if (histError) throw histError;
-
-    const { data: activeRides, error: activeError } = await supabase
+    // All rides where this driver was involved (accepted or countered)
+    const { data: rides, error: ridesError } = await supabase
       .from('ride_requests')
       .select('*')
-      .eq('accepted_by', id)
+      .or(`accepted_by.eq.${id},countered_by.eq.${id}`)
       .order('created_at', { ascending: false });
 
-    if (activeError) throw activeError;
+    if (ridesError) throw ridesError;
 
-    res.json({ driver, history: historyRows || [], rides: activeRides || [] });
+    res.json({ driver, rides: rides || [] });
   } catch (err) {
     console.error('Error fetching driver history:', err);
     res.status(500).json({ error: err.message });
