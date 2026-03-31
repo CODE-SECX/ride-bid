@@ -718,8 +718,10 @@ async function loadAllData(){
 
     // Synthesise rows for history entries whose ride_request was deleted
     const requestIds=new Set(requests.map(r=>String(r.id)));
+    const missingRequests = [];
     state.history.forEach(h=>{
       if(!requestIds.has(String(h.request_id))){
+        missingRequests.push(h.request_id);
         requests.push({
           id:h.request_id,passenger_name:h.passenger_name,passenger_phone:'—',
           pickup_location:h.pickup_location,dropoff_location:h.dropoff_location,
@@ -729,6 +731,32 @@ async function loadAllData(){
         });
       }
     });
+
+    // Enrich _history_only rides by fetching their ride_requests rows
+    if(missingRequests.length > 0){
+      console.log('[loadAllData] Enriching _history_only rides from ride_requests:', missingRequests);
+      const {data: missingRideReqs} = await sb
+        .from('ride_requests')
+        .select('id, passenger_phone, passenger_id, passenger_name, pickup_location, dropoff_location')
+        .in('id', missingRequests);
+
+      if(missingRideReqs && missingRideReqs.length > 0){
+        missingRideReqs.forEach(rr => {
+          const idx = requests.findIndex(r => String(r.id) === String(rr.id));
+          if(idx >= 0){
+            requests[idx] = {
+              ...requests[idx],
+              passenger_phone: rr.passenger_phone || '—',
+              passenger_id: rr.passenger_id || null,
+              passenger_name: rr.passenger_name || requests[idx].passenger_name,
+              pickup_location: rr.pickup_location || requests[idx].pickup_location,
+              dropoff_location: rr.dropoff_location || requests[idx].dropoff_location,
+            };
+            console.log('[loadAllData] Enriched ride:', rr.id, 'phone:', rr.passenger_phone);
+          }
+        });
+      }
+    }
 
     requests.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
     state.rides=requests;
