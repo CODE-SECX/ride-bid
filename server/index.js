@@ -368,8 +368,9 @@ app.get('/api/rides', async (req, res) => {
 app.get('/api/rides/history/passenger/:phone', async (req, res) => {
   try {
     const { phone } = req.params;
+    console.log('[passenger-history] Request for phone:', phone);  // ADD
     console.log('[DEBUG] /api/rides/history/passenger/:phone — phone:', phone);
-
+    
     const { data: passenger, error: passengerError } = await supabase
       .from('passengers')
       .select('id, name')
@@ -395,7 +396,7 @@ app.get('/api/rides/history/passenger/:phone', async (req, res) => {
     if (rideIds.length > 0) {
       const { data: histories } = await supabase
         .from('ride_history')
-        .select('request_id, driver_id, final_fare, completed_at')
+        .select('request_id, driver_id, final_fare, completed_at, passenger_phone')
         .in('request_id', rideIds);
       (histories || []).forEach(h => { histMap[String(h.request_id)] = h; });
     }
@@ -416,7 +417,9 @@ app.get('/api/rides/history/passenger/:phone', async (req, res) => {
 
     console.log('[DEBUG] history/passenger — total rides returned:', enriched.length,
       '| statuses:', enriched.map(r => r.status).join(', '));
-
+    console.log('[passenger-history] Found rides:', enriched.length);  // ADD
+    console.log('[passenger-history] Statuses:', enriched.map(r => r.status));  // ADD
+    console.log('[passenger-history] Sample ride:', JSON.stringify(enriched[0], null, 2));  // ADD
     res.json({ passenger, rides: enriched });
   } catch (err) {
     console.error('Error fetching passenger history:', err);
@@ -452,7 +455,7 @@ app.get('/api/rides/history/:phone', async (req, res) => {
     const rideIds = rides.map(r => r.id);
     const { data: histories, error: histError } = await supabase
       .from('ride_history')
-      .select('request_id, driver_id, final_fare, completed_at')
+      .select('request_id, driver_id, final_fare, completed_at, passenger_phone')
       .in('request_id', rideIds);
 
     if (histError) {
@@ -470,10 +473,11 @@ app.get('/api/rides/history/:phone', async (req, res) => {
       if (hist) {
         return {
           ...r,
-          final_fare:   hist.final_fare,
-          completed_at: hist.completed_at,
-          status:       r.status === 'confirmed' ? 'completed' : r.status,
-          accepted_by:  r.accepted_by || hist.driver_id,
+          final_fare:      hist.final_fare,
+          completed_at:    hist.completed_at,
+          passenger_phone: r.passenger_phone || hist.passenger_phone,  // add this
+          status:          r.status === 'confirmed' ? 'completed' : r.status,
+          accepted_by:     r.accepted_by || hist.driver_id
         };
       }
       return r;
@@ -791,6 +795,7 @@ app.post('/api/rides/:id/complete', async (req, res) => {
       request_id:       id,
       driver_id:        driverId,
       passenger_name:   data[0].passenger_name,
+      passenger_phone:  data[0].passenger_phone,
       pickup_location:  data[0].pickup_location,
       dropoff_location: data[0].dropoff_location,
       final_fare:       data[0].offered_fare
@@ -855,6 +860,7 @@ app.get('/api/rides/:id/negotiations', async (req, res) => {
   try {
     const { id } = req.params;
     console.log('[DEBUG] /api/rides/:id/negotiations — id:', id);
+    console.log('[negotiations] Request for ride id:', id);  // ADD
 
     const { data, error } = await supabase
       .from('ride_negotiations')
@@ -864,6 +870,8 @@ app.get('/api/rides/:id/negotiations', async (req, res) => {
 
     if (error) throw error;
     console.log('[DEBUG] negotiations found:', (data || []).length, 'steps');
+    console.log('[negotiations] Found steps:', data?.length);  // ADD
+    console.log('[negotiations] Data:', JSON.stringify(data, null, 2));  // ADD
     res.json({ negotiations: data || [] });
   } catch (err) {
     console.error('Error fetching negotiations:', err);
