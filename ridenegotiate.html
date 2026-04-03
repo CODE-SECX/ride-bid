@@ -441,7 +441,7 @@ select { cursor: pointer; }
   .badge { font-size: 0.6rem; padding: 3px 7px; }
   .scroll-list { max-height: 50vh; }
   .tip { padding: 10px 12px; font-size: 0.72rem; }
-  .address-callout { padding: 11px 12px; font-size: 0.72rem; }
+  .location-input-wrap { border-radius: 10px; }
   .filter-dropdown-body { padding: 14px; }
 }
 
@@ -506,7 +506,7 @@ select { cursor: pointer; }
 .counter-form .field { flex: 1; }
 .counter-form input { padding: 9px 12px; }
 
-/* ─── Counter Banner (passenger) ─── */
+/* ─── Counter Banner ─── */
 .counter-banner {
   margin-top: 12px;
   background: var(--violet-light);
@@ -570,7 +570,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 }
 .contact-info-icon { font-size: 0.9rem; flex-shrink: 0; opacity: 0.75; }
 
-/* ─── Driver Contact Block (passenger confirmed/completed view) ─── */
+/* ─── Driver Contact Block ─── */
 .driver-contact-block {
   margin-top: 12px;
   background: var(--green-light);
@@ -667,30 +667,176 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 .scroll-list::-webkit-scrollbar-track { background: transparent; }
 .scroll-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-.address-callout {
-  display: flex; align-items: flex-start; gap: 10px;
-  background: #fffbeb;
-  border: 1.5px solid #fbbf24;
+/* ─── MAPBOX SMART LOCATION INPUT ─── */
+.location-input-wrap {
+  position: relative;
   border-radius: var(--radius-sm);
-  padding: 13px 15px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 4px rgba(217,119,6,0.08);
 }
-.address-callout-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
-.address-callout-title {
-  font-size: 0.76rem; font-weight: 700;
-  color: #92400e; letter-spacing: 0.01em; margin-bottom: 3px;
-}
-.address-callout-desc {
-  font-size: 0.72rem; color: #78350f; line-height: 1.6;
-}
-.address-callout-desc strong { font-weight: 700; color: #92400e; }
 
-.driver-loading {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 0.72rem; color: var(--text-muted);
-  padding: 8px 0; font-style: italic;
+.location-field-inner {
+  display: flex;
+  align-items: center;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: all var(--t);
+  overflow: visible;
 }
+.location-field-inner:focus-within {
+  border-color: var(--border-focus);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+.location-field-inner.dropdown-open {
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  border-bottom-color: transparent;
+}
+
+.location-icon {
+  padding: 0 10px 0 12px;
+  font-size: 1rem;
+  flex-shrink: 0;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.location-field-inner input {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 10px 8px 10px 0;
+  flex: 1;
+  min-width: 0;
+}
+.location-field-inner input:focus {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.location-gps-btn {
+  background: none;
+  border: none;
+  padding: 0 12px;
+  cursor: pointer;
+  font-size: 1rem;
+  opacity: 0.45;
+  transition: opacity var(--t), background var(--t);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  height: 100%;
+  display: flex; align-items: center;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+.location-gps-btn:hover { opacity: 1; background: var(--blue-light); color: var(--blue); }
+.location-gps-btn.loading { animation: gps-spin 1s linear infinite; opacity: 0.6; }
+@keyframes gps-spin { from { rotate: 0deg; } to { rotate: 360deg; } }
+
+/* Mapbox dropdown */
+.mapbox-dropdown {
+  position: absolute;
+  z-index: 1200;
+  top: 100%;
+  left: 0; right: 0;
+  background: var(--surface);
+  border: 1.5px solid var(--border-focus);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06);
+  display: none;
+  overflow: hidden;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.mapbox-dropdown::-webkit-scrollbar { width: 4px; }
+.mapbox-dropdown::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.mapbox-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background var(--t);
+}
+.mapbox-item:last-of-type { border-bottom: none; }
+.mapbox-item:hover,
+.mapbox-item.kbd-active { background: var(--blue-light); }
+
+.mapbox-item-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--surface3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; flex-shrink: 0; margin-top: 1px;
+}
+.mapbox-item.poi .mapbox-item-icon { background: #fef3c7; }
+.mapbox-item.address .mapbox-item-icon { background: #eff6ff; }
+.mapbox-item.place .mapbox-item-icon { background: #f0fdf4; }
+
+.mapbox-item-body { flex: 1; min-width: 0; }
+.mapbox-item-name {
+  font-size: 0.84rem; font-weight: 600;
+  color: var(--text); line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mapbox-item-addr {
+  font-size: 0.73rem; color: var(--text-muted);
+  margin-top: 2px; line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mapbox-item-cat {
+  font-size: 0.62rem; font-weight: 600;
+  color: var(--blue); text-transform: uppercase;
+  letter-spacing: 0.05em; margin-top: 3px;
+}
+
+.mapbox-status {
+  padding: 14px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.78rem; color: var(--text-muted);
+}
+.mapbox-status svg {
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.mapbox-footer {
+  padding: 6px 14px;
+  font-size: 0.63rem; color: var(--text-dim);
+  border-top: 1px solid var(--border);
+  background: var(--surface2);
+  display: flex; align-items: center; justify-content: flex-end; gap: 4px;
+}
+.mapbox-footer svg { opacity: 0.5; }
+
+/* Recent searches */
+.mapbox-section-label {
+  padding: 8px 14px 4px;
+  font-size: 0.62rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-muted);
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Confirmed value chip */
+.location-confirmed-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 9px 12px;
+  font-size: 0.84rem; font-weight: 500; color: var(--text);
+  background: var(--surface2); border: 1.5px solid var(--green-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--t);
+}
+.location-confirmed-chip:hover { border-color: var(--border-focus); background: var(--blue-light); }
+.location-confirmed-chip .chip-icon { font-size: 0.9rem; }
+.location-confirmed-chip .chip-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.location-confirmed-chip .chip-clear { font-size: 0.7rem; color: var(--text-muted); margin-left: auto; padding: 2px 5px; border-radius: 4px; }
+.location-confirmed-chip .chip-clear:hover { background: var(--red-light); color: var(--red); }
 
 /* ─── Filter Dropdown ─── */
 .filter-dropdown {
@@ -701,10 +847,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   box-shadow: var(--shadow-xs);
   overflow: hidden;
   transition: box-shadow var(--t);
-}
-.filter-dropdown:has(.filter-dropdown-body:not(.hidden)) {
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-mid);
 }
 .filter-dropdown-toggle {
   display: flex; align-items: center; justify-content: space-between;
@@ -745,10 +887,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   margin-top: 14px;
 }
 .filter-grid-full { grid-column: 1 / -1; }
-.filter-fare-row {
-  display: flex; gap: 8px;
-}
-.filter-fare-row > div { flex: 1; }
 .filter-actions {
   display: flex; justify-content: flex-end; gap: 8px;
   margin-top: 14px; padding-top: 14px;
@@ -757,6 +895,13 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 @media(max-width: 600px) {
   .filter-grid { grid-template-columns: 1fr; }
   .filter-grid-full { grid-column: 1; }
+}
+
+/* ─── Driver loading ─── */
+.driver-loading {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.72rem; color: var(--text-muted);
+  padding: 8px 0; font-style: italic;
 }
 
 /* ─── Utils ─── */
@@ -823,13 +968,13 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
               <label>Your mobile — strictly for ride coordination</label>
               <div class="phone-row">
                 <select id="p-code">
-                  <option value="+1" selected>🇨🇦 +1</option>
-                  <option value="+91">🇮🇳 +91</option>
+                  <option value="+91" selected>🇮🇳 +91</option>
+                  <option value="+1">🇨🇦 +1</option>
                   <option value="+44">🇬🇧 +44</option>
                   <option value="+65">🇸🇬 +65</option>
                   <option value="+971">🇦🇪 +971</option>
                 </select>
-                <input id="p-phone" type="tel" placeholder="(555) 123-4567" autocomplete="tel" />
+                <input id="p-phone" type="tel" placeholder="98765 43210" autocomplete="tel" />
               </div>
             </div>
             <button class="btn btn-blue btn-full mt-3" onclick="createPassengerAccount()">
@@ -860,33 +1005,22 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div class="section-caption">Fill in your route and name your price — let drivers come to you.</div>
 
           <div class="card">
-            <div class="address-callout">
-              <div class="address-callout-icon">📍</div>
-              <div>
-                <div class="address-callout-title">Use your full address — it gets you picked up faster</div>
-                <div class="address-callout-desc">
-                  Include the <strong>door number, street name, and a nearby landmark</strong> for both
-                  pickup and drop-off. "Near the mall" won't cut it — drivers need enough detail
-                  to commit without back-and-forth.
-                </div>
-              </div>
-            </div>
-
             <div class="form-grid">
               <div>
-                <label>Pickup — the more specific, the better</label>
-                <input id="p-pickup" type="text" placeholder="e.g. 123 Yonge Street, near Eaton Centre, Toronto" />
+                <label>Pickup location</label>
+                <!-- Location inputs injected by initLocationFields() -->
+                <div id="pickup-field-container"></div>
               </div>
               <div>
-                <label>Drop-off — where the journey ends</label>
-                <input id="p-drop" type="text" placeholder="e.g. 100 Queen Street West, near Nathan Phillips Square, Toronto" />
+                <label>Drop-off location</label>
+                <div id="drop-field-container"></div>
               </div>
               <div>
                 <label>Pick-up Time — when do you want to ride?</label>
                 <input id="p-pickup-time" type="datetime-local" />
               </div>
               <div>
-                <label>Your offer — make it worth their ride ($)</label>
+                <label>Your offer — make it worth their ride (₹)</label>
                 <input id="p-price" type="number" placeholder="e.g. 140" min="1" />
               </div>
               <button class="btn btn-blue btn-full" onclick="submitRideRequest()">
@@ -899,9 +1033,10 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
           <div class="label-eyebrow">Tips for better deals</div>
           <div class="tip-list" style="margin-top:8px;">
-            <div class="tip"><span class="tip-i">📍</span><span>Precise locations help drivers commit faster — vague gets you vague.</span></div>
-            <div class="tip"><span class="tip-i">💡</span><span>Think of your opening offer as a handshake, not a lowball — a fair price invites faster replies.</span></div>
-            <div class="tip"><span class="tip-i">🤝</span><span>A counter offer is good news — it means a driver wants your ride. A small nudge often seals the deal.</span></div>
+            <div class="tip"><span class="tip-i">📍</span><span>Pick from the smart suggestions — it pins your exact location for drivers.</span></div>
+            <div class="tip"><span class="tip-i">📡</span><span>Tap the GPS button to auto-fill your current location instantly.</span></div>
+            <div class="tip"><span class="tip-i">💡</span><span>Think of your opening offer as a handshake — a fair price invites faster replies.</span></div>
+            <div class="tip"><span class="tip-i">🤝</span><span>A counter offer is good news — it means a driver wants your ride.</span></div>
           </div>
         </div>
 
@@ -981,884 +1116,1418 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  /* ═══════════ STATE ═══════════ */
-  const API_URL = (window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin) + '/api';
+/* ═══════════════════════════════════════════════════════════════
+   MAPBOX SMART LOCATION AUTOCOMPLETE
+   ─────────────────────────────────────────────────────────────
+   Architecture for minimal API spend:
 
-  let supabaseClient = null;
-  let realtimeSubscription = null;
-  let passenger = null;
+   1. SESSION TOKENS (UUID) — generated once per typing session.
+      All keystrokes in one session = 1 "Search" charge on Mapbox.
+      Token is reset only after a successful selection (retrieve).
 
-  async function initializeSupabase() {
-    try {
-      const response = await fetch(`${API_URL}/config`);
-      const config = await response.json();
-      if (config.supabaseUrl && config.supabaseAnonKey) {
-        const { createClient } = window.supabase;
-        supabaseClient = createClient(config.supabaseUrl, config.supabaseAnonKey);
-        console.log('✅ Supabase client initialized');
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('❌ Failed to fetch Supabase config:', error);
-      return false;
-    }
+   2. DEBOUNCE (350ms) + MIN CHARS (3) — prevents firing on
+      every keystroke; trims unused requests significantly.
+
+   3. CLIENT-SIDE LRU CACHE (50 slots) — identical queries within
+      a session reuse the previous response; zero extra API calls.
+
+   4. BACKEND PROXY — Mapbox secret key never touches the client.
+      All requests go through /api/mapbox/suggest and /api/mapbox/retrieve.
+
+   5. RETRIEVE ON SELECT ONLY — full coordinates fetched once,
+      only when user actually picks a result (not while typing).
+
+   6. GPS REVERSE GEOCODE — single call when user taps the GPS
+      button; uses /api/mapbox/reverse endpoint.
+═══════════════════════════════════════════════════════════════ */
+
+const API_URL = (window.location.hostname === 'localhost'
+  ? 'http://localhost:3000'
+  : window.location.origin) + '/api';
+
+// ─── Recent searches (persisted in localStorage, 5 max) ───
+const RECENT_KEY = 'rb_recent_locations';
+function getRecent() {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch { return []; }
+}
+function saveRecent(item) {
+  let list = getRecent().filter(r => r.text !== item.text);
+  list.unshift(item);
+  list = list.slice(0, 5);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+}
+
+// ─── LRU query cache (50 entries) ───
+class LRUCache {
+  constructor(max = 50) {
+    this.max = max;
+    this.map = new Map();
+  }
+  get(k) {
+    if (!this.map.has(k)) return null;
+    const v = this.map.get(k);
+    this.map.delete(k); this.map.set(k, v); // refresh
+    return v;
+  }
+  set(k, v) {
+    if (this.map.has(k)) this.map.delete(k);
+    else if (this.map.size >= this.max) this.map.delete(this.map.keys().next().value);
+    this.map.set(k, v);
+  }
+}
+const suggestCache = new LRUCache(50);
+
+// ─── UUID generator ───
+function uuid() {
+  return crypto.randomUUID
+    ? crypto.randomUUID()
+    : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
+}
+
+// ─── Debounce ───
+function debounce(fn, ms) {
+  let t;
+  return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+
+// ─── Type → icon/category mapping ───
+function placeIcon(types) {
+  if (!types) return { icon: '📍', cls: 'place' };
+  const t = Array.isArray(types) ? types.join(' ') : String(types);
+  if (/poi|restaurant|cafe|shop|store|hotel|hospital|school|park/i.test(t))
+    return { icon: '🏢', cls: 'poi' };
+  if (/address/i.test(t)) return { icon: '🏠', cls: 'address' };
+  if (/street|road|highway/i.test(t)) return { icon: '🛣️', cls: 'address' };
+  if (/airport/i.test(t)) return { icon: '✈️', cls: 'poi' };
+  if (/station|metro|rail/i.test(t)) return { icon: '🚉', cls: 'poi' };
+  if (/place|city|district|locality|neighborhood/i.test(t)) return { icon: '📌', cls: 'place' };
+  return { icon: '📍', cls: 'place' };
+}
+
+// ─── User GPS coords (cached for proximity bias) ───
+let userCoords = null;
+function getGPS() {
+  return new Promise((res, rej) => {
+    if (!navigator.geolocation) return rej(new Error('GPS unavailable'));
+    navigator.geolocation.getCurrentPosition(
+      p => { userCoords = { lng: p.coords.longitude, lat: p.coords.latitude }; res(userCoords); },
+      err => rej(err),
+      { timeout: 8000, maximumAge: 60000 }
+    );
+  });
+}
+
+/*
+ * createLocationField(containerId, fieldId, placeholder, dotType)
+ * Builds the smart location input inside `containerId`.
+ * Exposes  window._locationValues[fieldId]  with the resolved label.
+ */
+window._locationValues = {};
+
+function createLocationField(containerId, fieldId, placeholder, dotType) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  // Session token — one per typing session, reset on selection
+  let sessionToken = uuid();
+  let kbdIndex = -1;       // keyboard navigation index
+  let currentItems = [];   // current suggestion list
+
+  container.innerHTML = `
+    <div class="location-input-wrap" id="wrap-${fieldId}">
+      <div class="location-field-inner" id="inner-${fieldId}">
+        <span class="location-icon">${dotType === 'from' ? '🟢' : '🔴'}</span>
+        <input
+          id="${fieldId}"
+          type="text"
+          placeholder="${placeholder}"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-haspopup="listbox"
+          aria-expanded="false"
+        />
+        <button
+          class="location-gps-btn"
+          id="gps-${fieldId}"
+          type="button"
+          title="Use my current location"
+          tabindex="-1"
+          onclick="useCurrentLocation('${fieldId}')"
+        >📡</button>
+      </div>
+      <div class="mapbox-dropdown" id="dd-${fieldId}" role="listbox"></div>
+    </div>`;
+
+  const input  = document.getElementById(fieldId);
+  const inner  = document.getElementById(`inner-${fieldId}`);
+  const dd     = document.getElementById(`dd-${fieldId}`);
+
+  function openDD() {
+    dd.style.display = 'block';
+    inner.classList.add('dropdown-open');
+    input.setAttribute('aria-expanded', 'true');
+  }
+  function closeDD() {
+    dd.style.display = 'none';
+    inner.classList.remove('dropdown-open');
+    input.setAttribute('aria-expanded', 'false');
+    kbdIndex = -1;
   }
 
-  let allRides = [];
-  let myRides  = [];
-  const driverCache = {};
-  const driverPassedRides = new Set();
+  function renderLoading() {
+    dd.innerHTML = `
+      <div class="mapbox-status">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+        </svg>
+        Searching…
+      </div>`;
+    openDD();
+  }
 
-  async function fetchDriverById(driverId) {
-    if (!driverId || driverCache[driverId] !== undefined) return;
-    driverCache[driverId] = null;
+  function renderEmpty() {
+    dd.innerHTML = `<div class="mapbox-status">😕 No results — try a landmark or city name.</div>`;
+    openDD();
+  }
+
+  function renderItems(suggestions) {
+    currentItems = suggestions;
+    kbdIndex = -1;
+    if (!suggestions.length) { renderEmpty(); return; }
+
+    dd.innerHTML = suggestions.map((s, i) => {
+      const name  = s.name || s.place_name || '';
+      const addr  = s.full_address || s.place_formatted || '';
+      const types = s.feature_type || s.place_type;
+      const { icon, cls } = placeIcon(types);
+      const cat   = s.maki || (Array.isArray(types) ? types[0] : types) || '';
+      const addrDisplay = addr && addr !== name
+        ? `<div class="mapbox-item-addr">${addr}</div>`
+        : '';
+      const catDisplay = cat && cat !== 'place'
+        ? `<div class="mapbox-item-cat">${cat}</div>`
+        : '';
+      return `
+        <div class="mapbox-item ${cls}"
+             role="option"
+             data-idx="${i}"
+             onmousedown="event.preventDefault()"
+             onclick="selectSuggestion('${fieldId}', ${i})">
+          <div class="mapbox-item-icon">${icon}</div>
+          <div class="mapbox-item-body">
+            <div class="mapbox-item-name">${name}</div>
+            ${addrDisplay}
+            ${catDisplay}
+          </div>
+        </div>`;
+    }).join('');
+
+    dd.innerHTML += `
+      <div class="mapbox-footer">
+        <svg width="10" height="10" viewBox="0 0 50 50" fill="currentColor">
+          <path d="M25 5C14 5 5 14 5 25s9 20 20 20 20-9 20-20S36 5 25 5zm0 36c-8.8 0-16-7.2-16-16S16.2 9 25 9s16 7.2 16 16-7.2 16-16 16z"/>
+        </svg>
+        Powered by Mapbox
+      </div>`;
+    openDD();
+  }
+
+  function renderRecent() {
+    const recent = getRecent();
+    if (!recent.length) { closeDD(); return; }
+    currentItems = recent.map(r => ({ _isRecent: true, name: r.text, full_address: r.text, _value: r.text }));
+    dd.innerHTML = `<div class="mapbox-section-label">Recent</div>` +
+      recent.map((r, i) => `
+        <div class="mapbox-item place"
+             role="option"
+             data-idx="${i}"
+             onmousedown="event.preventDefault()"
+             onclick="selectSuggestion('${fieldId}', ${i})">
+          <div class="mapbox-item-icon">🕐</div>
+          <div class="mapbox-item-body">
+            <div class="mapbox-item-name">${r.text}</div>
+          </div>
+        </div>`).join('');
+    openDD();
+  }
+
+  // Fetch suggestions from backend (proxy → Mapbox)
+  const fetchSuggestions = debounce(async (q) => {
+    const key = `${q}::${userCoords ? `${userCoords.lng},${userCoords.lat}` : ''}`;
+    const cached = suggestCache.get(key);
+    if (cached) { renderItems(cached); return; }
+
+    renderLoading();
+
+    const params = new URLSearchParams({
+      q,
+      session_token: sessionToken,
+    });
+    if (userCoords) params.set('proximity', `${userCoords.lng},${userCoords.lat}`);
+
     try {
-      const res = await fetch(`${API_URL}/drivers/${driverId}/profile`);
-      if (res.ok) {
-        const data = await res.json();
-        driverCache[driverId] = data.driver || null;
-        renderPassengerRequests();
-        renderAllRides();
+      const res  = await fetch(`${API_URL}/mapbox/suggest?${params}`);
+      const data = await res.json();
+      const suggestions = data.suggestions || [];
+      suggestCache.set(key, suggestions);
+      renderItems(suggestions);
+    } catch (e) {
+      dd.innerHTML = `<div class="mapbox-status">⚠️ Search unavailable — type your location manually.</div>`;
+      openDD();
+    }
+  }, 350);
+
+  // Input handler
+  input.addEventListener('input', () => {
+    const q = input.value.trim();
+    window._locationValues[fieldId] = q; // provisional raw value
+    if (q.length < 3) {
+      if (q.length === 0) renderRecent();
+      else closeDD();
+      return;
+    }
+    fetchSuggestions(q);
+  });
+
+  input.addEventListener('focus', () => {
+    const q = input.value.trim();
+    if (q.length >= 3) fetchSuggestions(q);
+    else renderRecent();
+  });
+
+  input.addEventListener('blur', () => {
+    setTimeout(() => {
+      closeDD();
+      // If user typed but didn't pick → keep raw text as value
+      window._locationValues[fieldId] = input.value.trim();
+    }, 200);
+  });
+
+  // Keyboard navigation
+  input.addEventListener('keydown', e => {
+    const items = dd.querySelectorAll('.mapbox-item');
+    if (e.key === 'Escape') { closeDD(); input.blur(); return; }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      kbdIndex = Math.min(kbdIndex + 1, items.length - 1);
+      items.forEach((el, i) => el.classList.toggle('kbd-active', i === kbdIndex));
+      items[kbdIndex]?.scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      kbdIndex = Math.max(kbdIndex - 1, 0);
+      items.forEach((el, i) => el.classList.toggle('kbd-active', i === kbdIndex));
+      items[kbdIndex]?.scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (kbdIndex >= 0) selectSuggestion(fieldId, kbdIndex);
+    }
+  });
+
+  // Store session token reference so selectSuggestion can access it
+  window._sessionTokens = window._sessionTokens || {};
+  window._sessionTokens[fieldId] = { get: () => sessionToken, reset: () => { sessionToken = uuid(); } };
+  window._currentItems = window._currentItems || {};
+  window._currentItems[fieldId] = () => currentItems;
+  window._closeDD = window._closeDD || {};
+  window._closeDD[fieldId] = closeDD;
+  window._inputRefs = window._inputRefs || {};
+  window._inputRefs[fieldId] = input;
+
+  // Try to get GPS in background for proximity bias (silent)
+  getGPS().catch(() => {});
+}
+
+// Called when user clicks a suggestion row
+async function selectSuggestion(fieldId, idx) {
+  const items  = window._currentItems[fieldId]?.() || [];
+  const item   = items[idx];
+  if (!item) return;
+
+  const input   = window._inputRefs[fieldId];
+  const closeDD = window._closeDD[fieldId];
+  const tokenRef = window._sessionTokens[fieldId];
+
+  // Recent search — use label directly (no retrieve needed)
+  if (item._isRecent) {
+    const text = item._value || item.name;
+    input.value = text;
+    window._locationValues[fieldId] = text;
+    closeDD?.();
+    tokenRef?.reset(); // new session for next search
+    return;
+  }
+
+  // Show selected text immediately (UX responsiveness)
+  const label = item.name || item.place_name || '';
+  input.value = label;
+  closeDD?.();
+
+  // Retrieve full details (coordinates) — fires the billing-closing call
+  const mapboxId = item.mapbox_id;
+  let finalLabel = label;
+
+  if (mapboxId) {
+    try {
+      const params = new URLSearchParams({ session_token: tokenRef.get() });
+      const res    = await fetch(`${API_URL}/mapbox/retrieve/${encodeURIComponent(mapboxId)}?${params}`);
+      const data   = await res.json();
+      const feature = data.features?.[0];
+      if (feature) {
+        finalLabel = feature.properties?.full_address
+          || feature.properties?.name
+          || label;
+        input.value = finalLabel;
       }
     } catch (e) {
-      console.warn('Could not fetch driver profile for', driverId, e);
+      // Non-critical: we already have the label from suggest
+      console.warn('Retrieve failed, using suggest label:', e);
     }
+  } else {
+    // Fallback: no mapbox_id (e.g., recent), just use display text
+    finalLabel = item.full_address || item.name || label;
+    input.value = finalLabel;
   }
 
-  /*
-   * FIX (BUG F): resolveDriver now uses accepted_by first, then countered_by.
-   * Also triggers fetchDriverById for completed rides so the cache fills in.
-   */
-  function resolveDriver(r) {
-    if (r.driver) return r.driver;
-    // accepted_by is set for direct-accept. For accept-counter flow,
-    // server.js now also sets accepted_by = countered_by (see server.js fix).
-    // We still fall back to countered_by for older rides in the DB.
-    const driverId = r.accepted_by || r.countered_by;
-    if (!driverId) return null;
-    if (driverCache[driverId] !== undefined) return driverCache[driverId];
-    // Trigger async fetch for any confirmed/completed ride
-    if (r.status === 'confirmed' || r.status === 'completed') {
-      fetchDriverById(driverId);
+  window._locationValues[fieldId] = finalLabel;
+  saveRecent({ text: finalLabel });
+
+  // Reset session token — next typing session starts fresh
+  tokenRef?.reset();
+}
+
+// GPS button handler
+async function useCurrentLocation(fieldId) {
+  const btn   = document.getElementById(`gps-${fieldId}`);
+  const input = window._inputRefs[fieldId];
+  if (!btn || !input) return;
+
+  btn.classList.add('loading');
+  btn.textContent = '⏳';
+
+  try {
+    const coords = await getGPS();
+    const params = new URLSearchParams({ lng: coords.lng, lat: coords.lat });
+    const res    = await fetch(`${API_URL}/mapbox/reverse?${params}`);
+    const data   = await res.json();
+    const feature = data.features?.[0];
+
+    if (feature) {
+      const label = feature.properties?.full_address
+        || feature.properties?.name
+        || `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}`;
+      input.value = label;
+      window._locationValues[fieldId] = label;
+      saveRecent({ text: label });
+      toast('📡', 'Location detected', 'Current location pinned as pickup.', 'blue');
+    } else {
+      throw new Error('No result');
     }
-    return null;
-  }
-
-  let driver = null;
-  let driverFilter = 'all';
-  let driverSearchText = '';
-  let driverFareMin = '';
-  let driverFareMax = '';
-  let driverLocationFilter = '';
-  let driverFilterOpen = false;
-
-  /* ═══════════ PHONE LINK HELPER ═══════════ */
-  function phoneLink(phoneStr, labelClass) {
-    if (!phoneStr || phoneStr === 'N/A') {
-      return `<span class="${labelClass || ''}">N/A</span>`;
+  } catch (err) {
+    if (err.code === 1) {
+      toast('🚫', 'Location access denied', 'Enable GPS in your browser settings.', 'amber');
+    } else {
+      toast('⚠️', 'GPS failed', 'Could not detect your location. Type it manually.', 'amber');
     }
-    const dialable = phoneStr.replace(/\s+/g, '');
-    return `<a href="tel:${dialable}" class="phone-link ${labelClass || ''}"><span class="phone-icon">📞</span>${phoneStr}</a>`;
+  } finally {
+    btn.classList.remove('loading');
+    btn.textContent = '📡';
   }
+}
 
-  /* ═══════════ HELPERS ═══════════ */
-  function getRide(id) {
-    return allRides.find(r => r.id === id) || myRides.find(r => r.id === id);
-  }
+// Initialize both location fields after dashboard renders
+function initLocationFields() {
+  createLocationField('pickup-field-container', 'p-pickup', 'e.g. JOHN DOE 123-456 MAIN ST, TORONTO', 'from');
+  createLocationField('drop-field-container',   'p-drop',   'e.g. ALEX RIVERA 713066 RR 71 GRANDE', 'to');
+}
 
-  /*
-   * FIX (BUG E): getFinalFare now correctly resolves the true charged amount.
-   *
-   * Flow breakdown:
-   * - Direct accept:        offered_fare stays original, accepted_by set
-   * - Accept-counter:       server sets offered_fare = counter_fare, counter_fare remains
-   * - After complete_ride:  ride_history.final_fare is inserted (= offered_fare at that time)
-   *
-   * So the priority is:
-   *   final_fare (from ride_history, most authoritative)
-   *   > counter_fare (set by driver counter, reflects negotiated price before accept-counter mutates offered_fare)
-   *   > offered_fare (original offer OR mutated to counter_fare by accept-counter)
-   *
-   * The strikethrough "original bid" is only shown when final_fare != original offered_fare.
-   * We preserve original_offered_fare on each ride object when first seen to avoid confusion.
-   */
-  function getFinalFare(r) {
-    if (r.status === 'confirmed' || r.status === 'completed') {
-      // final_fare is set after complete_ride RPC (most authoritative)
-      if (r.final_fare != null) return r.final_fare;
-      // counter_fare is the agreed negotiated amount
-      if (r.counter_fare != null) return r.counter_fare;
+/* ═══════════ STATE ═══════════ */
+let supabaseClient = null;
+let realtimeSubscription = null;
+let passenger = null;
+
+async function initializeSupabase() {
+  try {
+    const response = await fetch(`${API_URL}/config`);
+    const config = await response.json();
+    if (config.supabaseUrl && config.supabaseAnonKey) {
+      const { createClient } = window.supabase;
+      supabaseClient = createClient(config.supabaseUrl, config.supabaseAnonKey);
+      return true;
     }
-    return r.offered_fare;
+    return false;
+  } catch (error) {
+    console.error('Failed to fetch Supabase config:', error);
+    return false;
   }
+}
 
-  /*
-   * Returns the original passenger bid — the very first offered_fare
-   * before any accept-counter mutation. Used for the strikethrough display.
-   */
-  function getOriginalFare(r) {
-    // original_offered_fare is preserved in handleRideUpdate when first seen
-    if (r.original_offered_fare != null) return r.original_offered_fare;
-    return r.offered_fare;
+let allRides = [];
+let myRides  = [];
+const driverCache = {};
+const driverPassedRides = new Set();
+
+async function fetchDriverById(driverId) {
+  if (!driverId || driverCache[driverId] !== undefined) return;
+  driverCache[driverId] = null;
+  try {
+    const res = await fetch(`${API_URL}/drivers/${driverId}/profile`);
+    if (res.ok) {
+      const data = await res.json();
+      driverCache[driverId] = data.driver || null;
+      renderPassengerRequests();
+      renderAllRides();
+    }
+  } catch (e) {
+    console.warn('Could not fetch driver profile for', driverId, e);
   }
+}
 
-  function badgeHTML(status) {
-    const labels = { pending:'Awaiting response', countered:'Counter proposed', confirmed:'Confirmed', completed:'Completed', rejected:'Closed' };
-    return `<span class="badge badge-${status}">${labels[status]||status}</span>`;
+function resolveDriver(r) {
+  if (r.driver) return r.driver;
+  const driverId = r.accepted_by || r.countered_by;
+  if (!driverId) return null;
+  if (driverCache[driverId] !== undefined) return driverCache[driverId];
+  if (r.status === 'confirmed' || r.status === 'completed') {
+    fetchDriverById(driverId);
   }
+  return null;
+}
 
-  /* ═══════════ SUPABASE REALTIME ═══════════ */
-  function connectRealtime() {
-    realtimeSubscription = supabaseClient
-      .channel('ride_requests')
-      .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'ride_requests' },
-        (payload) => {
-          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-            handleRideUpdate(payload.new);
-          }
+let driver = null;
+let driverFilter = 'all';
+let driverSearchText = '';
+let driverFareMin = '';
+let driverFareMax = '';
+let driverLocationFilter = '';
+let driverFilterOpen = false;
+
+/* ═══════════ PHONE LINK HELPER ═══════════ */
+function phoneLink(phoneStr, labelClass) {
+  if (!phoneStr || phoneStr === 'N/A') {
+    return `<span class="${labelClass || ''}">N/A</span>`;
+  }
+  const dialable = phoneStr.replace(/\s+/g, '');
+  return `<a href="tel:${dialable}" class="phone-link ${labelClass || ''}"><span class="phone-icon">📞</span>${phoneStr}</a>`;
+}
+
+/* ═══════════ HELPERS ═══════════ */
+function getRide(id) {
+  return allRides.find(r => r.id === id) || myRides.find(r => r.id === id);
+}
+
+function getFinalFare(r) {
+  if (r.status === 'confirmed' || r.status === 'completed') {
+    if (r.final_fare != null) return r.final_fare;
+    if (r.counter_fare != null) return r.counter_fare;
+  }
+  return r.offered_fare;
+}
+
+function getOriginalFare(r) {
+  if (r.original_offered_fare != null) return r.original_offered_fare;
+  return r.offered_fare;
+}
+
+function badgeHTML(status) {
+  const labels = { pending:'Awaiting response', countered:'Counter proposed', confirmed:'Confirmed', completed:'Completed', rejected:'Closed' };
+  return `<span class="badge badge-${status}">${labels[status]||status}</span>`;
+}
+
+/* ═══════════ SUPABASE REALTIME ═══════════ */
+function connectRealtime() {
+  realtimeSubscription = supabaseClient
+    .channel('ride_requests')
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'ride_requests' },
+      (payload) => {
+        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          handleRideUpdate(payload.new);
         }
-      )
-      .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR') {
-          setTimeout(connectRealtime, 3000);
-        }
-      });
-  }
-
-  function disconnectRealtime() {
-    if (realtimeSubscription) {
-      supabaseClient.removeChannel(realtimeSubscription);
-      realtimeSubscription = null;
-    }
-  }
-
-  /*
-   * FIX: handleRideUpdate now preserves original_offered_fare so the strikethrough
-   * "bid $X" always shows what the passenger originally offered, not the mutated value.
-   */
-  function handleRideUpdate(incomingRide) {
-    const existingAll = allRides.find(r => r.id === incomingRide.id);
-    const existingMy  = myRides.find(r => r.id === incomingRide.id);
-    const existing    = existingAll || existingMy;
-
-    // Track the very first offered_fare before any server mutation
-    const originalOfferedFare = existing
-      ? (existing.original_offered_fare ?? existing.offered_fare)
-      : incomingRide.offered_fare;
-
-    let previousCounterFare = existing ? existing.previous_counter_fare : undefined;
-    if (incomingRide.counter_fare !== undefined) {
-      const oldCounterFare = existing ? existing.counter_fare : undefined;
-      if (oldCounterFare !== undefined && oldCounterFare !== incomingRide.counter_fare) {
-        previousCounterFare = oldCounterFare;
-      } else if (previousCounterFare === undefined) {
-        previousCounterFare = incomingRide.offered_fare;
       }
+    )
+    .subscribe((status) => {
+      if (status === 'CHANNEL_ERROR') {
+        setTimeout(connectRealtime, 3000);
+      }
+    });
+}
+
+function disconnectRealtime() {
+  if (realtimeSubscription) {
+    supabaseClient.removeChannel(realtimeSubscription);
+    realtimeSubscription = null;
+  }
+}
+
+function handleRideUpdate(incomingRide) {
+  const existingAll = allRides.find(r => r.id === incomingRide.id);
+  const existingMy  = myRides.find(r => r.id === incomingRide.id);
+  const existing    = existingAll || existingMy;
+
+  const originalOfferedFare = existing
+    ? (existing.original_offered_fare ?? existing.offered_fare)
+    : incomingRide.offered_fare;
+
+  let previousCounterFare = existing ? existing.previous_counter_fare : undefined;
+  if (incomingRide.counter_fare !== undefined) {
+    const oldCounterFare = existing ? existing.counter_fare : undefined;
+    if (oldCounterFare !== undefined && oldCounterFare !== incomingRide.counter_fare) {
+      previousCounterFare = oldCounterFare;
+    } else if (previousCounterFare === undefined) {
+      previousCounterFare = incomingRide.offered_fare;
+    }
+  }
+
+  const mergedRide = {
+    ...incomingRide,
+    original_offered_fare:        originalOfferedFare,
+    previous_counter_fare:        previousCounterFare,
+    counterInputVisible:          existing ? existing.counterInputVisible          : false,
+    passengerCounterInputVisible: existing ? existing.passengerCounterInputVisible : false,
+  };
+
+  const allIdx = allRides.findIndex(r => r.id === incomingRide.id);
+  if (allIdx >= 0) { allRides[allIdx] = mergedRide; }
+  else             { allRides.unshift(mergedRide); }
+
+  if (passenger && incomingRide.passenger_phone === passenger.phone) {
+    const myIdx = myRides.findIndex(r => r.id === incomingRide.id);
+    if (myIdx >= 0) { myRides[myIdx] = mergedRide; }
+    else            { myRides.unshift(mergedRide); }
+  }
+
+  renderPassengerRequests();
+  renderAllRides();
+  renderDriverView();
+}
+
+function sendRideUpdate(ride) {
+  handleRideUpdate(ride);
+}
+
+/* ═══════════ TABS ═══════════ */
+function switchTab(tab) {
+  document.getElementById('view-passenger').classList.toggle('active', tab === 'passenger');
+  document.getElementById('view-driver').classList.toggle('active', tab === 'driver');
+  document.getElementById('tab-passenger').className = 'tab-btn' + (tab === 'passenger' ? ' active-passenger' : '');
+  document.getElementById('tab-driver').className    = 'tab-btn' + (tab === 'driver'    ? ' active-driver'    : '');
+
+  if (tab === 'driver') {
+    if (!driver) showDriverLogin();
+    else loadAllRides();
+  }
+  if (tab === 'passenger') {
+    loadAllRides();
+    if (passenger) loadMyRides();
+  }
+}
+
+/* ═══════════ ACCOUNT: PASSENGER ═══════════ */
+async function createPassengerAccount() {
+  const nameInput = document.getElementById('p-name').value.trim();
+  const code      = document.getElementById('p-code').value;
+  const phone     = document.getElementById('p-phone').value.trim();
+
+  if (!nameInput)                { toast('⚠️', 'Name required', 'Drivers need something to call you.', 'amber'); return; }
+  if (!phone || phone.length < 6){ toast('⚠️', 'Check your number', "That doesn't look right — try again.", 'amber'); return; }
+
+  const fullPhone = code + ' ' + phone;
+
+  try {
+    const res = await fetch(`${API_URL}/passengers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: nameInput, phone: fullPhone })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    const canonicalName = data.passenger.name;
+    passenger = { id: data.passenger.id, name: canonicalName, phone: fullPhone };
+    localStorage.setItem('passenger', JSON.stringify(passenger));
+
+    showPassengerDashboard();
+
+    if (canonicalName !== nameInput) {
+      toast('ℹ️', 'Welcome back, ' + canonicalName.split(' ')[0] + '!',
+        'This number is already registered — signed in as ' + canonicalName + '.', 'blue');
+    } else {
+      toast('👋', "You're in, " + canonicalName.split(' ')[0] + '!',
+        'Name your price and see who bites.', 'blue');
     }
 
-    const mergedRide = {
-      ...incomingRide,
-      original_offered_fare:        originalOfferedFare,
-      previous_counter_fare:        previousCounterFare,
-      counterInputVisible:          existing ? existing.counterInputVisible          : false,
-      passengerCounterInputVisible: existing ? existing.passengerCounterInputVisible : false,
-    };
+    loadAllRides();
+    loadMyRides();
+  } catch (err) {
+    toast('❌', 'Error', err.message, 'red');
+  }
+}
 
-    const allIdx = allRides.findIndex(r => r.id === incomingRide.id);
-    if (allIdx >= 0) { allRides[allIdx] = mergedRide; }
-    else             { allRides.unshift(mergedRide); }
+function showPassengerDashboard() {
+  document.getElementById('passenger-auth').classList.add('hidden');
+  document.getElementById('passenger-dashboard').classList.remove('hidden');
+  document.getElementById('p-display-name').textContent  = passenger.name;
+  document.getElementById('p-display-phone').textContent = passenger.phone;
+  document.getElementById('p-avatar').textContent        = passenger.name[0].toUpperCase();
 
-    if (passenger && incomingRide.passenger_phone === passenger.phone) {
-      const myIdx = myRides.findIndex(r => r.id === incomingRide.id);
-      if (myIdx >= 0) { myRides[myIdx] = mergedRide; }
-      else            { myRides.unshift(mergedRide); }
+  // Initialize Mapbox location fields
+  initLocationFields();
+}
+
+function logoutPassenger() {
+  passenger = null;
+  myRides   = [];
+  window._locationValues = {};
+  localStorage.removeItem('passenger');
+  document.getElementById('passenger-auth').classList.remove('hidden');
+  document.getElementById('passenger-dashboard').classList.add('hidden');
+  document.getElementById('p-name').value  = '';
+  document.getElementById('p-phone').value = '';
+}
+
+function checkSavedPassenger() {
+  const saved = localStorage.getItem('passenger');
+  if (saved) {
+    try {
+      passenger = JSON.parse(saved);
+      showPassengerDashboard();
+      loadMyRides();
+    } catch (e) {
+      localStorage.removeItem('passenger');
     }
+  }
+}
 
+/* ═══════════ ACCOUNT: DRIVER ═══════════ */
+function showDriverLogin() {
+  const loginHtml = `
+    <div class="auth-wrap" style="max-width:420px; margin:40px auto;">
+      <div class="inner-tabs" style="margin: 0 auto 24px;">
+        <button class="inner-tab active" id="driver-login-tab" onclick="showDriverLoginForm()">Login</button>
+        <button class="inner-tab" id="driver-signup-tab" onclick="showDriverSignupForm()">Sign Up</button>
+      </div>
+      <div id="driver-login-form">
+        <h2 class="auth-heading">Driver Login</h2>
+        <p class="auth-sub">Enter your credentials to access ride requests</p>
+        <div class="card">
+          <div class="form-grid">
+            <div><label>Username</label><input id="d-username" type="text" placeholder="username" /></div>
+            <div><label>Password</label><input id="d-password" type="password" placeholder="password" /></div>
+            <button class="btn btn-primary btn-full" onclick="loginDriver()">Login</button>
+            <button class="btn btn-ghost btn-full" onclick="switchTab('passenger')">Back to Rider</button>
+          </div>
+        </div>
+      </div>
+      <div id="driver-signup-form" class="hidden">
+        <h2 class="auth-heading">Driver Sign Up</h2>
+        <p class="auth-sub">Join our driver community and start earning</p>
+        <div class="card">
+          <div class="form-grid">
+            <div><label>Full Name</label><input id="d-signup-name" type="text" placeholder="Raj Sharma" /></div>
+            <div><label>Username</label><input id="d-signup-username" type="text" placeholder="username" /></div>
+            <div><label>Password</label><input id="d-signup-password" type="password" placeholder="min 6 characters" /></div>
+            <div><label>Contact Number</label><input id="d-signup-phone" type="tel" placeholder="+91 98765 43210" /></div>
+            <div><label>Vehicle Info (optional)</label><input id="d-signup-vehicle" type="text" placeholder="Swift Dzire 2022, White" /></div>
+            <button class="btn btn-primary btn-full" onclick="signupDriver()">Create Account</button>
+            <button class="btn btn-ghost btn-full" onclick="showDriverLoginForm()">Back to Login</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('view-driver').innerHTML = loginHtml;
+}
+
+async function loginDriver() {
+  const username = document.getElementById('d-username').value.trim();
+  const password = document.getElementById('d-password').value;
+  if (!username || !password) { toast('⚠️', 'Credentials required', 'Please enter username and password.', 'amber'); return; }
+  try {
+    const res = await fetch(`${API_URL}/drivers`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    driver = data.driver;
+    localStorage.setItem('driver', JSON.stringify(driver));
+    toast('✅', 'Welcome, ' + driver.name + '!', 'You are now online.', 'green');
+    renderDriverDashboard();
+    loadAllRides();
+  } catch (err) { toast('❌', 'Login failed', err.message, 'red'); }
+}
+
+function showDriverLoginForm() {
+  document.getElementById('driver-login-tab').classList.add('active');
+  document.getElementById('driver-signup-tab').classList.remove('active');
+  document.getElementById('driver-login-form').classList.remove('hidden');
+  document.getElementById('driver-signup-form').classList.add('hidden');
+}
+
+function showDriverSignupForm() {
+  document.getElementById('driver-login-tab').classList.remove('active');
+  document.getElementById('driver-signup-tab').classList.add('active');
+  document.getElementById('driver-login-form').classList.add('hidden');
+  document.getElementById('driver-signup-form').classList.remove('hidden');
+}
+
+async function signupDriver() {
+  const name = document.getElementById('d-signup-name').value.trim();
+  const username = document.getElementById('d-signup-username').value.trim();
+  const password = document.getElementById('d-signup-password').value;
+  const phone = document.getElementById('d-signup-phone').value.trim();
+  const vehicle = document.getElementById('d-signup-vehicle').value.trim();
+  if (!name)     { toast('⚠️', 'Name required', 'Please enter your full name.', 'amber'); return; }
+  if (!username) { toast('⚠️', 'Username required', 'Please choose a username.', 'amber'); return; }
+  if (!password || password.length < 6) { toast('⚠️', 'Password too short', 'Password must be at least 6 characters.', 'amber'); return; }
+  if (!phone)    { toast('⚠️', 'Phone required', 'Please enter your contact number.', 'amber'); return; }
+  try {
+    const res = await fetch(`${API_URL}/drivers/signup`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, username, password, contact_no: phone, vehicle_info: vehicle })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    driver = data.driver;
+    localStorage.setItem('driver', JSON.stringify(driver));
+    toast('✅', 'Welcome, ' + driver.name + '!', 'Your driver account has been created.', 'green');
+    renderDriverDashboard();
+    loadAllRides();
+  } catch (err) { toast('❌', 'Signup failed', err.message, 'red'); }
+}
+
+function logoutDriver() {
+  if (driver) {
+    fetch(`${API_URL}/drivers/logout`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ driverId: driver.id })
+    });
+  }
+  driver = null;
+  driverPassedRides.clear();
+  localStorage.removeItem('driver');
+  showDriverLogin();
+}
+
+function checkSavedDriver() {
+  const saved = localStorage.getItem('driver');
+  if (saved) {
+    try {
+      driver = JSON.parse(saved);
+      renderDriverDashboard();
+      loadAllRides();
+    } catch (e) {
+      localStorage.removeItem('driver');
+      showDriverLogin();
+    }
+  } else {
+    showDriverLogin();
+  }
+}
+
+function showDriverProfileEdit() {
+  if (!driver) return;
+  const modal = document.createElement('div');
+  modal.id = 'driver-profile-modal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div class="auth-wrap" style="max-width:480px;width:90%;">
+      <h2 class="auth-heading">Edit Driver Profile</h2>
+      <p class="auth-sub">Update your information that passengers see</p>
+      <div class="card">
+        <div class="form-grid">
+          <div><label>Username</label><input id="edit-username" type="text" value="${driver.username||''}" /></div>
+          <div><label>Full Name</label><input id="edit-name" type="text" value="${driver.name||''}" /></div>
+          <div><label>Contact Number</label><input id="edit-contact" type="tel" value="${driver.contact_no||''}" /></div>
+          <div><label>Vehicle Information</label><input id="edit-vehicle" type="text" value="${driver.vehicle_info||''}" /></div>
+          <div><label>Current Password</label><input id="edit-current-password" type="password" placeholder="Required to confirm changes" /></div>
+          <div><label>New Password (optional)</label><input id="edit-new-password" type="password" placeholder="Leave blank to keep current" /></div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button class="btn btn-primary" onclick="updateDriverProfile()">Save Changes</button>
+            <button class="btn btn-ghost" onclick="closeDriverProfileEdit()">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function updateDriverProfile() {
+  if (!driver) return;
+  const username = document.getElementById('edit-username').value.trim();
+  const name = document.getElementById('edit-name').value.trim();
+  const contact = document.getElementById('edit-contact').value.trim();
+  const vehicle = document.getElementById('edit-vehicle').value.trim();
+  const currentPassword = document.getElementById('edit-current-password').value;
+  const newPassword = document.getElementById('edit-new-password').value;
+  if (!username) { toast('⚠️', 'Username required', '', 'amber'); return; }
+  if (!name)     { toast('⚠️', 'Name required', '', 'amber'); return; }
+  if (!contact)  { toast('⚠️', 'Contact required', '', 'amber'); return; }
+  if (!currentPassword) { toast('⚠️', 'Current password required', '', 'amber'); return; }
+  try {
+    const loginRes = await fetch(`${API_URL}/drivers`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: driver.username, password: currentPassword })
+    });
+    if (!loginRes.ok) throw new Error('Current password is incorrect');
+    const updateData = { username, name, contact_no: contact, vehicle_info: vehicle };
+    if (newPassword.trim()) updateData.password = newPassword;
+    const updateRes = await fetch(`${API_URL}/drivers/${driver.id}/profile`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updateData)
+    });
+    const updateResult = await updateRes.json();
+    if (!updateRes.ok) throw new Error(updateResult.error || 'Update failed');
+    driver = { ...driver, ...updateData };
+    localStorage.setItem('driver', JSON.stringify(driver));
+    closeDriverProfileEdit();
+    renderDriverDashboard();
+    toast('✅', 'Profile Updated', 'Your driver information has been updated.', 'green');
+  } catch (err) { toast('❌', 'Update Failed', err.message, 'red'); }
+}
+
+function closeDriverProfileEdit() {
+  document.getElementById('driver-profile-modal')?.remove();
+}
+
+/* ═══════════ FILTER DROPDOWN ═══════════ */
+function toggleFilterDropdown() {
+  driverFilterOpen = !driverFilterOpen;
+  document.getElementById('filter-dropdown-body')?.classList.toggle('hidden', !driverFilterOpen);
+  document.getElementById('filter-chevron')?.classList.toggle('open', driverFilterOpen);
+}
+
+function updateFilterBadge() {
+  const badge = document.getElementById('filter-active-count');
+  if (!badge) return;
+  let count = 0;
+  if (driverSearchText) count++;
+  if (driverLocationFilter) count++;
+  if (driverFareMin) count++;
+  if (driverFareMax) count++;
+  badge.textContent = count;
+  badge.classList.toggle('visible', count > 0);
+}
+
+/* ═══════════ DRIVER DASHBOARD ═══════════ */
+function renderDriverDashboard() {
+  const html = `
+    <div class="driver-header">
+      <div class="driver-online">
+        <div class="live-pip"></div>
+        <div>
+          <div class="driver-label">Online & Ready</div>
+          <div class="driver-sub">New rider offers appear below the moment they're submitted</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <div class="count-chip"><strong id="driver-count">0</strong> awaiting your call</div>
+        <button class="btn btn-blue btn-sm" onclick="showDriverProfileEdit()">Edit Profile</button>
+        <button class="btn btn-ghost btn-sm" onclick="logoutDriver()">Logout</button>
+      </div>
+    </div>
+
+    <div class="inner-tabs">
+      <button class="inner-tab active" id="dtab-all"       onclick="filterDriver('all')">All</button>
+      <button class="inner-tab"        id="dtab-pending"   onclick="filterDriver('pending')">Pending</button>
+      <button class="inner-tab"        id="dtab-countered" onclick="filterDriver('countered')">Countered</button>
+      <button class="inner-tab"        id="dtab-closed"    onclick="filterDriver('closed')">Closed</button>
+    </div>
+
+    <div class="filter-dropdown" id="filter-dropdown">
+      <div class="filter-dropdown-toggle" onclick="toggleFilterDropdown()">
+        <div class="filter-dropdown-toggle-left">
+          <span>🔍</span>
+          <span class="filter-dropdown-toggle-label">Search &amp; Filter Rides</span>
+          <span class="filter-active-count" id="filter-active-count">0</span>
+        </div>
+        <span class="filter-dropdown-chevron" id="filter-chevron">▼</span>
+      </div>
+      <div class="filter-dropdown-body hidden" id="filter-dropdown-body">
+        <div class="filter-grid">
+          <div class="filter-grid-full">
+            <label>Search passenger name or phone</label>
+            <input id="driver-search" type="text" placeholder="e.g. Priya or +91 98765" onkeyup="applyDriverFilters()" />
+          </div>
+          <div class="filter-grid-full">
+            <label>Pickup location contains</label>
+            <input id="driver-location" type="text" placeholder="e.g. Connaught Place" onkeyup="applyDriverFilters()" />
+          </div>
+          <div>
+            <label>Min fare (₹)</label>
+            <input id="driver-fare-min" type="number" placeholder="50" onkeyup="applyDriverFilters()" />
+          </div>
+          <div>
+            <label>Max fare (₹)</label>
+            <input id="driver-fare-max" type="number" placeholder="500" onkeyup="applyDriverFilters()" />
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button class="btn btn-ghost btn-sm" onclick="clearDriverFilters()">Clear Filters</button>
+          <button class="btn btn-blue btn-sm" onclick="toggleFilterDropdown()">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="driver-requests-empty" class="empty">
+      <span class="empty-icon">⏳</span>
+      <div class="empty-head">Quiet for now</div>
+      <div class="empty-body">Switch to the Rider tab to place a sample offer —<br>it'll land here instantly.</div>
+    </div>
+    <div id="driver-requests-list" class="scroll-list"></div>`;
+  document.getElementById('view-driver').innerHTML = html;
+}
+
+/* ═══════════ API: RIDES ═══════════ */
+async function loadAllRides() {
+  try {
+    const res  = await fetch(`${API_URL}/rides`);
+    const data = await res.json();
+    const incoming = data.rides || [];
+    const existingAllRides = [...allRides];
+    allRides = incoming.map(r => {
+      const existing = existingAllRides.find(e => e.id === r.id);
+      return {
+        ...r,
+        original_offered_fare:        existing ? (existing.original_offered_fare ?? existing.offered_fare) : r.offered_fare,
+        previous_counter_fare:        existing ? existing.previous_counter_fare        : r.offered_fare,
+        counterInputVisible:          existing ? existing.counterInputVisible          : false,
+        passengerCounterInputVisible: existing ? existing.passengerCounterInputVisible : false,
+      };
+    });
+    renderAllRides();
+    renderDriverView();
+  } catch (err) { console.error('Error loading all rides:', err); }
+}
+
+async function loadMyRides() {
+  if (!passenger || !passenger.phone) return;
+  try {
+    const res  = await fetch(`${API_URL}/rides/history/${encodeURIComponent(passenger.phone)}`);
+    const data = await res.json();
+    const incoming = data.rides || [];
+    const existingMyRides = [...myRides];
+    myRides = incoming.map(r => {
+      const fromAll = allRides.find(e => e.id === r.id);
+      const fromMy  = existingMyRides.find(e => e.id === r.id);
+      const originalFare = fromMy
+        ? (fromMy.original_offered_fare ?? fromMy.offered_fare)
+        : fromAll
+          ? (fromAll.original_offered_fare ?? fromAll.offered_fare)
+          : r.offered_fare;
+      const previousFare = fromMy ? fromMy.previous_counter_fare
+                         : fromAll ? fromAll.previous_counter_fare : r.offered_fare;
+      return {
+        ...r,
+        original_offered_fare:        originalFare,
+        previous_counter_fare:        previousFare,
+        counterInputVisible:          fromMy ? fromMy.counterInputVisible          : false,
+        passengerCounterInputVisible: fromMy ? fromMy.passengerCounterInputVisible : false,
+      };
+    });
+    renderPassengerRequests();
+  } catch (err) { console.error('Error loading my rides:', err); }
+}
+
+async function submitRideRequest() {
+  if (!passenger) { toast('🔒', 'Hold on', "You'll need an account before sending offers.", 'amber'); return; }
+  const pickup     = (window._locationValues['p-pickup'] || document.getElementById('p-pickup')?.value || '').trim();
+  const drop       = (window._locationValues['p-drop']   || document.getElementById('p-drop')?.value   || '').trim();
+  const pickupTime = document.getElementById('p-pickup-time').value;
+  const price      = parseFloat(document.getElementById('p-price').value);
+  if (!pickup)     { toast('📍', 'Pickup missing',      "Let drivers know where to find you.", 'amber'); return; }
+  if (!drop)       { toast('📍', 'Drop-off missing',    "Where are you headed? Add your destination.", 'amber'); return; }
+  if (!pickupTime) { toast('⏰', 'Pickup time missing', "When do you want to ride? Select a pickup time.", 'amber'); return; }
+  if (!price || price <= 0) { toast('💰', 'Set a price', "Enter what you'd like to pay.", 'amber'); return; }
+  try {
+    const res = await fetch(`${API_URL}/rides`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ passengerId: passenger.id, passengerPhone: passenger.phone, pickupLocation: pickup, dropoffLocation: drop, pickupTime, offeredFare: price })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    // Clear location fields
+    const pickupInput = document.getElementById('p-pickup');
+    const dropInput   = document.getElementById('p-drop');
+    if (pickupInput) pickupInput.value = '';
+    if (dropInput)   dropInput.value   = '';
+    window._locationValues['p-pickup'] = '';
+    window._locationValues['p-drop']   = '';
+    document.getElementById('p-pickup-time').value = '';
+    document.getElementById('p-price').value = '';
+
+    toast('📤', 'Offer sent!', 'Drivers can see your ₹' + price + ' bid. Sit tight.', 'green');
+    const newRide = { ...data.ride, original_offered_fare: data.ride.offered_fare, previous_counter_fare: data.ride.offered_fare };
+    myRides.unshift(newRide);
+    allRides.unshift(newRide);
     renderPassengerRequests();
     renderAllRides();
     renderDriverView();
-  }
+  } catch (err) { toast('❌', 'Error', err.message, 'red'); }
+}
 
-  function sendRideUpdate(ride) {
-    handleRideUpdate(ride);
-  }
+/* ═══════════ DRIVER ACTIONS ═══════════ */
+async function driverAccept(rideId) {
+  if (!driver) return;
+  try {
+    const res = await fetch(`${API_URL}/rides/${rideId}/accept`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ driverId: driver.id })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    sendRideUpdate(data.ride);
+    toast('✅', 'Ride accepted!', 'Locked in at ₹' + (getFinalFare(data.ride)) + '.', 'green');
+  } catch (err) { toast('❌', 'Error', err.message, 'red'); }
+}
 
-  /* ═══════════ TABS ═══════════ */
-  function switchTab(tab) {
-    document.getElementById('view-passenger').classList.toggle('active', tab === 'passenger');
-    document.getElementById('view-driver').classList.toggle('active', tab === 'driver');
-    document.getElementById('tab-passenger').className = 'tab-btn' + (tab === 'passenger' ? ' active-passenger' : '');
-    document.getElementById('tab-driver').className    = 'tab-btn' + (tab === 'driver'    ? ' active-driver'    : '');
+function driverReject(rideId) {
+  if (!driver) return;
+  driverPassedRides.add(rideId);
+  renderDriverView();
+  toast('👋', 'Passed on this one', "Ride is still open for other drivers.", 'amber');
+}
 
-    if (tab === 'driver') {
-      if (!driver) showDriverLogin();
-      else loadAllRides();
+async function driverComplete(rideId) {
+  if (!driver) return;
+  try {
+    const res = await fetch(`${API_URL}/rides/${rideId}/complete`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ driverId: driver.id })
+    });
+    if (!res.ok) {
+      if (res.status === 404) { toast('❌', 'Error', 'Ride not found or already completed', 'red'); return; }
+      throw new Error(await res.text());
     }
-    if (tab === 'passenger') {
-      loadAllRides();
-      if (passenger) loadMyRides();
-    }
+    const data = await res.json();
+    sendRideUpdate(data.ride);
+    toast('🏁', 'Ride completed!', 'Great job! Ride marked as completed.', 'green');
+  } catch (err) { toast('❌', 'Error', err.message, 'red'); }
+}
+
+async function driverCounter(rideId) {
+  if (!driver) return;
+  const input = document.getElementById('counter-input-' + rideId);
+  const val   = parseFloat(input ? input.value : 0);
+  const ride  = getRide(rideId);
+  if (!val || val <= ride.offered_fare) {
+    toast('⚠️', 'Counter must be higher', 'Your counter needs to beat their ₹' + ride.offered_fare + ' offer.', 'amber');
+    return;
   }
+  try {
+    const res = await fetch(`${API_URL}/rides/${rideId}/counter`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ counterFare: val, driverId: driver.id })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    data.ride.previous_counter_fare = ride.counter_fare || ride.offered_fare;
+    sendRideUpdate(data.ride);
+    toast('💬', 'Counter sent', '₹' + val + " is now with the passenger.", 'blue');
+  } catch (err) { toast('❌', 'Error', err.message, 'red'); }
+}
 
-  /* ═══════════ ACCOUNT: PASSENGER ═══════════ */
-  async function createPassengerAccount() {
-    const nameInput = document.getElementById('p-name').value.trim();
-    const code      = document.getElementById('p-code').value;
-    const phone     = document.getElementById('p-phone').value.trim();
+/* ═══════════ PASSENGER RESPONSES ═══════════ */
+async function passengerAcceptCounter(rideId) {
+  try {
+    const res = await fetch(`${API_URL}/rides/${rideId}/accept-counter`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    sendRideUpdate(data.ride);
+    toast('🎉', 'Ride confirmed!', 'Deal locked at ₹' + getFinalFare(data.ride) + '. Your driver is on the way.', 'green');
+  } catch (err) { toast('❌', 'Error', err.message, 'red'); }
+}
 
-    if (!nameInput)                { toast('⚠️', 'Name required', 'Drivers need something to call you.', 'amber'); return; }
-    if (!phone || phone.length < 6){ toast('⚠️', 'Check your number', "That doesn't look right — try again.", 'amber'); return; }
+async function passengerRejectCounter(rideId) {
+  try {
+    const res = await fetch(`${API_URL}/rides/${rideId}/decline-counter`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    sendRideUpdate(data.ride);
+    toast('👋', 'Counter declined', "No worries — try a fresh request.", 'amber');
+  } catch (err) { toast('❌', 'Error', err.message, 'red'); }
+}
 
-    const fullPhone = code + ' ' + phone;
-
-    try {
-      const res = await fetch(`${API_URL}/passengers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: nameInput, phone: fullPhone })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-
-      const canonicalName = data.passenger.name;
-      passenger = { id: data.passenger.id, name: canonicalName, phone: fullPhone };
-      localStorage.setItem('passenger', JSON.stringify(passenger));
-
-      showPassengerDashboard();
-
-      if (canonicalName !== nameInput) {
-        toast('ℹ️', 'Welcome back, ' + canonicalName.split(' ')[0] + '!',
-          'This number is already registered — signed in as ' + canonicalName + '.', 'blue');
-      } else {
-        toast('👋', "You're in, " + canonicalName.split(' ')[0] + '!',
-          'Name your price and see who bites.', 'blue');
-      }
-
-      loadAllRides();
-      loadMyRides();
-    } catch (err) {
-      toast('❌', 'Error', err.message, 'red');
-    }
+async function passengerCounter(rideId) {
+  const input = document.getElementById('passenger-counter-input-' + rideId);
+  const val   = parseFloat(input ? input.value : 0);
+  const ride  = getRide(rideId);
+  if (!val || val >= ride.counter_fare) {
+    toast('⚠️', 'Counter must be lower', 'Your counter needs to be lower than their ₹' + ride.counter_fare + ' offer.', 'amber');
+    return;
   }
+  try {
+    const res = await fetch(`${API_URL}/rides/${rideId}/counter`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ counterFare: val, driverId: null, isPassenger: true })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    data.ride.previous_counter_fare = ride.counter_fare;
+    sendRideUpdate(data.ride);
+    toast('💬', 'Counter sent', '₹' + val + " is now with the driver.", 'blue');
+  } catch (err) { toast('❌', 'Error', err.message, 'red'); }
+}
 
-  function showPassengerDashboard() {
-    document.getElementById('passenger-auth').classList.add('hidden');
-    document.getElementById('passenger-dashboard').classList.remove('hidden');
-    document.getElementById('p-display-name').textContent  = passenger.name;
-    document.getElementById('p-display-phone').textContent = passenger.phone;
-    document.getElementById('p-avatar').textContent        = passenger.name[0].toUpperCase();
+function togglePassengerCounterForm(rideId) {
+  const ride = getRide(rideId); if (!ride) return;
+  ride.passengerCounterInputVisible = !ride.passengerCounterInputVisible;
+  const allIdx = allRides.findIndex(r => r.id === rideId);
+  const myIdx  = myRides.findIndex(r => r.id === rideId);
+  if (allIdx >= 0) allRides[allIdx].passengerCounterInputVisible = ride.passengerCounterInputVisible;
+  if (myIdx  >= 0) myRides[myIdx].passengerCounterInputVisible  = ride.passengerCounterInputVisible;
+  renderPassengerRequests();
+}
+
+/* ═══════════ RENDER: PASSENGER ═══════════ */
+function renderPassengerRequests() {
+  if (!passenger) return;
+  const listEl  = document.getElementById('passenger-requests-list');
+  const emptyEl = document.getElementById('passenger-requests-empty');
+  if (!listEl) return;
+  if (myRides.length === 0) {
+    emptyEl.style.display = '';
+    listEl.innerHTML = '';
+  } else {
+    emptyEl.style.display = 'none';
+    listEl.innerHTML = myRides.map(renderPassengerCard).join('');
   }
+}
 
-  function logoutPassenger() {
-    passenger = null;
-    myRides   = [];
-    localStorage.removeItem('passenger');
-    document.getElementById('passenger-auth').classList.remove('hidden');
-    document.getElementById('passenger-dashboard').classList.add('hidden');
-    document.getElementById('p-name').value  = '';
-    document.getElementById('p-phone').value = '';
-  }
+function renderPassengerCard(r) {
+  let extra = '';
+  const offeredFare     = r.offered_fare;
+  const originalFare    = getOriginalFare(r);
+  const counterFare     = r.counter_fare;
+  const previousCounterFare = r.previous_counter_fare != null ? r.previous_counter_fare : offeredFare;
+  const finalFare       = getFinalFare(r);
 
-  function checkSavedPassenger() {
-    const saved = localStorage.getItem('passenger');
-    if (saved) {
-      try {
-        passenger = JSON.parse(saved);
-        showPassengerDashboard();
-        loadMyRides();
-      } catch (e) {
-        localStorage.removeItem('passenger');
-      }
-    }
-  }
+  if (r.status === 'countered') {
+    const driverObj = resolveDriver(r);
+    const driverDetail = driverObj
+      ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--violet-border);">
+           <div class="contact-avatar-sm" style="background:linear-gradient(135deg,var(--violet),#6d28d9);">
+             ${(driverObj.name||'D')[0].toUpperCase()}
+           </div>
+           <div>
+             <div style="font-size:0.84rem;font-weight:700;color:var(--text);">${driverObj.name||'Driver'}</div>
+             <div style="font-size:0.69rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--violet);">Your Driver</div>
+           </div>
+         </div>
+         <div style="display:flex;align-items:center;gap:6px;font-size:0.79rem;color:var(--text-secondary);margin-bottom:${driverObj.vehicle_info?'6px':'10px'};">
+           ${phoneLink(driverObj.contact_no)}
+         </div>
+         ${driverObj.vehicle_info ? `<div style="font-size:0.74rem;color:var(--text-muted);margin-bottom:10px;">🚘 ${driverObj.vehicle_info}</div>` : ''}`
+      : (r.accepted_by || r.countered_by)
+        ? `<div class="driver-loading">⏳ Loading driver details…</div>`
+        : '';
 
-  /* ═══════════ ACCOUNT: DRIVER ═══════════ */
-  function showDriverLogin() {
-    const loginHtml = `
-      <div class="auth-wrap" style="max-width:420px; margin:40px auto;">
-        <div class="inner-tabs" style="margin: 0 auto 24px;">
-          <button class="inner-tab active" id="driver-login-tab" onclick="showDriverLoginForm()">Login</button>
-          <button class="inner-tab" id="driver-signup-tab" onclick="showDriverSignupForm()">Sign Up</button>
-        </div>
-        <div id="driver-login-form">
-          <h2 class="auth-heading">Driver Login</h2>
-          <p class="auth-sub">Enter your credentials to access ride requests</p>
-          <div class="card">
-            <div class="form-grid">
-              <div><label>Username</label><input id="d-username" type="text" placeholder="username" /></div>
-              <div><label>Password</label><input id="d-password" type="password" placeholder="password" /></div>
-              <button class="btn btn-primary btn-full" onclick="loginDriver()">Login</button>
-              <button class="btn btn-ghost btn-full" onclick="switchTab('passenger')">Back to Rider</button>
-            </div>
+    const passengerCounteredLast = r.passenger_countered === true;
+
+    if (!passengerCounteredLast) {
+      extra = `
+        <div class="counter-banner">
+          <div class="counter-banner-head">💬 Driver has a counter proposal</div>
+          ${driverDetail}
+          <div class="price-compare">
+            <span class="price-was">Your offer: ₹${previousCounterFare}</span>
+            <span style="color:var(--text-dim);margin:0 2px;">→</span>
+            <span class="price-now">Driver asks: ₹${counterFare}</span>
           </div>
-        </div>
-        <div id="driver-signup-form" class="hidden">
-          <h2 class="auth-heading">Driver Sign Up</h2>
-          <p class="auth-sub">Join our driver community and start earning</p>
-          <div class="card">
-            <div class="form-grid">
-              <div><label>Full Name</label><input id="d-signup-name" type="text" placeholder="John Smith" /></div>
-              <div><label>Username</label><input id="d-signup-username" type="text" placeholder="username" /></div>
-              <div><label>Password</label><input id="d-signup-password" type="password" placeholder="min 6 characters" /></div>
-              <div><label>Contact Number</label><input id="d-signup-phone" type="tel" placeholder="(555) 123-4567" /></div>
-              <div><label>Vehicle Info (optional)</label><input id="d-signup-vehicle" type="text" placeholder="Toyota Camry 2020, Black" /></div>
-              <button class="btn btn-primary btn-full" onclick="signupDriver()">Create Account</button>
-              <button class="btn btn-ghost btn-full" onclick="showDriverLoginForm()">Back to Login</button>
-            </div>
+          <p>They think ₹${counterFare} is a fair deal. Accept and you're on your way — counter back, or decline and try a new request.</p>
+          <div class="action-row">
+            <button class="btn btn-primary btn-sm" onclick="passengerAcceptCounter('${r.id}')">Accept ₹${counterFare}</button>
+            <button class="btn btn-amber btn-sm" onclick="togglePassengerCounterForm('${r.id}')">Propose a Counter</button>
+            <button class="btn btn-ghost btn-sm" onclick="passengerRejectCounter('${r.id}')">Decline &amp; Close</button>
           </div>
-        </div>
-      </div>`;
-    document.getElementById('view-driver').innerHTML = loginHtml;
-  }
-
-  async function loginDriver() {
-    const username = document.getElementById('d-username').value.trim();
-    const password = document.getElementById('d-password').value;
-    if (!username || !password) { toast('⚠️', 'Credentials required', 'Please enter username and password.', 'amber'); return; }
-    try {
-      const res = await fetch(`${API_URL}/drivers`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      driver = data.driver;
-      localStorage.setItem('driver', JSON.stringify(driver));
-      toast('✅', 'Welcome, ' + driver.name + '!', 'You are now online.', 'green');
-      renderDriverDashboard();
-      loadAllRides();
-    } catch (err) { toast('❌', 'Login failed', err.message, 'red'); }
-  }
-
-  function showDriverLoginForm() {
-    document.getElementById('driver-login-tab').classList.add('active');
-    document.getElementById('driver-signup-tab').classList.remove('active');
-    document.getElementById('driver-login-form').classList.remove('hidden');
-    document.getElementById('driver-signup-form').classList.add('hidden');
-  }
-
-  function showDriverSignupForm() {
-    document.getElementById('driver-login-tab').classList.remove('active');
-    document.getElementById('driver-signup-tab').classList.add('active');
-    document.getElementById('driver-login-form').classList.add('hidden');
-    document.getElementById('driver-signup-form').classList.remove('hidden');
-  }
-
-  async function signupDriver() {
-    const name = document.getElementById('d-signup-name').value.trim();
-    const username = document.getElementById('d-signup-username').value.trim();
-    const password = document.getElementById('d-signup-password').value;
-    const phone = document.getElementById('d-signup-phone').value.trim();
-    const vehicle = document.getElementById('d-signup-vehicle').value.trim();
-    if (!name)     { toast('⚠️', 'Name required', 'Please enter your full name.', 'amber'); return; }
-    if (!username) { toast('⚠️', 'Username required', 'Please choose a username.', 'amber'); return; }
-    if (!password) { toast('⚠️', 'Password required', 'Please enter a password.', 'amber'); return; }
-    if (password.length < 6) { toast('⚠️', 'Password too short', 'Password must be at least 6 characters.', 'amber'); return; }
-    if (!phone)    { toast('⚠️', 'Phone required', 'Please enter your contact number.', 'amber'); return; }
-    try {
-      const res = await fetch(`${API_URL}/drivers/signup`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, username, password, contact_no: phone, vehicle_info: vehicle })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      driver = data.driver;
-      localStorage.setItem('driver', JSON.stringify(driver));
-      toast('✅', 'Welcome, ' + driver.name + '!', 'Your driver account has been created.', 'green');
-      renderDriverDashboard();
-      loadAllRides();
-    } catch (err) { toast('❌', 'Signup failed', err.message, 'red'); }
-  }
-
-  function logoutDriver() {
-    if (driver) {
-      fetch(`${API_URL}/drivers/logout`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ driverId: driver.id })
-      });
-    }
-    driver = null;
-    driverPassedRides.clear();
-    localStorage.removeItem('driver');
-    showDriverLogin();
-  }
-
-  function checkSavedDriver() {
-    const saved = localStorage.getItem('driver');
-    if (saved) {
-      try {
-        driver = JSON.parse(saved);
-        renderDriverDashboard();
-        loadAllRides();
-      } catch (e) {
-        localStorage.removeItem('driver');
-        showDriverLogin();
-      }
+          ${r.passengerCounterInputVisible ? `
+            <div class="counter-form" style="margin-top:12px;">
+              <div class="field">
+                <label>Your counter offer (₹) — must be lower than ₹${counterFare}</label>
+                <input type="number" id="passenger-counter-input-${r.id}" placeholder="${Math.round(counterFare*0.9)}" max="${counterFare-1}" />
+              </div>
+              <button class="btn btn-amber btn-sm" onclick="passengerCounter('${r.id}')">Send Counter</button>
+              <button class="btn btn-ghost btn-sm" onclick="togglePassengerCounterForm('${r.id}')">Cancel</button>
+            </div>
+          ` : ''}
+        </div>`;
     } else {
-      showDriverLogin();
+      extra = `
+        <div class="counter-banner">
+          <div class="counter-banner-head">⏳ Your counter is with the driver</div>
+          <div class="price-compare">
+            <span class="price-was">Driver asked: ₹${previousCounterFare}</span>
+            <span style="color:var(--text-dim);margin:0 2px;">→</span>
+            <span class="price-now">Your counter: ₹${counterFare}</span>
+          </div>
+          <p>Your counter of ₹${counterFare} has been sent. Waiting for their response.</p>
+          <div class="status-note wait" style="margin-top:12px;">
+            ⏳ <span>Waiting for driver to respond to your ₹${counterFare} counter.</span>
+          </div>
+        </div>`;
     }
   }
 
-  function showDriverProfileEdit() {
-    if (!driver) return;
-    const modalHtml = `
-      <div class="auth-wrap" style="max-width:480px; margin:40px auto;">
-        <h2 class="auth-heading">Edit Driver Profile</h2>
-        <p class="auth-sub">Update your information that passengers see</p>
-        <div class="card">
-          <div class="form-grid">
-            <div><label>Username</label><input id="edit-username" type="text" value="${driver.username || ''}" placeholder="username" /></div>
-            <div><label>Full Name</label><input id="edit-name" type="text" value="${driver.name || ''}" placeholder="e.g. Raj Sharma" /></div>
-            <div><label>Contact Number</label><input id="edit-contact" type="tel" value="${driver.contact_no || ''}" placeholder="+91 98765 43210" /></div>
-            <div><label>Vehicle Information</label><input id="edit-vehicle" type="text" value="${driver.vehicle_info || ''}" placeholder="e.g. Swift Dzire, White, KA01AB1234" /></div>
-            <div><label>Current Password</label><input id="edit-current-password" type="password" placeholder="Enter current password to confirm changes" /></div>
-            <div><label>New Password (optional)</label><input id="edit-new-password" type="password" placeholder="Leave blank to keep current password" /></div>
-            <div style="display:flex; gap:8px; margin-top:8px;">
-              <button class="btn btn-primary" onclick="updateDriverProfile()">Save Changes</button>
-              <button class="btn btn-ghost" onclick="closeDriverProfileEdit()">Cancel</button>
-            </div>
-          </div>
-        </div>
-      </div>`;
-    const modal = document.createElement('div');
-    modal.id = 'driver-profile-modal';
-    modal.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;`;
-    modal.innerHTML = modalHtml;
-    document.body.appendChild(modal);
-  }
+  if (r.status === 'confirmed' || r.status === 'completed') {
+    const driverObj = resolveDriver(r);
+    const isComplete = r.status === 'completed';
+    const statusIcon = isComplete ? '🏁' : '🎉';
+    const statusMsg  = isComplete
+      ? `Ride completed at <strong>₹${finalFare}</strong>. Thanks for riding!`
+      : `Confirmed at <strong>₹${finalFare}</strong> — your driver is on the way. Safe travels!`;
+    const driverRole = isComplete ? 'Your Driver · Ride Complete' : 'Your Driver · En Route';
 
-  async function updateDriverProfile() {
-    if (!driver) return;
-    const username = document.getElementById('edit-username').value.trim();
-    const name = document.getElementById('edit-name').value.trim();
-    const contact = document.getElementById('edit-contact').value.trim();
-    const vehicle = document.getElementById('edit-vehicle').value.trim();
-    const currentPassword = document.getElementById('edit-current-password').value;
-    const newPassword = document.getElementById('edit-new-password').value;
-    if (!username) { toast('⚠️', 'Username required', 'Username is required for login.', 'amber'); return; }
-    if (!name)     { toast('⚠️', 'Name required', 'Your name is required.', 'amber'); return; }
-    if (!contact)  { toast('⚠️', 'Contact required', 'Passengers need to reach you.', 'amber'); return; }
-    if (!currentPassword) { toast('⚠️', 'Password required', 'Enter current password to confirm changes.', 'amber'); return; }
-    try {
-      const loginRes = await fetch(`${API_URL}/drivers`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: driver.username, password: currentPassword })
-      });
-      if (!loginRes.ok) throw new Error('Current password is incorrect');
-      const updateData = { username, name, contact_no: contact, vehicle_info: vehicle };
-      if (newPassword.trim()) updateData.password = newPassword;
-      const updateRes = await fetch(`${API_URL}/drivers/${driver.id}/profile`, {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updateData)
-      });
-      const updateResult = await updateRes.json();
-      if (!updateRes.ok) throw new Error(updateResult.error || 'Update failed');
-      driver = { ...driver, ...updateData };
-      localStorage.setItem('driver', JSON.stringify(driver));
-      closeDriverProfileEdit();
-      renderDriverDashboard();
-      toast('✅', 'Profile Updated', 'Your driver information has been updated.', 'green');
-    } catch (err) { toast('❌', 'Update Failed', err.message, 'red'); }
-  }
-
-  function closeDriverProfileEdit() {
-    const modal = document.getElementById('driver-profile-modal');
-    if (modal) modal.remove();
-  }
-
-  /* ═══════════ FILTER DROPDOWN ═══════════ */
-  function toggleFilterDropdown() {
-    driverFilterOpen = !driverFilterOpen;
-    const body    = document.getElementById('filter-dropdown-body');
-    const chevron = document.getElementById('filter-chevron');
-    if (body)    body.classList.toggle('hidden', !driverFilterOpen);
-    if (chevron) chevron.classList.toggle('open', driverFilterOpen);
-  }
-
-  function updateFilterBadge() {
-    const badge = document.getElementById('filter-active-count');
-    if (!badge) return;
-    let count = 0;
-    if (driverSearchText)     count++;
-    if (driverLocationFilter) count++;
-    if (driverFareMin)        count++;
-    if (driverFareMax)        count++;
-    badge.textContent = count;
-    badge.classList.toggle('visible', count > 0);
-  }
-
-  /* ═══════════ DRIVER DASHBOARD ═══════════ */
-  function renderDriverDashboard() {
-    const html = `
-      <div class="driver-header">
-        <div class="driver-online">
-          <div class="live-pip"></div>
-          <div>
-            <div class="driver-label">Online & Ready</div>
-            <div class="driver-sub">New rider offers appear below the moment they're submitted</div>
-          </div>
-        </div>
-        <div style="display:flex; gap:12px; align-items:center;">
-          <div class="count-chip"><strong id="driver-count">0</strong> awaiting your call</div>
-          <button class="btn btn-blue btn-sm" onclick="showDriverProfileEdit()">Edit Profile</button>
-          <button class="btn btn-ghost btn-sm" onclick="logoutDriver()">Logout</button>
-        </div>
-      </div>
-
-      <div class="inner-tabs">
-        <button class="inner-tab active" id="dtab-all"       onclick="filterDriver('all')">All</button>
-        <button class="inner-tab"        id="dtab-pending"   onclick="filterDriver('pending')">Pending</button>
-        <button class="inner-tab"        id="dtab-countered" onclick="filterDriver('countered')">Countered</button>
-        <button class="inner-tab"        id="dtab-closed"    onclick="filterDriver('closed')">Closed</button>
-      </div>
-
-      <div class="filter-dropdown" id="filter-dropdown">
-        <div class="filter-dropdown-toggle" onclick="toggleFilterDropdown()">
-          <div class="filter-dropdown-toggle-left">
-            <span>🔍</span>
-            <span class="filter-dropdown-toggle-label">Search &amp; Filter Rides</span>
-            <span class="filter-active-count" id="filter-active-count">0</span>
-          </div>
-          <span class="filter-dropdown-chevron" id="filter-chevron">▼</span>
-        </div>
-        <div class="filter-dropdown-body hidden" id="filter-dropdown-body">
-          <div class="filter-grid">
-            <div class="filter-grid-full">
-              <label>Search passenger name or phone</label>
-              <input id="driver-search" type="text" placeholder="e.g. John or +1 555-1234" onkeyup="applyDriverFilters()" />
-            </div>
-            <div class="filter-grid-full">
-              <label>Pickup location contains</label>
-              <input id="driver-location" type="text" placeholder="e.g. Downtown" onkeyup="applyDriverFilters()" />
-            </div>
-            <div>
-              <label>Min fare ($)</label>
-              <input id="driver-fare-min" type="number" placeholder="50" onkeyup="applyDriverFilters()" />
-            </div>
-            <div>
-              <label>Max fare ($)</label>
-              <input id="driver-fare-max" type="number" placeholder="200" onkeyup="applyDriverFilters()" />
-            </div>
-          </div>
-          <div class="filter-actions">
-            <button class="btn btn-ghost btn-sm" onclick="clearDriverFilters()">Clear Filters</button>
-            <button class="btn btn-blue btn-sm" onclick="toggleFilterDropdown()">Done</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="driver-requests-empty" class="empty">
-        <span class="empty-icon">⏳</span>
-        <div class="empty-head">Quiet for now</div>
-        <div class="empty-body">Switch to the Rider tab to place a sample offer —<br>it'll land here instantly.</div>
-      </div>
-      <div id="driver-requests-list" class="scroll-list"></div>`;
-    document.getElementById('view-driver').innerHTML = html;
-  }
-
-  /* ═══════════ API: RIDES ═══════════ */
-  async function loadAllRides() {
-    try {
-      const res  = await fetch(`${API_URL}/rides`);
-      const data = await res.json();
-      const incoming = data.rides || [];
-      const existingAllRides = [...allRides];
-      allRides = incoming.map(r => {
-        const existing = existingAllRides.find(e => e.id === r.id);
-        return {
-          ...r,
-          // FIX: preserve original_offered_fare across reloads
-          original_offered_fare:        existing ? (existing.original_offered_fare ?? existing.offered_fare) : r.offered_fare,
-          previous_counter_fare:        existing ? existing.previous_counter_fare        : r.offered_fare,
-          counterInputVisible:          existing ? existing.counterInputVisible          : false,
-          passengerCounterInputVisible: existing ? existing.passengerCounterInputVisible : false,
-        };
-      });
-      renderAllRides();
-      renderDriverView();
-    } catch (err) { console.error('Error loading all rides:', err); }
-  }
-
-  async function loadMyRides() {
-    if (!passenger || !passenger.phone) return;
-    try {
-      const res  = await fetch(`${API_URL}/rides/history/${encodeURIComponent(passenger.phone)}`);
-      const data = await res.json();
-      const incoming = data.rides || [];
-      const existingMyRides = [...myRides];
-      myRides = incoming.map(r => {
-        const fromAll = allRides.find(e => e.id === r.id);
-        const fromMy  = existingMyRides.find(e => e.id === r.id);
-        const originalFare = fromMy
-          ? (fromMy.original_offered_fare ?? fromMy.offered_fare)
-          : fromAll
-            ? (fromAll.original_offered_fare ?? fromAll.offered_fare)
-            : r.offered_fare;
-        const previousFare = fromMy ? fromMy.previous_counter_fare
-                           : fromAll ? fromAll.previous_counter_fare : r.offered_fare;
-        return {
-          ...r,
-          original_offered_fare:        originalFare,
-          previous_counter_fare:        previousFare,
-          counterInputVisible:          fromMy ? fromMy.counterInputVisible          : false,
-          passengerCounterInputVisible: fromMy ? fromMy.passengerCounterInputVisible : false,
-        };
-      });
-      renderPassengerRequests();
-    } catch (err) { console.error('Error loading my rides:', err); }
-  }
-
-  async function submitRideRequest() {
-    if (!passenger) { toast('🔒', 'Hold on', "You'll need an account before sending offers.", 'amber'); return; }
-    const pickup = document.getElementById('p-pickup').value.trim();
-    const drop   = document.getElementById('p-drop').value.trim();
-    const pickupTime = document.getElementById('p-pickup-time').value;
-    const price  = parseFloat(document.getElementById('p-price').value);
-    if (!pickup)     { toast('📍', 'Pickup missing',      "Let drivers know where to find you.", 'amber'); return; }
-    if (!drop)       { toast('📍', 'Drop-off missing',    "Where are you headed? Add your destination.", 'amber'); return; }
-    if (!pickupTime) { toast('⏰', 'Pickup time missing', "When do you want to ride? Select a pickup time.", 'amber'); return; }
-    if (!price || price <= 0) { toast('💰', 'Set a price', "Enter what you'd like to pay.", 'amber'); return; }
-    try {
-      const res = await fetch(`${API_URL}/rides`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ passengerId: passenger.id, passengerPhone: passenger.phone, pickupLocation: pickup, dropoffLocation: drop, pickupTime, offeredFare: price })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      document.getElementById('p-pickup').value = '';
-      document.getElementById('p-drop').value   = '';
-      document.getElementById('p-pickup-time').value = '';
-      document.getElementById('p-price').value  = '';
-      toast('📤', 'Offer sent!', 'Drivers can see your $' + price + ' bid. Sit tight.', 'green');
-      const newRide = { ...data.ride, original_offered_fare: data.ride.offered_fare, previous_counter_fare: data.ride.offered_fare };
-      myRides.unshift(newRide);
-      allRides.unshift(newRide);
-      renderPassengerRequests();
-      renderAllRides();
-      renderDriverView();
-    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
-  }
-
-  /* ═══════════ DRIVER ACTIONS ═══════════ */
-  async function driverAccept(rideId) {
-    if (!driver) return;
-    try {
-      const res = await fetch(`${API_URL}/rides/${rideId}/accept`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ driverId: driver.id })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      sendRideUpdate(data.ride);
-      toast('✅', 'Ride accepted!', 'Locked in at $' + (getFinalFare(data.ride)) + '.', 'green');
-    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
-  }
-
-  function driverReject(rideId) {
-    if (!driver) return;
-    driverPassedRides.add(rideId);
-    renderDriverView();
-    toast('👋', 'Passed on this one', "Ride is still open for other drivers.", 'amber');
-  }
-
-  async function driverComplete(rideId) {
-    if (!driver) return;
-    try {
-      const res = await fetch(`${API_URL}/rides/${rideId}/complete`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ driverId: driver.id })
-      });
-      if (!res.ok) {
-        if (res.status === 404) { toast('❌', 'Error', 'Ride not found or already completed', 'red'); return; }
-        throw new Error(await res.text());
-      }
-      const data = await res.json();
-      sendRideUpdate(data.ride);
-      toast('🏁', 'Ride completed!', 'Great job! Ride marked as completed.', 'green');
-    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
-  }
-
-  async function driverCounter(rideId) {
-    if (!driver) return;
-    const input = document.getElementById('counter-input-' + rideId);
-    const val   = parseFloat(input ? input.value : 0);
-    const ride  = getRide(rideId);
-    if (!val || val <= ride.offered_fare) {
-      toast('⚠️', 'Counter must be higher', 'Your counter needs to beat their $' + ride.offered_fare + ' offer.', 'amber');
-      return;
-    }
-    try {
-      const res = await fetch(`${API_URL}/rides/${rideId}/counter`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ counterFare: val, driverId: driver.id })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      data.ride.previous_counter_fare = ride.counter_fare || ride.offered_fare;
-      sendRideUpdate(data.ride);
-      toast('💬', 'Counter sent', '$' + val + " is now with the passenger.", 'blue');
-    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
-  }
-
-  /* ═══════════ PASSENGER RESPONSES ═══════════ */
-  async function passengerAcceptCounter(rideId) {
-    try {
-      const res = await fetch(`${API_URL}/rides/${rideId}/accept-counter`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      sendRideUpdate(data.ride);
-      toast('🎉', 'Ride confirmed!', 'Deal locked at $' + getFinalFare(data.ride) + '. Your driver is on the way.', 'green');
-    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
-  }
-
-  async function passengerRejectCounter(rideId) {
-    try {
-      const res = await fetch(`${API_URL}/rides/${rideId}/decline-counter`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      sendRideUpdate(data.ride);
-      toast('👋', 'Counter declined', "No worries — try a fresh request.", 'amber');
-    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
-  }
-
-  async function passengerCounter(rideId) {
-    const input = document.getElementById('passenger-counter-input-' + rideId);
-    const val   = parseFloat(input ? input.value : 0);
-    const ride  = getRide(rideId);
-    if (!val || val >= ride.counter_fare) {
-      toast('⚠️', 'Counter must be lower', 'Your counter needs to be lower than their $' + ride.counter_fare + ' offer.', 'amber');
-      return;
-    }
-    try {
-      const res = await fetch(`${API_URL}/rides/${rideId}/counter`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ counterFare: val, driverId: null, isPassenger: true })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      data.ride.previous_counter_fare = ride.counter_fare;
-      sendRideUpdate(data.ride);
-      toast('💬', 'Counter sent', '$' + val + " is now with the driver.", 'blue');
-    } catch (err) { toast('❌', 'Error', err.message, 'red'); }
-  }
-
-  function togglePassengerCounterForm(rideId) {
-    const ride = getRide(rideId);
-    if (!ride) return;
-    ride.passengerCounterInputVisible = !ride.passengerCounterInputVisible;
-    const allRidesIndex = allRides.findIndex(r => r.id === rideId);
-    const myRidesIndex  = myRides.findIndex(r => r.id === rideId);
-    if (allRidesIndex >= 0) allRides[allRidesIndex].passengerCounterInputVisible = ride.passengerCounterInputVisible;
-    if (myRidesIndex  >= 0) myRides[myRidesIndex].passengerCounterInputVisible  = ride.passengerCounterInputVisible;
-    renderPassengerRequests();
-  }
-
-  /* ═══════════ RENDER: PASSENGER ═══════════ */
-  function renderPassengerRequests() {
-    if (!passenger) return;
-    const listEl  = document.getElementById('passenger-requests-list');
-    const emptyEl = document.getElementById('passenger-requests-empty');
-    if (!listEl) return;
-    if (myRides.length === 0) {
-      emptyEl.style.display = '';
-      listEl.innerHTML = '';
-    } else {
-      emptyEl.style.display = 'none';
-      listEl.innerHTML = myRides.map(renderPassengerCard).join('');
-    }
-  }
-
-  function renderPassengerCard(r) {
-    let extra = '';
-    const offeredFare     = r.offered_fare;
-    const originalFare    = getOriginalFare(r);  // FIX: always the first bid
-    const counterFare     = r.counter_fare;
-    const previousCounterFare = r.previous_counter_fare != null ? r.previous_counter_fare : offeredFare;
-    const finalFare       = getFinalFare(r);
-
-    if (r.status === 'countered') {
-      const driverObj = resolveDriver(r);
-      const driverDetail = driverObj
-        ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--violet-border);">
-             <div class="contact-avatar-sm" style="background:linear-gradient(135deg,var(--violet),#6d28d9);">
-               ${(driverObj.name||'D')[0].toUpperCase()}
-             </div>
+    const driverBlock = driverObj
+      ? `<div class="driver-contact-block">
+           <div class="driver-contact-block-header">
+             <div class="contact-avatar-sm green-avatar">${(driverObj.name||'D')[0].toUpperCase()}</div>
              <div>
-               <div style="font-size:0.84rem;font-weight:700;color:var(--text);">${driverObj.name||'Driver'}</div>
-               <div style="font-size:0.69rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--violet);">Your Driver</div>
+               <div class="driver-contact-name">${driverObj.name||'Driver'}</div>
+               <div class="driver-contact-role">${driverRole}</div>
              </div>
            </div>
-           <div style="display:flex;align-items:center;gap:6px;font-size:0.79rem;color:var(--text-secondary);margin-bottom:${driverObj.vehicle_info?'6px':'10px'};">
+           <div class="driver-contact-row">
+             <span class="contact-info-icon">📞</span>
              ${phoneLink(driverObj.contact_no)}
            </div>
-           ${driverObj.vehicle_info ? `<div style="font-size:0.74rem;color:var(--text-muted);margin-bottom:10px;">🚘 ${driverObj.vehicle_info}</div>` : ''}`
-        : (r.accepted_by || r.countered_by)
-          ? `<div class="driver-loading">⏳ Loading driver details…</div>`
-          : '';
+           ${driverObj.vehicle_info
+             ? `<div class="driver-contact-row"><span class="contact-info-icon">🚘</span><span>${driverObj.vehicle_info}</span></div>`
+             : ''}
+         </div>`
+      : (r.accepted_by || r.countered_by)
+        ? `<div class="driver-loading">⏳ Loading driver details…</div>`
+        : '';
 
-      const passengerCounteredLast = r.passenger_countered === true;
+    extra = `
+      <div class="status-note ok">${statusIcon} <span>${statusMsg}</span></div>
+      ${driverBlock}`;
+  }
 
-      if (!passengerCounteredLast) {
-        extra = `
-          <div class="counter-banner">
-            <div class="counter-banner-head">💬 Driver has a counter proposal</div>
-            ${driverDetail}
-            <div class="price-compare">
-              <span class="price-was">Your offer: $${previousCounterFare}</span>
-              <span style="color:var(--text-dim);margin:0 2px;">→</span>
-              <span class="price-now">Driver asks: $${counterFare}</span>
-            </div>
-            <p>They think $${counterFare} is a fair deal. Accept and you're on your way — counter back, or decline and try a new request.</p>
-            <div class="action-row">
-              <button class="btn btn-primary btn-sm" onclick="passengerAcceptCounter('${r.id}')">Accept $${counterFare}</button>
-              <button class="btn btn-amber btn-sm" onclick="togglePassengerCounterForm('${r.id}')">Propose a Counter</button>
-              <button class="btn btn-ghost btn-sm" onclick="passengerRejectCounter('${r.id}')">Decline &amp; Close</button>
-            </div>
-            ${r.passengerCounterInputVisible ? `
-              <div class="counter-form" style="margin-top:12px;">
-                <div class="field">
-                  <label>Your counter offer ($) — must be lower than $${counterFare}</label>
-                  <input type="number" id="passenger-counter-input-${r.id}" placeholder="${Math.round(counterFare*0.9)}" max="${counterFare-1}" />
-                </div>
-                <button class="btn btn-amber btn-sm" onclick="passengerCounter('${r.id}')">Send Counter</button>
-                <button class="btn btn-ghost btn-sm" onclick="togglePassengerCounterForm('${r.id}')">Cancel</button>
-              </div>
-            ` : ''}
-          </div>`;
-      } else {
-        extra = `
-          <div class="counter-banner">
-            <div class="counter-banner-head">⏳ Your counter is with the driver</div>
-            <div class="price-compare">
-              <span class="price-was">Driver asked: $${previousCounterFare}</span>
-              <span style="color:var(--text-dim);margin:0 2px;">→</span>
-              <span class="price-now">Your counter: $${counterFare}</span>
-            </div>
-            <p>Your counter of $${counterFare} has been sent. Waiting for their response.</p>
-            <div class="status-note wait" style="margin-top:12px;">
-              ⏳ <span>Waiting for driver to respond to your $${counterFare} counter.</span>
-            </div>
-          </div>`;
-      }
-    }
+  if (r.status === 'rejected') {
+    extra = `<div class="status-note closed">— <span>This one didn't land. Feel free to submit a fresh offer.</span></div>`;
+  }
 
-    if (r.status === 'confirmed' || r.status === 'completed') {
-      const driverObj = resolveDriver(r);
-      const isComplete = r.status === 'completed';
-      const statusIcon = isComplete ? '🏁' : '🎉';
-      const statusMsg  = isComplete
-        ? `Ride completed at <strong>$${finalFare}</strong>. Thanks for riding!`
-        : `Confirmed at <strong>$${finalFare}</strong> — your driver is on the way. Safe travels!`;
-      const driverRole = isComplete ? 'Your Driver · Ride Complete' : 'Your Driver · En Route';
+  const showStrikethrough = (r.status === 'confirmed' || r.status === 'completed')
+    && String(finalFare) !== String(originalFare);
 
-      const driverBlock = driverObj
+  return `
+    <div class="ride-card ${r.status}">
+      <div class="ride-card-top">
+        <div>${badgeHTML(r.status)}</div>
+        <div class="price-block">
+          <div class="price-label-sm">${(r.status === 'confirmed' || r.status === 'completed') ? 'Final fare' : 'Your offer'}</div>
+          <div class="price-big ${r.status==='countered' ? 'counter-col' : ''}">₹${(r.status === 'confirmed' || r.status === 'completed') ? finalFare : offeredFare}</div>
+          ${showStrikethrough ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">bid ₹${originalFare}</div>` : ''}
+        </div>
+      </div>
+      <div class="route">
+        <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
+        <div class="route-line"></div>
+        <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
+        ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>${new Date(r.pickup_time).toLocaleDateString('en-IN', { month:'short',day:'numeric',year:'numeric',timeZone:'UTC' })}, ${new Date(r.pickup_time).toLocaleTimeString('en-IN', { hour:'numeric',minute:'2-digit',hour12:true,timeZone:'UTC' })}</span></div>` : ''}
+      </div>
+      ${extra}
+    </div>`;
+}
+
+/* ═══════════ RENDER: DRIVER ═══════════ */
+function toggleCounterForm(rideId) {
+  const ride = getRide(rideId); if (!ride) return;
+  ride.counterInputVisible = !ride.counterInputVisible;
+  const idx = allRides.findIndex(r => r.id === rideId);
+  if (idx >= 0) allRides[idx].counterInputVisible = ride.counterInputVisible;
+  renderDriverView();
+}
+
+function filterDriver(f) {
+  driverFilter = f;
+  ['all','pending','countered','closed'].forEach(id => {
+    const el = document.getElementById('dtab-' + id);
+    if (el) el.classList.toggle('active', id === f);
+  });
+  applyDriverFilters();
+}
+
+function applyDriverFilters() {
+  driverSearchText     = document.getElementById('driver-search')?.value.toLowerCase() || '';
+  driverFareMin        = document.getElementById('driver-fare-min')?.value || '';
+  driverFareMax        = document.getElementById('driver-fare-max')?.value || '';
+  driverLocationFilter = document.getElementById('driver-location')?.value.toLowerCase() || '';
+  updateFilterBadge();
+  renderDriverView();
+}
+
+function clearDriverFilters() {
+  ['driver-search','driver-fare-min','driver-fare-max','driver-location'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  driverSearchText = ''; driverFareMin = ''; driverFareMax = ''; driverLocationFilter = '';
+  updateFilterBadge();
+  renderDriverView();
+}
+
+/* ═══════════ RENDER: ALL RIDES ═══════════ */
+let passengerRideFilter = 'all';
+
+function filterPassengerRides(f) {
+  passengerRideFilter = f;
+  ['all','pending','confirmed'].forEach(id => {
+    const el = document.getElementById('ptab-' + id);
+    if (el) el.classList.toggle('active', id === f);
+  });
+  renderAllRides();
+}
+
+function renderAllRides() {
+  const listEl  = document.getElementById('all-rides-list');
+  const emptyEl = document.getElementById('all-rides-empty');
+  if (!listEl) return;
+
+  let filtered = passenger
+    ? allRides.filter(r => r.passenger_phone === passenger.phone)
+    : allRides.filter(r => r.status === 'pending' || r.status === 'countered');
+
+  if (passengerRideFilter === 'pending')   filtered = filtered.filter(r => r.status === 'pending' || r.status === 'countered');
+  if (passengerRideFilter === 'confirmed') filtered = filtered.filter(r => r.status === 'confirmed' || r.status === 'completed');
+
+  if (filtered.length === 0) {
+    emptyEl.style.display = '';
+    listEl.innerHTML = '';
+    return;
+  }
+  emptyEl.style.display = 'none';
+  listEl.innerHTML = filtered.map(renderAllRidesCard).join('');
+}
+
+function renderAllRidesCard(r) {
+  let extra = '';
+  const finalFare    = getFinalFare(r);
+  const originalFare = getOriginalFare(r);
+
+  if (r.status === 'confirmed' || r.status === 'completed') {
+    const driverObj  = resolveDriver(r);
+    const isComplete = r.status === 'completed';
+    const statusIcon = isComplete ? '🏁' : '🎉';
+    const statusMsg  = isComplete
+      ? `Ride completed at <strong>₹${finalFare}</strong>. Thanks for riding!`
+      : `Confirmed at <strong>₹${finalFare}</strong> — driver is on the way.`;
+    const driverRole = isComplete ? 'Driver · Ride Complete' : 'Driver · En Route';
+    const isOwner    = passenger && r.passenger_phone === passenger.phone;
+
+    const driverBlock = isOwner
+      ? (driverObj
         ? `<div class="driver-contact-block">
              <div class="driver-contact-block-header">
                <div class="contact-avatar-sm green-avatar">${(driverObj.name||'D')[0].toUpperCase()}</div>
@@ -1871,440 +2540,260 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
                <span class="contact-info-icon">📞</span>
                ${phoneLink(driverObj.contact_no)}
              </div>
-             ${driverObj.vehicle_info
-               ? `<div class="driver-contact-row"><span class="contact-info-icon">🚘</span><span>${driverObj.vehicle_info}</span></div>`
-               : ''}
+             ${driverObj.vehicle_info ? `<div class="driver-contact-row"><span class="contact-info-icon">🚘</span><span>${driverObj.vehicle_info}</span></div>` : ''}
            </div>`
         : (r.accepted_by || r.countered_by)
           ? `<div class="driver-loading">⏳ Loading driver details…</div>`
-          : '';
+          : '')
+      : '';
 
-      extra = `
-        <div class="status-note ok">${statusIcon} <span>${statusMsg}</span></div>
-        ${driverBlock}`;
-    }
+    extra = `<div class="status-note ok">${statusIcon} <span>${statusMsg}</span></div>${driverBlock}`;
+  }
 
-    if (r.status === 'rejected') {
-      extra = `<div class="status-note closed">— <span>This one didn't land. Feel free to submit a fresh offer.</span></div>`;
-    }
+  const showStrikethrough = (r.status === 'confirmed' || r.status === 'completed')
+    && String(finalFare) !== String(originalFare);
 
-    // FIX (BUG E): only show strikethrough if finalFare genuinely differs from the ORIGINAL bid
-    const showStrikethrough = (r.status === 'confirmed' || r.status === 'completed')
-      && String(finalFare) !== String(originalFare);
-
-    return `
-      <div class="ride-card ${r.status}">
-        <div class="ride-card-top">
-          <div>
-            ${badgeHTML(r.status)}
-          </div>
-          <div class="price-block">
-            <div class="price-label-sm">${
-              (r.status === 'confirmed' || r.status === 'completed') ? 'Final fare' : 'Your offer'
-            }</div>
-            <div class="price-big ${r.status==='countered' ? 'counter-col' : ''}">$${
-              (r.status === 'confirmed' || r.status === 'completed') ? finalFare : offeredFare
-            }</div>
-            ${showStrikethrough
-              ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">bid $${originalFare}</div>`
-              : ''}
-          </div>
+  return `
+    <div class="ride-card ${r.status}">
+      <div class="ride-card-top">
+        <div>
+          ${badgeHTML(r.status)}
+          <div style="margin-top:8px;font-size:0.88rem;font-weight:600;">${r.passenger_name}</div>
         </div>
-        <div class="route">
-          <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
-          <div class="route-line"></div>
-          <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
-          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>Pick-up time: ${new Date(r.pickup_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}, ${new Date(r.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'UTC' })}</span></div>` : ''}
+        <div class="price-block">
+          <div class="price-label-sm">${(r.status==='confirmed'||r.status==='completed')?'Final':'Offer'}</div>
+          <div class="price-big">₹${(r.status==='confirmed'||r.status==='completed') ? finalFare : r.offered_fare}</div>
+          ${showStrikethrough ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">bid ₹${originalFare}</div>` : ''}
         </div>
-        ${extra}
-      </div>`;
-  }
+      </div>
+      <div class="route">
+        <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
+        <div class="route-line"></div>
+        <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
+        ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>${new Date(r.pickup_time).toLocaleDateString('en-IN', { month:'short',day:'numeric',year:'numeric',timeZone:'UTC' })}, ${new Date(r.pickup_time).toLocaleTimeString('en-IN', { hour:'numeric',minute:'2-digit',hour12:true,timeZone:'UTC' })}</span></div>` : ''}
+      </div>
+      ${extra}
+    </div>`;
+}
 
-  /* ═══════════ RENDER: DRIVER ═══════════ */
-  function toggleCounterForm(rideId) {
-    const ride = getRide(rideId); if (!ride) return;
-    ride.counterInputVisible = !ride.counterInputVisible;
-    const idx = allRides.findIndex(r => r.id === rideId);
-    if (idx >= 0) allRides[idx].counterInputVisible = ride.counterInputVisible;
-    renderDriverView();
-  }
+/* ═══════════ RENDER: DRIVER VIEW ═══════════ */
+function renderDriverView() {
+  const listEl  = document.getElementById('driver-requests-list');
+  const emptyEl = document.getElementById('driver-requests-empty');
+  const countEl = document.getElementById('driver-count');
+  if (!listEl) return;
 
-  function filterDriver(f) {
-    driverFilter = f;
-    ['all','pending','countered','closed'].forEach(id => {
-      const el = document.getElementById('dtab-' + id);
-      if (el) el.classList.toggle('active', id === f);
-    });
-    applyDriverFilters();
-  }
+  const availableRides = allRides.filter(r =>
+    (r.status === 'pending' || r.status === 'countered') &&
+    !driverPassedRides.has(r.id)
+  );
+  if (countEl) countEl.textContent = availableRides.length;
 
-  function applyDriverFilters() {
-    driverSearchText     = document.getElementById('driver-search')?.value.toLowerCase() || '';
-    driverFareMin        = document.getElementById('driver-fare-min')?.value || '';
-    driverFareMax        = document.getElementById('driver-fare-max')?.value || '';
-    driverLocationFilter = document.getElementById('driver-location')?.value.toLowerCase() || '';
-    updateFilterBadge();
-    renderDriverView();
-  }
-
-  function clearDriverFilters() {
-    const s = document.getElementById('driver-search');
-    const m = document.getElementById('driver-fare-min');
-    const x = document.getElementById('driver-fare-max');
-    const l = document.getElementById('driver-location');
-    if (s) s.value = '';
-    if (m) m.value = '';
-    if (x) x.value = '';
-    if (l) l.value = '';
-    driverSearchText = ''; driverFareMin = ''; driverFareMax = ''; driverLocationFilter = '';
-    updateFilterBadge();
-    renderDriverView();
-  }
-
-  /* ═══════════ RENDER: ALL RIDES (PASSENGER BOTTOM SECTION) ═══════════ */
-  let passengerRideFilter = 'all';
-
-  function filterPassengerRides(f) {
-    passengerRideFilter = f;
-    ['all','pending','confirmed'].forEach(id => {
-      const el = document.getElementById('ptab-' + id);
-      if (el) el.classList.toggle('active', id === f);
-    });
-    renderAllRides();
-  }
-
-  /*
-   * FIX (BUG I): When a passenger is logged in, the bottom "All Rides" section
-   * now shows ALL rides from allRides (not just their own), so it's genuinely
-   * useful for seeing market trends. Their own rides always appear in "Your Negotiations" above.
-   * For guests (no passenger), show all pending/countered rides as before.
-   */
-  function renderAllRides() {
-    const listEl  = document.getElementById('all-rides-list');
-    const emptyEl = document.getElementById('all-rides-empty');
-    if (!listEl) return;
-
-    let filtered;
-
-    if (passenger) {
-      // Only show THIS passenger's rides
-      filtered = allRides.filter(r => r.passenger_phone === passenger.phone);
-    } else {
-      // Guest mode: show pending/countered rides as a preview
-      filtered = allRides.filter(r => r.status === 'pending' || r.status === 'countered');
-    }
-
-    // Apply tab filter
-    if (passengerRideFilter === 'pending')   filtered = filtered.filter(r => r.status === 'pending' || r.status === 'countered');
-    if (passengerRideFilter === 'confirmed') filtered = filtered.filter(r => r.status === 'confirmed' || r.status === 'completed');
-
-    if (filtered.length === 0) {
-      emptyEl.style.display = '';
-      listEl.innerHTML = '';
-      return;
-    }
-    emptyEl.style.display = 'none';
-    listEl.innerHTML = filtered.map(renderAllRidesCard).join('');
-  }
-
-  function renderAllRidesCard(r) {
-    let extra = '';
-    const finalFare = getFinalFare(r);
-    const originalFare = getOriginalFare(r);
-
-    if (r.status === 'confirmed' || r.status === 'completed') {
-      const driverObj = resolveDriver(r);
-      const isComplete = r.status === 'completed';
-      const statusIcon = isComplete ? '🏁' : '🎉';
-      const statusMsg  = isComplete
-        ? `Ride completed at <strong>$${finalFare}</strong>. Thanks for riding!`
-        : `Confirmed at <strong>$${finalFare}</strong> — driver is on the way.`;
-      const driverRole = isComplete ? 'Driver · Ride Complete' : 'Driver · En Route';
-
-      // Only show driver contact block for the ride owner
-      const isOwner = passenger && r.passenger_phone === passenger.phone;
-      const driverBlock = isOwner
-        ? (driverObj
-          ? `<div class="driver-contact-block">
-               <div class="driver-contact-block-header">
-                 <div class="contact-avatar-sm green-avatar">${(driverObj.name||'D')[0].toUpperCase()}</div>
-                 <div>
-                   <div class="driver-contact-name">${driverObj.name||'Driver'}</div>
-                   <div class="driver-contact-role">${driverRole}</div>
-                 </div>
-               </div>
-               <div class="driver-contact-row">
-                 <span class="contact-info-icon">📞</span>
-                 ${phoneLink(driverObj.contact_no)}
-               </div>
-               ${driverObj.vehicle_info ? `<div class="driver-contact-row"><span class="contact-info-icon">🚘</span><span>${driverObj.vehicle_info}</span></div>` : ''}
-             </div>`
-          : (r.accepted_by || r.countered_by)
-            ? `<div class="driver-loading">⏳ Loading driver details…</div>`
-            : '')
-        : '';
-
-      extra = `
-        <div class="status-note ok">${statusIcon} <span>${statusMsg}</span></div>
-        ${driverBlock}`;
-    }
-
-    const showStrikethrough = (r.status === 'confirmed' || r.status === 'completed')
-      && String(finalFare) !== String(originalFare);
-
-    return `
-      <div class="ride-card ${r.status}">
-        <div class="ride-card-top">
-          <div>
-            ${badgeHTML(r.status)}
-            <div style="margin-top:8px;font-size:0.88rem;font-weight:600;">${r.passenger_name}</div>
-          </div>
-          <div class="price-block">
-            <div class="price-label-sm">${(r.status==='confirmed'||r.status==='completed')?'Final':'Offer'}</div>
-            <div class="price-big">$${(r.status==='confirmed'||r.status==='completed') ? finalFare : r.offered_fare}</div>
-            ${showStrikethrough ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">bid $${originalFare}</div>` : ''}
-          </div>
-        </div>
-        <div class="route">
-          <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
-          <div class="route-line"></div>
-          <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
-          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>Pick-up time: ${new Date(r.pickup_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}, ${new Date(r.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'UTC' })}</span></div>` : ''}
-        </div>
-        ${extra}
-      </div>`;
-  }
-
-  /* ═══════════ RENDER: DRIVER VIEW ═══════════ */
-  function renderDriverView() {
-    const listEl  = document.getElementById('driver-requests-list');
-    const emptyEl = document.getElementById('driver-requests-empty');
-    const countEl = document.getElementById('driver-count');
-    if (!listEl) return;
-
-    const availableRides = allRides.filter(r =>
-      (r.status === 'pending' || r.status === 'countered') &&
-      !driverPassedRides.has(r.id)
+  let filtered = [];
+  if (driverFilter === 'all') {
+    filtered = allRides.filter(r => ['pending','countered','confirmed','completed','rejected'].includes(r.status));
+  } else if (driverFilter === 'pending') {
+    filtered = allRides.filter(r => r.status === 'pending');
+  } else if (driverFilter === 'countered') {
+    filtered = allRides.filter(r => r.status === 'countered');
+  } else if (driverFilter === 'closed') {
+    filtered = allRides.filter(r =>
+      (r.status === 'confirmed' || r.status === 'rejected' || r.status === 'completed') &&
+      (String(r.accepted_by) === String(driver.id) || String(r.countered_by) === String(driver.id))
     );
-    if (countEl) countEl.textContent = availableRides.length;
-
-    let filtered = [];
-
-    if (driverFilter === 'all') {
-      filtered = allRides.filter(r =>
-        r.status === 'pending' || r.status === 'countered' ||
-        r.status === 'confirmed' || r.status === 'completed' || r.status === 'rejected'
-      );
-    } else if (driverFilter === 'pending') {
-      filtered = allRides.filter(r => r.status === 'pending');
-    } else if (driverFilter === 'countered') {
-      filtered = allRides.filter(r => r.status === 'countered');
-    } else if (driverFilter === 'closed') {
-      /*
-       * FIX (BUG J + BUG G): Use String() coercion for safe UUID comparison.
-       * accepted_by is set for direct accept; countered_by for accept-counter flow.
-       * Both are now set by our fixed server.js (accept-counter also sets accepted_by).
-       */
-      filtered = allRides.filter(r =>
-        (r.status === 'confirmed' || r.status === 'rejected' || r.status === 'completed') &&
-        (String(r.accepted_by) === String(driver.id) || String(r.countered_by) === String(driver.id))
-      );
-    }
-
-    // Hide rides this driver passed on (except in closed tab)
-    if (driverFilter !== 'closed') {
-      filtered = filtered.filter(r => !driverPassedRides.has(r.id));
-    }
-
-    if (driverSearchText) {
-      filtered = filtered.filter(r =>
-        (r.passenger_name || '').toLowerCase().includes(driverSearchText) ||
-        (r.passenger_phone || '').toLowerCase().includes(driverSearchText)
-      );
-    }
-    if (driverLocationFilter) {
-      filtered = filtered.filter(r =>
-        (r.pickup_location || '').toLowerCase().includes(driverLocationFilter) ||
-        (r.dropoff_location || '').toLowerCase().includes(driverLocationFilter)
-      );
-    }
-    if (driverFareMin) {
-      const minFare = parseFloat(driverFareMin);
-      filtered = filtered.filter(r => (+(r.counter_fare || r.offered_fare)) >= minFare);
-    }
-    if (driverFareMax) {
-      const maxFare = parseFloat(driverFareMax);
-      filtered = filtered.filter(r => (+(r.counter_fare || r.offered_fare)) <= maxFare);
-    }
-
-    if (filtered.length === 0) {
-      emptyEl.style.display = '';
-      listEl.innerHTML = '';
-      return;
-    }
-    emptyEl.style.display = 'none';
-    listEl.innerHTML = filtered.map(renderDriverCard).join('');
   }
 
-  function renderDriverCard(r) {
-    const isClosed    = r.status === 'confirmed' || r.status === 'completed' || r.status === 'rejected';
-    const offeredFare = r.offered_fare;
-    const counterFare = r.counter_fare;
-    const finalFare   = getFinalFare(r);
-    const previousCounterFare = r.previous_counter_fare != null ? r.previous_counter_fare : offeredFare;
+  if (driverFilter !== 'closed') {
+    filtered = filtered.filter(r => !driverPassedRides.has(r.id));
+  }
 
-    let actions    = '';
-    let closedNote = '';
+  if (driverSearchText) {
+    filtered = filtered.filter(r =>
+      (r.passenger_name || '').toLowerCase().includes(driverSearchText) ||
+      (r.passenger_phone || '').toLowerCase().includes(driverSearchText)
+    );
+  }
+  if (driverLocationFilter) {
+    filtered = filtered.filter(r =>
+      (r.pickup_location || '').toLowerCase().includes(driverLocationFilter) ||
+      (r.dropoff_location || '').toLowerCase().includes(driverLocationFilter)
+    );
+  }
+  if (driverFareMin) {
+    filtered = filtered.filter(r => (+(r.counter_fare || r.offered_fare)) >= parseFloat(driverFareMin));
+  }
+  if (driverFareMax) {
+    filtered = filtered.filter(r => (+(r.counter_fare || r.offered_fare)) <= parseFloat(driverFareMax));
+  }
 
-    if (!isClosed) {
-      if (r.status === 'pending') {
-        actions = `
-          <div class="action-row">
-            <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept $${offeredFare}</button>
-            <button class="btn btn-amber   btn-sm" onclick="toggleCounterForm('${r.id}')">Propose a Counter</button>
-            <button class="btn btn-danger  btn-sm" onclick="driverReject('${r.id}')">Pass</button>
-          </div>`;
-        if (r.counterInputVisible) {
-          actions += `
-            <div class="counter-form">
-              <div class="field">
-                <label>Your counter offer ($) — must exceed $${offeredFare}</label>
-                <input type="number" id="counter-input-${r.id}" placeholder="${Math.round(offeredFare*1.2)}" min="${offeredFare+1}" />
-              </div>
-              <button class="btn btn-amber btn-sm" onclick="driverCounter('${r.id}')">Send Counter</button>
-              <button class="btn btn-ghost btn-sm" onclick="toggleCounterForm('${r.id}')">Cancel</button>
-            </div>`;
-        }
-      }
+  if (filtered.length === 0) {
+    emptyEl.style.display = '';
+    listEl.innerHTML = '';
+    return;
+  }
+  emptyEl.style.display = 'none';
+  listEl.innerHTML = filtered.map(renderDriverCard).join('');
+}
 
-      if (r.status === 'countered') {
-        const passengerCounteredLast = r.passenger_countered === true;
-        if (passengerCounteredLast) {
-          actions = `
-            <div class="counter-banner" style="margin-top:12px;">
-              <div class="counter-banner-head">💬 Passenger has a counter proposal</div>
-              <div class="price-compare">
-                <span class="price-was">Your ask: $${previousCounterFare}</span>
-                <span style="color:var(--text-dim);margin:0 2px;">→</span>
-                <span class="price-now">Passenger countered: $${counterFare}</span>
-              </div>
-              <p>They think $${counterFare} is fair. Accept and lock it in — or counter again.</p>
-              <div class="action-row">
-                <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept $${counterFare}</button>
-                <button class="btn btn-amber btn-sm" onclick="toggleCounterForm('${r.id}')">Propose a Counter</button>
-                <button class="btn btn-danger btn-sm" onclick="driverReject('${r.id}')">Pass</button>
-              </div>
-              ${r.counterInputVisible ? `
-                <div class="counter-form" style="margin-top:12px;">
-                  <div class="field">
-                    <label>Your counter offer ($) — must exceed $${counterFare}</label>
-                    <input type="number" id="counter-input-${r.id}" placeholder="${Math.round(counterFare*1.2)}" min="${counterFare+1}" />
-                  </div>
-                  <button class="btn btn-amber btn-sm" onclick="driverCounter('${r.id}')">Send Counter</button>
-                  <button class="btn btn-ghost btn-sm" onclick="toggleCounterForm('${r.id}')">Cancel</button>
-                </div>
-              ` : ''}
-            </div>`;
-        } else {
-          actions = `<div class="status-note wait" style="margin-top:12px;">⏳ <span>Your counter of <strong>$${counterFare}</strong> is with the rider — waiting on their move.</span></div>`;
-        }
-      }
-    }
+function renderDriverCard(r) {
+  const isClosed    = r.status === 'confirmed' || r.status === 'completed' || r.status === 'rejected';
+  const offeredFare = r.offered_fare;
+  const counterFare = r.counter_fare;
+  const finalFare   = getFinalFare(r);
+  const previousCounterFare = r.previous_counter_fare != null ? r.previous_counter_fare : offeredFare;
 
-    if (r.status === 'confirmed') {
-      closedNote = `
-        <div class="contact-info-block" style="margin-top:12px;">
-          <div class="contact-info-block-header">
-            <div class="contact-avatar-sm">${(r.passenger_name||'P')[0].toUpperCase()}</div>
-            <div>
-              <div class="contact-info-name">${r.passenger_name||'Passenger'}</div>
-              <div class="contact-info-role">Confirmed Passenger</div>
-            </div>
-          </div>
-          <div class="contact-info-row">
-            <span class="contact-info-icon">📞</span>
-            ${phoneLink(r.passenger_phone)}
-          </div>
-        </div>
-        <div style="margin-top:10px;">
-          <button class="btn btn-primary btn-sm" onclick="driverComplete('${r.id}')">Mark Completed</button>
+  let actions    = '';
+  let closedNote = '';
+
+  if (!isClosed) {
+    if (r.status === 'pending') {
+      actions = `
+        <div class="action-row">
+          <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept ₹${offeredFare}</button>
+          <button class="btn btn-amber   btn-sm" onclick="toggleCounterForm('${r.id}')">Propose a Counter</button>
+          <button class="btn btn-danger  btn-sm" onclick="driverReject('${r.id}')">Pass</button>
         </div>`;
-    }
-    if (r.status === 'rejected') {
-      closedNote = `<div class="status-note closed" style="margin-top:12px;">— <span>You passed on this one. Plenty more offers on the way.</span></div>`;
-    }
-    if (r.status === 'completed') {
-      closedNote = `<div class="status-note ok" style="margin-top:12px;">🏁 <span>Ride completed at <strong>$${finalFare}</strong>. Great job!</span></div>`;
+      if (r.counterInputVisible) {
+        actions += `
+          <div class="counter-form">
+            <div class="field">
+              <label>Your counter offer (₹) — must exceed ₹${offeredFare}</label>
+              <input type="number" id="counter-input-${r.id}" placeholder="${Math.round(offeredFare*1.2)}" min="${offeredFare+1}" />
+            </div>
+            <button class="btn btn-amber btn-sm" onclick="driverCounter('${r.id}')">Send Counter</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleCounterForm('${r.id}')">Cancel</button>
+          </div>`;
+      }
     }
 
-    const showingPrice = (r.status === 'confirmed' || r.status === 'completed')
-      ? finalFare
-      : (r.status === 'countered' && counterFare) ? counterFare : offeredFare;
-    const priceLabel = (r.status === 'confirmed' || r.status === 'completed')
-      ? 'Final fare'
-      : r.status === 'countered'
-        ? (r.passenger_countered ? 'Passenger\'s counter' : 'Your counter')
-        : 'Rider\'s offer';
+    if (r.status === 'countered') {
+      const passengerCounteredLast = r.passenger_countered === true;
+      if (passengerCounteredLast) {
+        actions = `
+          <div class="counter-banner" style="margin-top:12px;">
+            <div class="counter-banner-head">💬 Passenger has a counter proposal</div>
+            <div class="price-compare">
+              <span class="price-was">Your ask: ₹${previousCounterFare}</span>
+              <span style="color:var(--text-dim);margin:0 2px;">→</span>
+              <span class="price-now">Passenger countered: ₹${counterFare}</span>
+            </div>
+            <p>They think ₹${counterFare} is fair. Accept and lock it in — or counter again.</p>
+            <div class="action-row">
+              <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept ₹${counterFare}</button>
+              <button class="btn btn-amber btn-sm" onclick="toggleCounterForm('${r.id}')">Propose a Counter</button>
+              <button class="btn btn-danger btn-sm" onclick="driverReject('${r.id}')">Pass</button>
+            </div>
+            ${r.counterInputVisible ? `
+              <div class="counter-form" style="margin-top:12px;">
+                <div class="field">
+                  <label>Your counter offer (₹) — must exceed ₹${counterFare}</label>
+                  <input type="number" id="counter-input-${r.id}" placeholder="${Math.round(counterFare*1.2)}" min="${counterFare+1}" />
+                </div>
+                <button class="btn btn-amber btn-sm" onclick="driverCounter('${r.id}')">Send Counter</button>
+                <button class="btn btn-ghost btn-sm" onclick="toggleCounterForm('${r.id}')">Cancel</button>
+              </div>
+            ` : ''}
+          </div>`;
+      } else {
+        actions = `<div class="status-note wait" style="margin-top:12px;">⏳ <span>Your counter of <strong>₹${counterFare}</strong> is with the rider — waiting on their move.</span></div>`;
+      }
+    }
+  }
 
-    return `
-      <div class="ride-card ${r.status}">
-        <div class="ride-card-top">
+  if (r.status === 'confirmed') {
+    closedNote = `
+      <div class="contact-info-block" style="margin-top:12px;">
+        <div class="contact-info-block-header">
+          <div class="contact-avatar-sm">${(r.passenger_name||'P')[0].toUpperCase()}</div>
           <div>
-            <div class="passenger-name">${r.passenger_name}</div>
-            <div class="passenger-phone">${phoneLink(r.passenger_phone)}</div>
-            <div style="margin-top:8px;">${badgeHTML(r.status)}</div>
-          </div>
-          <div class="price-block">
-            <div class="price-label-sm">${priceLabel}</div>
-            <div class="price-big ${r.status==='countered'?'counter-col':''}">$${showingPrice}</div>
-            ${r.status==='countered' && counterFare && !r.passenger_countered
-              ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">was $${previousCounterFare}</div>`
-              : ''}
+            <div class="contact-info-name">${r.passenger_name||'Passenger'}</div>
+            <div class="contact-info-role">Confirmed Passenger</div>
           </div>
         </div>
-        <div class="route">
-          <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
-          <div class="route-line"></div>
-          <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
-          ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>Pick-up time: ${new Date(r.pickup_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}, ${new Date(r.pickup_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'UTC' })}</span></div>` : ''}
+        <div class="contact-info-row">
+          <span class="contact-info-icon">📞</span>
+          ${phoneLink(r.passenger_phone)}
         </div>
-        ${actions}
-        ${closedNote}
+      </div>
+      <div style="margin-top:10px;">
+        <button class="btn btn-primary btn-sm" onclick="driverComplete('${r.id}')">Mark Completed</button>
       </div>`;
   }
-
-  /* ═══════════ TOASTS ═══════════ */
-  function toast(icon, title, msg, type) {
-    const palette = { green:'#16a34a', amber:'#d97706', red:'#dc2626', blue:'#2563eb' };
-    const el = document.createElement('div');
-    el.className = 'toast';
-    el.style.borderLeftColor = palette[type] || palette.green;
-    el.innerHTML = `
-      <div class="toast-icon">${icon}</div>
-      <div>
-        <div class="toast-title" style="color:${palette[type]||palette.green}">${title}</div>
-        <div class="toast-msg">${msg}</div>
-      </div>`;
-    document.getElementById('toast-container').appendChild(el);
-    setTimeout(() => {
-      el.classList.add('removing');
-      el.addEventListener('animationend', () => el.remove(), { once: true });
-    }, 3800);
+  if (r.status === 'rejected') {
+    closedNote = `<div class="status-note closed" style="margin-top:12px;">— <span>You passed on this one. Plenty more offers on the way.</span></div>`;
+  }
+  if (r.status === 'completed') {
+    closedNote = `<div class="status-note ok" style="margin-top:12px;">🏁 <span>Ride completed at <strong>₹${finalFare}</strong>. Great job!</span></div>`;
   }
 
-  /* ═══════════ INIT ═══════════ */
-  async function initializeApp() {
-    const supabaseInitialized = await initializeSupabase();
-    if (supabaseInitialized) {
-      connectRealtime();
-    }
-    checkSavedPassenger();
-    checkSavedDriver();
-    loadAllRides();
-    switchTab('passenger');
-  }
+  const showingPrice = (r.status === 'confirmed' || r.status === 'completed')
+    ? finalFare
+    : (r.status === 'countered' && counterFare) ? counterFare : offeredFare;
+  const priceLabel = (r.status === 'confirmed' || r.status === 'completed')
+    ? 'Final fare'
+    : r.status === 'countered'
+      ? (r.passenger_countered ? "Passenger's counter" : 'Your counter')
+      : "Rider's offer";
 
-  initializeApp();
+  return `
+    <div class="ride-card ${r.status}">
+      <div class="ride-card-top">
+        <div>
+          <div class="passenger-name">${r.passenger_name}</div>
+          <div class="passenger-phone">${phoneLink(r.passenger_phone)}</div>
+          <div style="margin-top:8px;">${badgeHTML(r.status)}</div>
+        </div>
+        <div class="price-block">
+          <div class="price-label-sm">${priceLabel}</div>
+          <div class="price-big ${r.status==='countered'?'counter-col':''}">₹${showingPrice}</div>
+          ${r.status==='countered' && counterFare && !r.passenger_countered
+            ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">was ₹${previousCounterFare}</div>`
+            : ''}
+        </div>
+      </div>
+      <div class="route">
+        <div class="route-row"><div class="dot from"></div><span>${r.pickup_location}</span></div>
+        <div class="route-line"></div>
+        <div class="route-row"><div class="dot to"></div><span>${r.dropoff_location}</span></div>
+        ${r.pickup_time ? `<div class="route-row" style="margin-top:8px;color:var(--blue);font-weight:500;"><div class="dot" style="background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,0.2);"></div><span>${new Date(r.pickup_time).toLocaleDateString('en-IN', { month:'short',day:'numeric',year:'numeric',timeZone:'UTC' })}, ${new Date(r.pickup_time).toLocaleTimeString('en-IN', { hour:'numeric',minute:'2-digit',hour12:true,timeZone:'UTC' })}</span></div>` : ''}
+      </div>
+      ${actions}
+      ${closedNote}
+    </div>`;
+}
+
+/* ═══════════ TOASTS ═══════════ */
+function toast(icon, title, msg, type) {
+  const palette = { green:'#16a34a', amber:'#d97706', red:'#dc2626', blue:'#2563eb' };
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.style.borderLeftColor = palette[type] || palette.green;
+  el.innerHTML = `
+    <div class="toast-icon">${icon}</div>
+    <div>
+      <div class="toast-title" style="color:${palette[type]||palette.green}">${title}</div>
+      <div class="toast-msg">${msg}</div>
+    </div>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => {
+    el.classList.add('removing');
+    el.addEventListener('animationend', () => el.remove(), { once: true });
+  }, 3800);
+}
+
+/* ═══════════ INIT ═══════════ */
+async function initializeApp() {
+  const supabaseInitialized = await initializeSupabase();
+  if (supabaseInitialized) connectRealtime();
+  checkSavedPassenger();
+  checkSavedDriver();
+  loadAllRides();
+  switchTab('passenger');
+  // Warm up GPS silently for proximity bias
+  getGPS().catch(() => {});
+}
+
+initializeApp();
 </script>
 </body>
 </html>

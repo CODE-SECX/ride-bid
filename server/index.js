@@ -5,6 +5,7 @@ const { createClient } = require('@supabase/supabase-js');
 const WebSocket = require('ws');
 const http = require('http');
 const path = require('path');
+const { randomUUID } = require('crypto');
 
 const app = express();
 app.use(express.json());
@@ -31,6 +32,176 @@ app.get('/api/config', (req, res) => {
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY
   });
+});
+
+// ─────────────────────────────────────────────
+// MAPBOX — all requests go through backend so the
+// secret key never touches the client.
+//
+// Billing model:
+//   • /suggest uses Mapbox Search Box API with session_token
+//     → all keystrokes in one session = 1 Search request charge
+//   • /retrieve fires once per selection (1 Retrieve charge)
+//   • Country biased to IN (India); change if needed.
+// ─────────────────────────────────────────────
+
+const MAPBOX_TOKEN = process.env.MAPBOX_SECRET_TOKEN; // sk.eyJ1... stored in .env
+const MAPBOX_SEARCH_BASE = 'https://api.mapbox.com/search/searchbox/v1';
+
+/**
+ * GET /api/mapbox/suggest?q=...&session_token=...&proximity=lng,lat
+ *
+ * Proxies Mapbox Search Box "suggest" endpoint.
+ * Session token must be a UUID generated client-side at the start of
+ * each typing session and reused until the user selects a result.
+ * This ensures the entire session (N keystrokes) is billed as 1 call.
+ */
+app.get('/api/mapbox/suggest', async (req, res) => {
+  try {
+    const { q, session_token, proximity } = req.query;
+
+    if (!q || q.length < 2) {
+      return res.json({ suggestions: [] });
+    }
+
+    if (!MAPBOX_TOKEN) {
+      return res.status(503).json({ error: 'Mapbox not configured. Add MAPBOX_SECRET_TOKEN to .env' });
+    }
+
+    const params = new URLSearchParams({
+      q,
+      access_token: MAPBOX_TOKEN,
+      session_token: session_token || randomUUID(),
+      country: 'ca',          // India — change to 'ca' for Canada, etc.
+      language: 'en',
+      limit: '7',
+      types: 'place,district,locality,neighborhood,address,poi,street,block',
+    });
+
+    // Use user's GPS coords for proximity-biased results (Rapido/Uber style)
+    if (proximity) {
+      params.set('proximity', proximity);
+    }
+
+    const url = `${MAPBOX_SEARCH_BASE}/suggest?${params}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error('Mapbox suggest error:', response.status, text);
+      return res.status(response.status).json({ error: 'Mapbox API error' });
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error('Mapbox suggest proxy error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/mapbox/retrieve/:mapbox_id?session_token=...
+ *
+ * Fires once when the user clicks a suggestion to get full coordinates.
+ * This is the "Retrieve" call that finalises the billing session.
+ */
+app.get('/api/mapbox/retrieve/:mapbox_id', async (req, res) => {
+  try {
+    const { mapbox_id } = req.params;
+    const { session_token } = req.query;
+
+    if (!MAPBOX_TOKEN) {
+      return res.status(503).json({ error: 'Mapbox not configured' });
+    }
+
+    const params = new URLSearchParams({
+      access_token: MAPBOX_TOKEN,
+      session_token: session_token || randomUUID(),
+    });
+
+    const url = `${MAPBOX_SEARCH_BASE}/retrieve/${encodeURIComponent(mapbox_id)}?${params}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error('Mapbox retrieve error:', response.status, text);
+      return res.status(response.status).json({ error: 'Mapbox API error' });
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error('Mapbox retrieve proxy error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/mapbox/reverse?lng=...&lat=...
+ *
+ * Single reverse-geocode call used for "Use current location".
+ * No session token needed for reverse geocoding.
+ */
+app.get('/api/mapbox/reverse', async (req, res) => {
+  try {
+    const { lng, lat } = req.query;
+
+    if (!lng || !lat) {
+      return res.status(400).json({ error: 'lng and lat are required' });
+    }
+
+    if (!MAPBOX_TOKEN) {
+      return res.status(503).json({ error: 'Mapbox not configured' });
+    }
+
+    const params = new URLSearchParams({
+      access_token: MAPBOX_TOKEN,
+      language: 'en',
+      limit: '1',
+      types: 'address,poi,street',
+    });
+
+    const url = `${MAPBOX_SEARCH_BASE}/reverse?longitude=${lng}&latitude=${lat}&${params}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Reverse geocode failed' });
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error('Mapbox reverse proxy error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────
+// LEGACY Mappls token endpoint kept for backwards compat
+// (can be removed once fully migrated)
+// ─────────────────────────────────────────────
+app.get('/api/mappls-token', async (req, res) => {
+  try {
+    const params = new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: process.env.MAPPLS_CLIENT_ID,
+      client_secret: process.env.MAPPLS_CLIENT_SECRET,
+    });
+    const response = await fetch('https://outpost.mappls.com/api/security/oauth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString(),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.access_token) {
+      return res.status(500).json({ error: 'Failed to get Mappls token' });
+    }
+    res.json({ access_token: data.access_token, expires_in: data.expires_in || 3600 });
+  } catch (err) {
+    console.error('Mappls token error:', err);
+    res.status(500).json({ error: 'Token fetch failed' });
+  }
 });
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -306,7 +477,6 @@ app.post('/api/rides', async (req, res) => {
 
     if (error) throw error;
 
-    // Log the initial passenger offer
     await logNegotiationStep({
       requestId:    data.id,
       proposedBy:   'passenger',
@@ -335,9 +505,6 @@ app.get('/api/rides', async (req, res) => {
       query = query.eq('passenger_phone', passengerPhone);
     } else if (status === 'pending' || status === 'countered') {
       query = query.in('status', ['pending', 'countered']).gt('expires_at', new Date().toISOString());
-    } else {
-      // Return all statuses — no filter
-      // This ensures admin and frontends get the full picture
     }
 
     const { data: rides, error } = await query;
@@ -354,11 +521,6 @@ app.get('/api/rides', async (req, res) => {
 // HISTORY ROUTES — MUST be defined BEFORE /api/rides/:id
 // ─────────────────────────────────────────────
 
-/**
- * GET /api/rides/history/passenger/:phone
- * Returns ALL rides for a passenger (all statuses).
- * No more ride_history join needed — everything is in ride_requests.
- */
 app.get('/api/rides/history/passenger/:phone', async (req, res) => {
   try {
     const { phone } = req.params;
@@ -388,11 +550,6 @@ app.get('/api/rides/history/passenger/:phone', async (req, res) => {
   }
 });
 
-/**
- * GET /api/rides/history/:phone
- * Used by the admin portal passenger detail view.
- * Returns ALL rides for a phone number — single query, no joins.
- */
 app.get('/api/rides/history/:phone', async (req, res) => {
   try {
     const { phone } = req.params;
@@ -413,7 +570,7 @@ app.get('/api/rides/history/:phone', async (req, res) => {
 });
 
 // ─────────────────────────────────────────────
-// RIDE by ID — kept AFTER history routes intentionally
+// RIDE by ID
 // ─────────────────────────────────────────────
 
 app.get('/api/rides/:id', async (req, res) => {
@@ -460,9 +617,6 @@ app.patch('/api/rides/:id', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// COUNTER — dual-write to ride_negotiations
-// ─────────────────────────────────────────────
 app.post('/api/rides/:id/counter', async (req, res) => {
   try {
     const { id } = req.params;
@@ -539,9 +693,6 @@ app.post('/api/rides/:id/counter', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// ACCEPT — driver accepts passenger's offer
-// ─────────────────────────────────────────────
 app.post('/api/rides/:id/accept', async (req, res) => {
   try {
     const { id } = req.params;
@@ -585,9 +736,6 @@ app.post('/api/rides/:id/accept', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// REJECT
-// ─────────────────────────────────────────────
 app.post('/api/rides/:id/reject', async (req, res) => {
   try {
     const { id } = req.params;
@@ -639,9 +787,6 @@ app.post('/api/rides/:id/reject', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// ACCEPT-COUNTER — passenger accepts driver's counter
-// ─────────────────────────────────────────────
 app.post('/api/rides/:id/accept-counter', async (req, res) => {
   try {
     const { id } = req.params;
@@ -669,7 +814,6 @@ app.post('/api/rides/:id/accept-counter', async (req, res) => {
 
     if (error) throw error;
 
-    // Log passenger acceptance
     await logNegotiationStep({
       requestId:    id,
       proposedBy:   'passenger',
@@ -695,10 +839,6 @@ app.post('/api/rides/:id/accept-counter', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// COMPLETE — now sets final_fare and completed_at
-// directly on ride_requests (no ride_history insert)
-// ─────────────────────────────────────────────
 app.post('/api/rides/:id/complete', async (req, res) => {
   try {
     const { id } = req.params;
@@ -713,9 +853,6 @@ app.post('/api/rides/:id/complete', async (req, res) => {
       throw error;
     }
 
-    // No more ride_history insert — the RPC now sets final_fare
-    // and completed_at directly on ride_requests
-
     broadcastRideUpdate(data[0]);
     res.json({ ride: data[0] });
   } catch (err) {
@@ -724,9 +861,6 @@ app.post('/api/rides/:id/complete', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// DECLINE-COUNTER — passenger declines driver's counter
-// ─────────────────────────────────────────────
 app.post('/api/rides/:id/decline-counter', async (req, res) => {
   try {
     const { id } = req.params;
@@ -768,9 +902,6 @@ app.post('/api/rides/:id/decline-counter', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// NEGOTIATIONS — full history for admin portal
-// ─────────────────────────────────────────────
 app.get('/api/rides/:id/negotiations', async (req, res) => {
   try {
     const { id } = req.params;
@@ -789,10 +920,6 @@ app.get('/api/rides/:id/negotiations', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// DRIVER HISTORY — now queries ride_requests only
-// ─────────────────────────────────────────────
-
 app.get('/api/drivers/:id/history', async (req, res) => {
   try {
     const { id } = req.params;
@@ -807,7 +934,6 @@ app.get('/api/drivers/:id/history', async (req, res) => {
       return res.status(404).json({ error: 'Driver not found' });
     }
 
-    // All rides where this driver was involved (accepted or countered)
     const { data: rides, error: ridesError } = await supabase
       .from('ride_requests')
       .select('*')
@@ -823,10 +949,6 @@ app.get('/api/drivers/:id/history', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// ADMIN
-// ─────────────────────────────────────────────
-
 app.post('/api/admin/expire-rides', async (req, res) => {
   try {
     const { data, error } = await supabase.rpc('expire_pending_rides');
@@ -837,10 +959,6 @@ app.post('/api/admin/expire-rides', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-// ─────────────────────────────────────────────
-// DRIVER PROFILE
-// ─────────────────────────────────────────────
 
 app.get('/api/drivers/:id/profile', async (req, res) => {
   try {
@@ -904,6 +1022,12 @@ app.patch('/api/drivers/:id/profile', async (req, res) => {
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log(`WebSocket server ready`);
+  if (!MAPBOX_TOKEN) {
+    console.log('⚠️  MAPBOX_SECRET_TOKEN not set — location autocomplete will be disabled');
+    console.log('   Add MAPBOX_SECRET_TOKEN=sk.eyJ1... to your .env file');
+  } else {
+    console.log('✓ Mapbox configured');
+  }
 });
 
 if (require.main === module) {
