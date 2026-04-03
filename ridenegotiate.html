@@ -1020,7 +1020,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
                 <input id="p-pickup-time" type="datetime-local" />
               </div>
               <div>
-                <label>Your offer — make it worth their ride (₹)</label>
+                <label>Your offer — make it worth their ride ($)</label>
                 <input id="p-price" type="number" placeholder="e.g. 140" min="1" />
               </div>
               <button class="btn btn-blue btn-full" onclick="submitRideRequest()">
@@ -2059,11 +2059,11 @@ function renderDriverDashboard() {
             <input id="driver-location" type="text" placeholder="e.g. Connaught Place" onkeyup="applyDriverFilters()" />
           </div>
           <div>
-            <label>Min fare (₹)</label>
+            <label>Min fare ($)</label>
             <input id="driver-fare-min" type="number" placeholder="50" onkeyup="applyDriverFilters()" />
           </div>
           <div>
-            <label>Max fare (₹)</label>
+            <label>Max fare ($)</label>
             <input id="driver-fare-max" type="number" placeholder="500" onkeyup="applyDriverFilters()" />
           </div>
         </div>
@@ -2162,7 +2162,7 @@ async function submitRideRequest() {
     document.getElementById('p-pickup-time').value = '';
     document.getElementById('p-price').value = '';
 
-    toast('📤', 'Offer sent!', 'Drivers can see your ₹' + price + ' bid. Sit tight.', 'green');
+    toast('📤', 'Offer sent!', 'Drivers can see your $' + price + ' bid. Sit tight.', 'green');
     const newRide = { ...data.ride, original_offered_fare: data.ride.offered_fare, previous_counter_fare: data.ride.offered_fare };
     myRides.unshift(newRide);
     allRides.unshift(newRide);
@@ -2183,7 +2183,7 @@ async function driverAccept(rideId) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
     sendRideUpdate(data.ride);
-    toast('✅', 'Ride accepted!', 'Locked in at ₹' + (getFinalFare(data.ride)) + '.', 'green');
+    toast('✅', 'Ride accepted!', 'Locked in at $' + (getFinalFare(data.ride)) + '.', 'green');
   } catch (err) { toast('❌', 'Error', err.message, 'red'); }
 }
 
@@ -2217,7 +2217,7 @@ async function driverCounter(rideId) {
   const val   = parseFloat(input ? input.value : 0);
   const ride  = getRide(rideId);
   if (!val || val <= ride.offered_fare) {
-    toast('⚠️', 'Counter must be higher', 'Your counter needs to beat their ₹' + ride.offered_fare + ' offer.', 'amber');
+    toast('⚠️', 'Counter must be higher', 'Your counter needs to beat their $' + ride.offered_fare + ' offer.', 'amber');
     return;
   }
   try {
@@ -2229,7 +2229,7 @@ async function driverCounter(rideId) {
     if (!res.ok) throw new Error(data.error);
     data.ride.previous_counter_fare = ride.counter_fare || ride.offered_fare;
     sendRideUpdate(data.ride);
-    toast('💬', 'Counter sent', '₹' + val + " is now with the passenger.", 'blue');
+    toast('💬', 'Counter sent', '$' + val + " is now with the passenger.", 'blue');
   } catch (err) { toast('❌', 'Error', err.message, 'red'); }
 }
 
@@ -2243,7 +2243,7 @@ async function passengerAcceptCounter(rideId) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
     sendRideUpdate(data.ride);
-    toast('🎉', 'Ride confirmed!', 'Deal locked at ₹' + getFinalFare(data.ride) + '. Your driver is on the way.', 'green');
+    toast('🎉', 'Ride confirmed!', 'Deal locked at $' + getFinalFare(data.ride) + '. Your driver is on the way.', 'green');
   } catch (err) { toast('❌', 'Error', err.message, 'red'); }
 }
 
@@ -2264,7 +2264,7 @@ async function passengerCounter(rideId) {
   const val   = parseFloat(input ? input.value : 0);
   const ride  = getRide(rideId);
   if (!val || val >= ride.counter_fare) {
-    toast('⚠️', 'Counter must be lower', 'Your counter needs to be lower than their ₹' + ride.counter_fare + ' offer.', 'amber');
+    toast('⚠️', 'Counter must be lower', 'Your counter needs to be lower than their $' + ride.counter_fare + ' offer.', 'amber');
     return;
   }
   try {
@@ -2276,7 +2276,7 @@ async function passengerCounter(rideId) {
     if (!res.ok) throw new Error(data.error);
     data.ride.previous_counter_fare = ride.counter_fare;
     sendRideUpdate(data.ride);
-    toast('💬', 'Counter sent', '₹' + val + " is now with the driver.", 'blue');
+    toast('💬', 'Counter sent', '$' + val + " is now with the driver.", 'blue');
   } catch (err) { toast('❌', 'Error', err.message, 'red'); }
 }
 
@@ -2341,20 +2341,20 @@ function renderPassengerCard(r) {
           <div class="counter-banner-head">💬 Driver has a counter proposal</div>
           ${driverDetail}
           <div class="price-compare">
-            <span class="price-was">Your offer: ₹${previousCounterFare}</span>
+            <span class="price-was">Your offer: $${previousCounterFare}</span>
             <span style="color:var(--text-dim);margin:0 2px;">→</span>
-            <span class="price-now">Driver asks: ₹${counterFare}</span>
+            <span class="price-now">Driver asks: $${counterFare}</span>
           </div>
-          <p>They think ₹${counterFare} is a fair deal. Accept and you're on your way — counter back, or decline and try a new request.</p>
+          <p>They think $${counterFare} is a fair deal. Accept and you're on your way — counter back, or decline and try a new request.</p>
           <div class="action-row">
-            <button class="btn btn-primary btn-sm" onclick="passengerAcceptCounter('${r.id}')">Accept ₹${counterFare}</button>
+            <button class="btn btn-primary btn-sm" onclick="passengerAcceptCounter('${r.id}')">Accept $${counterFare}</button>
             <button class="btn btn-amber btn-sm" onclick="togglePassengerCounterForm('${r.id}')">Propose a Counter</button>
             <button class="btn btn-ghost btn-sm" onclick="passengerRejectCounter('${r.id}')">Decline &amp; Close</button>
           </div>
           ${r.passengerCounterInputVisible ? `
             <div class="counter-form" style="margin-top:12px;">
               <div class="field">
-                <label>Your counter offer (₹) — must be lower than ₹${counterFare}</label>
+                <label>Your counter offer ($) — must be lower than $${counterFare}</label>
                 <input type="number" id="passenger-counter-input-${r.id}" placeholder="${Math.round(counterFare*0.9)}" max="${counterFare-1}" />
               </div>
               <button class="btn btn-amber btn-sm" onclick="passengerCounter('${r.id}')">Send Counter</button>
@@ -2367,13 +2367,13 @@ function renderPassengerCard(r) {
         <div class="counter-banner">
           <div class="counter-banner-head">⏳ Your counter is with the driver</div>
           <div class="price-compare">
-            <span class="price-was">Driver asked: ₹${previousCounterFare}</span>
+            <span class="price-was">Driver asked: $${previousCounterFare}</span>
             <span style="color:var(--text-dim);margin:0 2px;">→</span>
-            <span class="price-now">Your counter: ₹${counterFare}</span>
+            <span class="price-now">Your counter: $${counterFare}</span>
           </div>
-          <p>Your counter of ₹${counterFare} has been sent. Waiting for their response.</p>
+          <p>Your counter of $${counterFare} has been sent. Waiting for their response.</p>
           <div class="status-note wait" style="margin-top:12px;">
-            ⏳ <span>Waiting for driver to respond to your ₹${counterFare} counter.</span>
+            ⏳ <span>Waiting for driver to respond to your $${counterFare} counter.</span>
           </div>
         </div>`;
     }
@@ -2384,8 +2384,8 @@ function renderPassengerCard(r) {
     const isComplete = r.status === 'completed';
     const statusIcon = isComplete ? '🏁' : '🎉';
     const statusMsg  = isComplete
-      ? `Ride completed at <strong>₹${finalFare}</strong>. Thanks for riding!`
-      : `Confirmed at <strong>₹${finalFare}</strong> — your driver is on the way. Safe travels!`;
+      ? `Ride completed at <strong>$${finalFare}</strong>. Thanks for riding!`
+      : `Confirmed at <strong>$${finalFare}</strong> — your driver is on the way. Safe travels!`;
     const driverRole = isComplete ? 'Your Driver · Ride Complete' : 'Your Driver · En Route';
 
     const driverBlock = driverObj
@@ -2427,8 +2427,8 @@ function renderPassengerCard(r) {
         <div>${badgeHTML(r.status)}</div>
         <div class="price-block">
           <div class="price-label-sm">${(r.status === 'confirmed' || r.status === 'completed') ? 'Final fare' : 'Your offer'}</div>
-          <div class="price-big ${r.status==='countered' ? 'counter-col' : ''}">₹${(r.status === 'confirmed' || r.status === 'completed') ? finalFare : offeredFare}</div>
-          ${showStrikethrough ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">bid ₹${originalFare}</div>` : ''}
+          <div class="price-big ${r.status==='countered' ? 'counter-col' : ''}">$${(r.status === 'confirmed' || r.status === 'completed') ? finalFare : offeredFare}</div>
+          ${showStrikethrough ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">bid $${originalFare}</div>` : ''}
         </div>
       </div>
       <div class="route">
@@ -2521,8 +2521,8 @@ function renderAllRidesCard(r) {
     const isComplete = r.status === 'completed';
     const statusIcon = isComplete ? '🏁' : '🎉';
     const statusMsg  = isComplete
-      ? `Ride completed at <strong>₹${finalFare}</strong>. Thanks for riding!`
-      : `Confirmed at <strong>₹${finalFare}</strong> — driver is on the way.`;
+      ? `Ride completed at <strong>$${finalFare}</strong>. Thanks for riding!`
+      : `Confirmed at <strong>$${finalFare}</strong> — driver is on the way.`;
     const driverRole = isComplete ? 'Driver · Ride Complete' : 'Driver · En Route';
     const isOwner    = passenger && r.passenger_phone === passenger.phone;
 
@@ -2562,8 +2562,8 @@ function renderAllRidesCard(r) {
         </div>
         <div class="price-block">
           <div class="price-label-sm">${(r.status==='confirmed'||r.status==='completed')?'Final':'Offer'}</div>
-          <div class="price-big">₹${(r.status==='confirmed'||r.status==='completed') ? finalFare : r.offered_fare}</div>
-          ${showStrikethrough ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">bid ₹${originalFare}</div>` : ''}
+          <div class="price-big">$${(r.status==='confirmed'||r.status==='completed') ? finalFare : r.offered_fare}</div>
+          ${showStrikethrough ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">bid $${originalFare}</div>` : ''}
         </div>
       </div>
       <div class="route">
@@ -2649,7 +2649,7 @@ function renderDriverCard(r) {
     if (r.status === 'pending') {
       actions = `
         <div class="action-row">
-          <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept ₹${offeredFare}</button>
+          <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept $${offeredFare}</button>
           <button class="btn btn-amber   btn-sm" onclick="toggleCounterForm('${r.id}')">Propose a Counter</button>
           <button class="btn btn-danger  btn-sm" onclick="driverReject('${r.id}')">Pass</button>
         </div>`;
@@ -2657,7 +2657,7 @@ function renderDriverCard(r) {
         actions += `
           <div class="counter-form">
             <div class="field">
-              <label>Your counter offer (₹) — must exceed ₹${offeredFare}</label>
+              <label>Your counter offer ($) — must exceed $${offeredFare}</label>
               <input type="number" id="counter-input-${r.id}" placeholder="${Math.round(offeredFare*1.2)}" min="${offeredFare+1}" />
             </div>
             <button class="btn btn-amber btn-sm" onclick="driverCounter('${r.id}')">Send Counter</button>
@@ -2673,20 +2673,20 @@ function renderDriverCard(r) {
           <div class="counter-banner" style="margin-top:12px;">
             <div class="counter-banner-head">💬 Passenger has a counter proposal</div>
             <div class="price-compare">
-              <span class="price-was">Your ask: ₹${previousCounterFare}</span>
+              <span class="price-was">Your ask: $${previousCounterFare}</span>
               <span style="color:var(--text-dim);margin:0 2px;">→</span>
-              <span class="price-now">Passenger countered: ₹${counterFare}</span>
+              <span class="price-now">Passenger countered: $${counterFare}</span>
             </div>
-            <p>They think ₹${counterFare} is fair. Accept and lock it in — or counter again.</p>
+            <p>They think $${counterFare} is fair. Accept and lock it in — or counter again.</p>
             <div class="action-row">
-              <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept ₹${counterFare}</button>
+              <button class="btn btn-primary btn-sm" onclick="driverAccept('${r.id}')">Accept $${counterFare}</button>
               <button class="btn btn-amber btn-sm" onclick="toggleCounterForm('${r.id}')">Propose a Counter</button>
               <button class="btn btn-danger btn-sm" onclick="driverReject('${r.id}')">Pass</button>
             </div>
             ${r.counterInputVisible ? `
               <div class="counter-form" style="margin-top:12px;">
                 <div class="field">
-                  <label>Your counter offer (₹) — must exceed ₹${counterFare}</label>
+                  <label>Your counter offer ($) — must exceed $${counterFare}</label>
                   <input type="number" id="counter-input-${r.id}" placeholder="${Math.round(counterFare*1.2)}" min="${counterFare+1}" />
                 </div>
                 <button class="btn btn-amber btn-sm" onclick="driverCounter('${r.id}')">Send Counter</button>
@@ -2695,7 +2695,7 @@ function renderDriverCard(r) {
             ` : ''}
           </div>`;
       } else {
-        actions = `<div class="status-note wait" style="margin-top:12px;">⏳ <span>Your counter of <strong>₹${counterFare}</strong> is with the rider — waiting on their move.</span></div>`;
+        actions = `<div class="status-note wait" style="margin-top:12px;">⏳ <span>Your counter of <strong>$${counterFare}</strong> is with the rider — waiting on their move.</span></div>`;
       }
     }
   }
@@ -2723,7 +2723,7 @@ function renderDriverCard(r) {
     closedNote = `<div class="status-note closed" style="margin-top:12px;">— <span>You passed on this one. Plenty more offers on the way.</span></div>`;
   }
   if (r.status === 'completed') {
-    closedNote = `<div class="status-note ok" style="margin-top:12px;">🏁 <span>Ride completed at <strong>₹${finalFare}</strong>. Great job!</span></div>`;
+    closedNote = `<div class="status-note ok" style="margin-top:12px;">🏁 <span>Ride completed at <strong>$${finalFare}</strong>. Great job!</span></div>`;
   }
 
   const showingPrice = (r.status === 'confirmed' || r.status === 'completed')
@@ -2745,9 +2745,9 @@ function renderDriverCard(r) {
         </div>
         <div class="price-block">
           <div class="price-label-sm">${priceLabel}</div>
-          <div class="price-big ${r.status==='countered'?'counter-col':''}">₹${showingPrice}</div>
+          <div class="price-big ${r.status==='countered'?'counter-col':''}">$${showingPrice}</div>
           ${r.status==='countered' && counterFare && !r.passenger_countered
-            ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">was ₹${previousCounterFare}</div>`
+            ? `<div class="price-label-sm" style="text-decoration:line-through;color:var(--text-muted);">was $${previousCounterFare}</div>`
             : ''}
         </div>
       </div>
