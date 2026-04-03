@@ -33,6 +33,29 @@ app.get('/api/config', (req, res) => {
   });
 });
 
+app.get('/api/mappls-token', async (req, res) => {
+  try {
+    const params = new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: process.env.MAPPLS_CLIENT_ID,
+      client_secret: process.env.MAPPLS_CLIENT_SECRET,
+    });
+    const response = await fetch('https://outpost.mappls.com/api/security/oauth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString(),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.access_token) {
+      return res.status(500).json({ error: 'Failed to get Mappls token' });
+    }
+    res.json({ access_token: data.access_token, expires_in: data.expires_in || 3600 });
+  } catch (err) {
+    console.error('Mappls token error:', err);
+    res.status(500).json({ error: 'Token fetch failed' });
+  }
+});
+
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 

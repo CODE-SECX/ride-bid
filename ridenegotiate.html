@@ -759,6 +759,70 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   .filter-grid-full { grid-column: 1; }
 }
 
+/* ─── Mappls Autocomplete ─── */
+.autocomplete-wrap {
+  position: relative;
+}
+.mappls-dropdown {
+  position: absolute;
+  z-index: 9999;
+  background: var(--surface);
+  border: 1.5px solid var(--border-focus);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  width: 100%;
+  top: 100%;
+  left: 0;
+  display: none;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.mappls-dropdown::-webkit-scrollbar { width: 4px; }
+.mappls-dropdown::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.mappls-item {
+  padding: 10px 13px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background var(--t);
+}
+.mappls-item:last-child { border-bottom: none; }
+.mappls-item:hover { background: var(--blue-light); }
+.mappls-item-name {
+  font-size: 0.83rem; font-weight: 600;
+  color: var(--text); line-height: 1.3;
+}
+.mappls-item-addr {
+  font-size: 0.73rem; color: var(--text-muted);
+  margin-top: 2px; line-height: 1.35;
+}
+.mappls-item-dist {
+  font-size: 0.68rem; color: var(--blue);
+  font-weight: 600; margin-top: 2px;
+}
+.mappls-loading {
+  padding: 12px 13px;
+  font-size: 0.78rem; color: var(--text-muted);
+  display: flex; align-items: center; gap: 8px;
+}
+.mappls-no-result {
+  padding: 12px 13px;
+  font-size: 0.78rem; color: var(--text-muted);
+}
+.mappls-powered {
+  padding: 6px 13px;
+  font-size: 0.65rem; color: var(--text-dim);
+  border-top: 1px solid var(--border);
+  text-align: right;
+  background: var(--surface2);
+}
+/* active input styling when dropdown is open */
+.autocomplete-wrap.open input {
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
 /* ─── Utils ─── */
 .divider { height: 1px; background: var(--border); margin: 24px 0; }
 .hidden  { display: none !important; }
@@ -863,23 +927,23 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
             <div class="address-callout">
               <div class="address-callout-icon">📍</div>
               <div>
-                <div class="address-callout-title">Use your full address — it gets you picked up faster</div>
+                <div class="address-callout-title">Start typing your address for suggestions</div>
                 <div class="address-callout-desc">
-                  Include the <strong>door number, street name, and a nearby landmark</strong> for both
-                  pickup and drop-off. "Near the mall" won't cut it — drivers need enough detail
-                  to commit without back-and-forth.
+                  Type a <strong>street name, landmark, or area</strong> and pick from the suggestions.
+                  The more specific your pickup, the faster a driver can commit.
                 </div>
               </div>
             </div>
 
             <div class="form-grid">
               <div>
-                <label>Pickup — the more specific, the better</label>
-                <input id="p-pickup" type="text" placeholder="e.g. 123 Yonge Street, near Eaton Centre, Toronto" />
+                <label>Pickup — start typing for suggestions</label>
+                <!-- autocomplete-wrap is added dynamically by attachMapplsAutocomplete -->
+                <input id="p-pickup" type="text" placeholder="e.g. 123 Yonge Street, Toronto" autocomplete="off" />
               </div>
               <div>
                 <label>Drop-off — where the journey ends</label>
-                <input id="p-drop" type="text" placeholder="e.g. 100 Queen Street West, near Nathan Phillips Square, Toronto" />
+                <input id="p-drop" type="text" placeholder="e.g. 100 Queen Street West, Toronto" autocomplete="off" />
               </div>
               <div>
                 <label>Pick-up Time — when do you want to ride?</label>
@@ -899,7 +963,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
 
           <div class="label-eyebrow">Tips for better deals</div>
           <div class="tip-list" style="margin-top:8px;">
-            <div class="tip"><span class="tip-i">📍</span><span>Precise locations help drivers commit faster — vague gets you vague.</span></div>
+            <div class="tip"><span class="tip-i">📍</span><span>Pick from autocomplete suggestions — it gives drivers an exact location to commit to.</span></div>
             <div class="tip"><span class="tip-i">💡</span><span>Think of your opening offer as a handshake, not a lowball — a fair price invites faster replies.</span></div>
             <div class="tip"><span class="tip-i">🤝</span><span>A counter offer is good news — it means a driver wants your ride. A small nudge often seals the deal.</span></div>
           </div>
@@ -1026,19 +1090,11 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     }
   }
 
-  /*
-   * FIX (BUG F): resolveDriver now uses accepted_by first, then countered_by.
-   * Also triggers fetchDriverById for completed rides so the cache fills in.
-   */
   function resolveDriver(r) {
     if (r.driver) return r.driver;
-    // accepted_by is set for direct-accept. For accept-counter flow,
-    // server.js now also sets accepted_by = countered_by (see server.js fix).
-    // We still fall back to countered_by for older rides in the DB.
     const driverId = r.accepted_by || r.countered_by;
     if (!driverId) return null;
     if (driverCache[driverId] !== undefined) return driverCache[driverId];
-    // Trigger async fetch for any confirmed/completed ride
     if (r.status === 'confirmed' || r.status === 'completed') {
       fetchDriverById(driverId);
     }
@@ -1052,6 +1108,173 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   let driverFareMax = '';
   let driverLocationFilter = '';
   let driverFilterOpen = false;
+
+  /* ═══════════ MAPPLS AUTOCOMPLETE ═══════════ */
+  let mapplsToken = null;
+  let mapplsTokenExpiry = 0;
+
+  async function getMapplsToken() {
+    if (mapplsToken && Date.now() < mapplsTokenExpiry) return mapplsToken;
+    try {
+      const res = await fetch(`${API_URL}/mappls-token`);
+      if (!res.ok) throw new Error('Token fetch failed');
+      const data = await res.json();
+      mapplsToken = data.access_token;
+      // Refresh 60 seconds before actual expiry
+      mapplsTokenExpiry = Date.now() + ((data.expires_in || 3600) - 60) * 1000;
+      return mapplsToken;
+    } catch (e) {
+      console.error('Could not get Mappls token:', e);
+      return null;
+    }
+  }
+
+  function debounce(fn, ms) {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), ms);
+    };
+  }
+
+  /*
+   * attachMapplsAutocomplete
+   * Wraps the input in a .autocomplete-wrap div, appends a dropdown,
+   * and wires up the Mappls Places Search API (Canada region).
+   *
+   * inputId     — id of the <input> element
+   * dropdownId  — id to assign to the created dropdown div
+   */
+  function attachMapplsAutocomplete(inputId, dropdownId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    // Wrap the input so we can position the dropdown absolutely
+    const parent = input.parentElement;
+    if (!parent.classList.contains('autocomplete-wrap')) {
+      const wrap = document.createElement('div');
+      wrap.className = 'autocomplete-wrap';
+      parent.insertBefore(wrap, input);
+      wrap.appendChild(input);
+    }
+    const wrap = input.parentElement;
+
+    // Create dropdown if it doesn't exist yet
+    let dropdown = document.getElementById(dropdownId);
+    if (!dropdown) {
+      dropdown = document.createElement('div');
+      dropdown.id = dropdownId;
+      dropdown.className = 'mappls-dropdown';
+      wrap.appendChild(dropdown);
+    }
+
+    function openDropdown() {
+      dropdown.style.display = 'block';
+      wrap.classList.add('open');
+    }
+    function closeDropdown() {
+      dropdown.style.display = 'none';
+      wrap.classList.remove('open');
+    }
+
+    function showLoading() {
+      dropdown.innerHTML = `<div class="mappls-loading"><span>🔍</span> Searching...</div>`;
+      openDropdown();
+    }
+
+    function showNoResults() {
+      dropdown.innerHTML = `
+        <div class="mappls-no-result">No results found. Try a different search.</div>
+        <div class="mappls-powered">Powered by Mappls</div>`;
+      openDropdown();
+    }
+
+    function showResults(suggestions) {
+      if (!suggestions || suggestions.length === 0) { showNoResults(); return; }
+      const items = suggestions.slice(0, 7).map(s => {
+        const name    = s.placeName    || s.placeAddress || '';
+        const addr    = s.placeAddress || '';
+        const dist    = s.distance ? `${(s.distance / 1000).toFixed(1)} km away` : '';
+        const full    = addr && addr !== name ? `${name}, ${addr}` : name;
+        // Escape single quotes for the onclick attribute
+        const escaped = full.replace(/'/g, '&#39;');
+        return `
+          <div class="mappls-item"
+               onmousedown="event.preventDefault()"
+               onclick="selectMapplsPlace('${inputId}', '${dropdownId}', '${escaped}')">
+            <div class="mappls-item-name">${name}</div>
+            ${addr && addr !== name ? `<div class="mappls-item-addr">${addr}</div>` : ''}
+            ${dist ? `<div class="mappls-item-dist">📍 ${dist}</div>` : ''}
+          </div>`;
+      }).join('');
+      dropdown.innerHTML = items + `<div class="mappls-powered">Powered by Mappls</div>`;
+      openDropdown();
+    }
+
+    const search = debounce(async (query) => {
+      const q = query.trim();
+      if (q.length < 2) { closeDropdown(); return; }
+
+      showLoading();
+      const token = await getMapplsToken();
+      if (!token) {
+        // Graceful fallback — hide dropdown, let user type manually
+        closeDropdown();
+        return;
+      }
+
+      try {
+        // Canada region = CAN. Remove or change region param for other countries.
+        const url = `https://atlas.mappls.com/api/places/search/json` +
+          `?query=${encodeURIComponent(q)}&region=CAN`;
+
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error(`Mappls API error: ${res.status}`);
+
+        const data = await res.json();
+        showResults(data.suggestedLocations || []);
+      } catch (e) {
+        console.error('Mappls autocomplete error:', e);
+        closeDropdown();
+      }
+    }, 300);
+
+    input.addEventListener('input', e => search(e.target.value));
+
+    // Re-show dropdown on focus if there's already a query
+    input.addEventListener('focus', () => {
+      if (input.value.trim().length >= 2) search(input.value);
+    });
+
+    // Close dropdown on blur (small delay so onclick fires first)
+    input.addEventListener('blur', () => {
+      setTimeout(closeDropdown, 180);
+    });
+
+    // Close on Escape key
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { closeDropdown(); input.blur(); }
+    });
+  }
+
+  // Called from dropdown item onclick
+  function selectMapplsPlace(inputId, dropdownId, value) {
+    const input = document.getElementById(inputId);
+    if (input) {
+      input.value = value;
+      // Trigger any validation styles to reset
+      input.dispatchEvent(new Event('change'));
+    }
+    const dropdown = document.getElementById(dropdownId);
+    if (dropdown) {
+      dropdown.style.display = 'none';
+      const wrap = dropdown.parentElement;
+      if (wrap) wrap.classList.remove('open');
+    }
+  }
 
   /* ═══════════ PHONE LINK HELPER ═══════════ */
   function phoneLink(phoneStr, labelClass) {
@@ -1067,38 +1290,15 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     return allRides.find(r => r.id === id) || myRides.find(r => r.id === id);
   }
 
-  /*
-   * FIX (BUG E): getFinalFare now correctly resolves the true charged amount.
-   *
-   * Flow breakdown:
-   * - Direct accept:        offered_fare stays original, accepted_by set
-   * - Accept-counter:       server sets offered_fare = counter_fare, counter_fare remains
-   * - After complete_ride:  ride_history.final_fare is inserted (= offered_fare at that time)
-   *
-   * So the priority is:
-   *   final_fare (from ride_history, most authoritative)
-   *   > counter_fare (set by driver counter, reflects negotiated price before accept-counter mutates offered_fare)
-   *   > offered_fare (original offer OR mutated to counter_fare by accept-counter)
-   *
-   * The strikethrough "original bid" is only shown when final_fare != original offered_fare.
-   * We preserve original_offered_fare on each ride object when first seen to avoid confusion.
-   */
   function getFinalFare(r) {
     if (r.status === 'confirmed' || r.status === 'completed') {
-      // final_fare is set after complete_ride RPC (most authoritative)
       if (r.final_fare != null) return r.final_fare;
-      // counter_fare is the agreed negotiated amount
       if (r.counter_fare != null) return r.counter_fare;
     }
     return r.offered_fare;
   }
 
-  /*
-   * Returns the original passenger bid — the very first offered_fare
-   * before any accept-counter mutation. Used for the strikethrough display.
-   */
   function getOriginalFare(r) {
-    // original_offered_fare is preserved in handleRideUpdate when first seen
     if (r.original_offered_fare != null) return r.original_offered_fare;
     return r.offered_fare;
   }
@@ -1134,16 +1334,11 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     }
   }
 
-  /*
-   * FIX: handleRideUpdate now preserves original_offered_fare so the strikethrough
-   * "bid $X" always shows what the passenger originally offered, not the mutated value.
-   */
   function handleRideUpdate(incomingRide) {
     const existingAll = allRides.find(r => r.id === incomingRide.id);
     const existingMy  = myRides.find(r => r.id === incomingRide.id);
     const existing    = existingAll || existingMy;
 
-    // Track the very first offered_fare before any server mutation
     const originalOfferedFare = existing
       ? (existing.original_offered_fare ?? existing.offered_fare)
       : incomingRide.offered_fare;
@@ -1249,6 +1444,10 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     document.getElementById('p-display-name').textContent  = passenger.name;
     document.getElementById('p-display-phone').textContent = passenger.phone;
     document.getElementById('p-avatar').textContent        = passenger.name[0].toUpperCase();
+
+    // Attach Mappls autocomplete to both location inputs
+    attachMapplsAutocomplete('p-pickup', 'p-pickup-dropdown');
+    attachMapplsAutocomplete('p-drop',   'p-drop-dropdown');
   }
 
   function logoutPassenger() {
@@ -1411,8 +1610,8 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
           <div class="form-grid">
             <div><label>Username</label><input id="edit-username" type="text" value="${driver.username || ''}" placeholder="username" /></div>
             <div><label>Full Name</label><input id="edit-name" type="text" value="${driver.name || ''}" placeholder="e.g. Raj Sharma" /></div>
-            <div><label>Contact Number</label><input id="edit-contact" type="tel" value="${driver.contact_no || ''}" placeholder="+91 98765 43210" /></div>
-            <div><label>Vehicle Information</label><input id="edit-vehicle" type="text" value="${driver.vehicle_info || ''}" placeholder="e.g. Swift Dzire, White, KA01AB1234" /></div>
+            <div><label>Contact Number</label><input id="edit-contact" type="tel" value="${driver.contact_no || ''}" placeholder="+1 555 123 4567" /></div>
+            <div><label>Vehicle Information</label><input id="edit-vehicle" type="text" value="${driver.vehicle_info || ''}" placeholder="e.g. Toyota Camry 2022, White" /></div>
             <div><label>Current Password</label><input id="edit-current-password" type="password" placeholder="Enter current password to confirm changes" /></div>
             <div><label>New Password (optional)</label><input id="edit-new-password" type="password" placeholder="Leave blank to keep current password" /></div>
             <div style="display:flex; gap:8px; margin-top:8px;">
@@ -1569,7 +1768,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         const existing = existingAllRides.find(e => e.id === r.id);
         return {
           ...r,
-          // FIX: preserve original_offered_fare across reloads
           original_offered_fare:        existing ? (existing.original_offered_fare ?? existing.offered_fare) : r.offered_fare,
           previous_counter_fare:        existing ? existing.previous_counter_fare        : r.offered_fare,
           counterInputVisible:          existing ? existing.counterInputVisible          : false,
@@ -1778,7 +1976,7 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
   function renderPassengerCard(r) {
     let extra = '';
     const offeredFare     = r.offered_fare;
-    const originalFare    = getOriginalFare(r);  // FIX: always the first bid
+    const originalFare    = getOriginalFare(r);
     const counterFare     = r.counter_fare;
     const previousCounterFare = r.previous_counter_fare != null ? r.previous_counter_fare : offeredFare;
     const finalFare       = getFinalFare(r);
@@ -1888,7 +2086,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
       extra = `<div class="status-note closed">— <span>This one didn't land. Feel free to submit a fresh offer.</span></div>`;
     }
 
-    // FIX (BUG E): only show strikethrough if finalFare genuinely differs from the ORIGINAL bid
     const showStrikethrough = (r.status === 'confirmed' || r.status === 'completed')
       && String(finalFare) !== String(originalFare);
 
@@ -1973,12 +2170,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     renderAllRides();
   }
 
-  /*
-   * FIX (BUG I): When a passenger is logged in, the bottom "All Rides" section
-   * now shows ALL rides from allRides (not just their own), so it's genuinely
-   * useful for seeing market trends. Their own rides always appear in "Your Negotiations" above.
-   * For guests (no passenger), show all pending/countered rides as before.
-   */
   function renderAllRides() {
     const listEl  = document.getElementById('all-rides-list');
     const emptyEl = document.getElementById('all-rides-empty');
@@ -1987,14 +2178,11 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     let filtered;
 
     if (passenger) {
-      // Only show THIS passenger's rides
       filtered = allRides.filter(r => r.passenger_phone === passenger.phone);
     } else {
-      // Guest mode: show pending/countered rides as a preview
       filtered = allRides.filter(r => r.status === 'pending' || r.status === 'countered');
     }
 
-    // Apply tab filter
     if (passengerRideFilter === 'pending')   filtered = filtered.filter(r => r.status === 'pending' || r.status === 'countered');
     if (passengerRideFilter === 'confirmed') filtered = filtered.filter(r => r.status === 'confirmed' || r.status === 'completed');
 
@@ -2021,7 +2209,6 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
         : `Confirmed at <strong>$${finalFare}</strong> — driver is on the way.`;
       const driverRole = isComplete ? 'Driver · Ride Complete' : 'Driver · En Route';
 
-      // Only show driver contact block for the ride owner
       const isOwner = passenger && r.passenger_phone === passenger.phone;
       const driverBlock = isOwner
         ? (driverObj
@@ -2100,18 +2287,12 @@ a.phone-link .phone-icon { font-size: 0.8em; opacity: 0.7; flex-shrink: 0; }
     } else if (driverFilter === 'countered') {
       filtered = allRides.filter(r => r.status === 'countered');
     } else if (driverFilter === 'closed') {
-      /*
-       * FIX (BUG J + BUG G): Use String() coercion for safe UUID comparison.
-       * accepted_by is set for direct accept; countered_by for accept-counter flow.
-       * Both are now set by our fixed server.js (accept-counter also sets accepted_by).
-       */
       filtered = allRides.filter(r =>
         (r.status === 'confirmed' || r.status === 'rejected' || r.status === 'completed') &&
         (String(r.accepted_by) === String(driver.id) || String(r.countered_by) === String(driver.id))
       );
     }
 
-    // Hide rides this driver passed on (except in closed tab)
     if (driverFilter !== 'closed') {
       filtered = filtered.filter(r => !driverPassedRides.has(r.id));
     }
